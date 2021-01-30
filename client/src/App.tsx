@@ -1,7 +1,7 @@
 /* eslint-disable react/jsx-pascal-case */
 
 import React, { Component } from 'react';
-import styles from './App.scss';
+import styles from './App.module.scss';
 
 import Test_Comp from './components/Test'
 
