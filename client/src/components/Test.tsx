@@ -10,7 +10,7 @@ class Test extends Component {
 
     render() { 
         return (  
-            <div className="App">Test Component! + envvar:{process.env.REACT_APP_TEST_VAR}</div>
+            <div className="App">Test Component! + apikey:{process.env.REACT_APP_TWITTER_API_Key}</div>
         );
     }
 
