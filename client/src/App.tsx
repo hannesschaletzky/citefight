@@ -26,7 +26,7 @@ class App extends Component {
     return body;
   };
   
-  handleSubmit = async e => {
+  handleSubmit = async (e: { preventDefault: () => void; }) => {
     e.preventDefault();
     const response = await fetch('/api/world', {
       method: 'POST',
