@@ -1,7 +1,7 @@
 /* eslint-disable react/jsx-pascal-case */
 
 import React, { Component } from 'react';
-import './App.scss';
+import styles from './App.scss';
 
 import Test_Comp from './components/Test'
 
@@ -43,7 +43,7 @@ class App extends Component {
 render() {
     return (
       <div>
-        <div className="App">
+        <div className={styles.App}>
           <p>{this.state.response}</p>
           <form onSubmit={this.handleSubmit}>
             <p>
