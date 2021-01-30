@@ -1,6 +1,9 @@
-import React, { Component } from 'react';
+/* eslint-disable react/jsx-pascal-case */
 
+import React, { Component } from 'react';
 import './App.scss';
+
+import Test_Comp from './components/Test'
 
 class App extends Component {
   state = {
@@ -39,20 +42,25 @@ class App extends Component {
   
 render() {
     return (
-      <div className="App">
-        <p>{this.state.response}</p>
-        <form onSubmit={this.handleSubmit}>
-          <p>
-            <strong>Post to Server:</strong>
-          </p>
-          <input
-            type="text"
-            value={this.state.post}
-            onChange={e => this.setState({ post: e.target.value })}
-          />
-          <button type="submit">Submit</button>
-        </form>
-        <p>{this.state.responseToPost}</p>
+      <div>
+        <div className="App">
+          <p>{this.state.response}</p>
+          <form onSubmit={this.handleSubmit}>
+            <p>
+              <strong>Post to Server:</strong>
+            </p>
+            <input
+              type="text"
+              value={this.state.post}
+              onChange={e => this.setState({ post: e.target.value })}
+            />
+            <button type="submit">Submit</button>
+          </form>
+          <p>{this.state.responseToPost}</p>
+        </div>
+        <div>
+          <Test_Comp></Test_Comp>
+        </div>
       </div>
     );
   }
