@@ -24,3 +24,5 @@ yarn-error.log*
 
 #added
 /client/node_modules
+.env
+/client/.env

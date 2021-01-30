@@ -10,7 +10,10 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 // API calls
 app.get('/api/hello', (req, res) => {
-  res.send({ express: 'Hello From Express' });
+
+  const { TEST_VAR } = require('./config'); //get env var from config.js
+
+  res.send({ express: 'Hello From Express: ' + TEST_VAR});
 });
 
 app.post('/api/world', (req, res) => {
