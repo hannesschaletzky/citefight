@@ -3,7 +3,11 @@
 import React, { Component } from 'react';
 import styles from './App.module.scss';
 
+import { BrowserRouter, Route, Switch } from 'react-router-dom'
+
 import Test_Comp from './components/Test'
+import TestRouteComp from './components/TestRouteComp'
+import NotFound from './components/errorpages/NotFound'
 
 class App extends Component {
   state = {
@@ -59,7 +63,15 @@ render() {
           <p>{this.state.responseToPost}</p>
         </div>
         <div>
-          <Test_Comp></Test_Comp>
+          <BrowserRouter>
+            <Switch>
+              <Route exact path="/" component={Test_Comp}/>
+
+              <Route exact path="/test" component={TestRouteComp}/>
+
+              <Route component={NotFound} /* final route for 404 not found *//>
+            </Switch>
+          </BrowserRouter>
         </div>
       </div>
     );
