@@ -1,9 +1,9 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const path = require('path');
-
 const app = express();
 const port = process.env.PORT || 5000;
+let unirest = require('unirest');
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -19,10 +19,9 @@ app.get('/api/hello', (req, res) => {
 app.get('/api/tweets', (req, res) => {
 
   const { SERVER_TWITTER_API_BEARER } = require('./config'); //get env var from config.js
-  console.log(SERVER_TWITTER_API_BEARER)
+  //console.log(SERVER_TWITTER_API_BEARER)
 
-  var unirest = require('unirest');
-  let req_ = unirest('GET', 'https://api.twitter.com/2/tweets?ids=1345396853815312385&tweet.fields=public_metrics,created_at&expansions=attachments.media_keys&media.fields=duration_ms,height,media_key,public_metrics,type,url,width')
+  unirest('GET', 'https://api.twitter.com/2/tweets?ids=1345396853815312385&tweet.fields=public_metrics,created_at&expansions=attachments.media_keys&media.fields=duration_ms,height,media_key,public_metrics,type,url,width')
     .headers({
       'Authorization': 'Bearer ' + SERVER_TWITTER_API_BEARER
     })
@@ -31,8 +30,6 @@ app.get('/api/tweets', (req, res) => {
       console.log(response.raw_body);
       res.send({ express: response.raw_body})
     });
-
-  //es.send({ express: 'There should be the tweet object: '});
 });
 
 app.post('/api/world', (req, res) => {
