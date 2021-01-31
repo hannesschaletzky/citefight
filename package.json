@@ -11,7 +11,8 @@
   "dependencies": {
     "body-parser": "^1.18.3",
     "dotenv": "^8.2.0",
-    "express": "^4.16.4"
+    "express": "^4.16.4",
+    "unirest": "^0.6.0"
   },
   "devDependencies": {
     "concurrently": "^4.0.1"
