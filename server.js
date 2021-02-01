@@ -17,8 +17,6 @@ const TwitterV2 = require('twitter-v2');
 const clientv1 = getTwitterClient(1)
 const clientv2 = getTwitterClient(2)
 
-import {Twitter_User} from './client/src/types/Interfaces';
-
 /*
 Twitter API Calls
 */
@@ -59,21 +57,6 @@ function getTwitterClient(version) {
 
 }
 
-app.get('/api/tweetdetails', async(req, res) => {
-  
-  var params = {
-    ids: '1345396853815312385,1352681729736241158', 
-    'tweet.fields': 'public_metrics,created_at',
-    'expansions': 'attachments.media_keys',
-    'media.fields': 'duration_ms,height,media_key,public_metrics,type,url,width'
-  };
-  const { data, includes } = await clientv2.get('tweets', params)
-  console.log(data)
-  console.log(includes.media)
-
-  res.send({ data: data, includes: includes})
-});
-
 app.get('/api/users', (req, res) => {
   
   let params = {
@@ -85,17 +68,12 @@ app.get('/api/users', (req, res) => {
   clientv1.get('users/search', params, function(error, users, response) {
     if (!error) {
       //console.log(users)
-      console.log('retrievied ' + users.length + 'users')
-
-      //transform response to array of user-objects and send back as resource
-      let users = []
+      console.log('retrieved ' + users.length + 'users')
+      /*
       for(let i=0;i<users.length;i++) {
         console.log(users[i].screen_name)
       }
-
-
-
-
+      */
       res.send({ data: users})
     }
     else {
@@ -127,6 +105,21 @@ app.get('/api/tweets', (req, res) => {
     }
   });
 
+});
+
+app.get('/api/tweetdetails', async(req, res) => {
+  
+  var params = {
+    ids: '1345396853815312385,1352681729736241158', 
+    'tweet.fields': 'public_metrics,created_at',
+    'expansions': 'attachments.media_keys',
+    'media.fields': 'duration_ms,height,media_key,public_metrics,type,url,width'
+  };
+  const { data, includes } = await clientv2.get('tweets', params)
+  console.log(data)
+  console.log(includes.media)
+
+  res.send({ data: data, includes: includes})
 });
 
 
