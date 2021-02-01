@@ -1,3 +1,61 @@
-.App {
-  text-align: center;
+//for debugging
+/*
+* {
+  border: 1px solid red;
+}
+*/
+
+$root_backgroundcolor: #ffffff;
+$root_border: rgb(241, 238, 238);
+$header_height: 55px;
+
+.Root_Background {
+  //full screen body functioning as the base for everything
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+}
+
+.Root_Header {
+  //pin to top
+  position: fixed;
+  height: $header_height;
+  width: 100%;
+
+  //bottom border
+  border-bottom: 1px solid;
+  border-color: $root_border;
+
+  //background-color: $root_backgroundcolor;
+  background-color: $root_backgroundcolor;
+}
+
+//flexbox used as wrapper to let the content grow & fix footer to bottom of page
+.Root_FlexboxWrapper {
+  margin-top: $header_height;
+
+  display: flex;
+  flex-direction: column;
+  min-height: 91%;
+}
+
+.Root_Content {
+  flex: 1; //enables growing
+  background-color: $root_backgroundcolor;
+  //background-color: #1053b8;
+
+  //background-image: url("./assets/TestBackground.jpg");
+}
+
+.Root_Footer {
+  height: 60px;
+  flex-shrink: 0; //prevents shrinking
+
+  border-top: 1px solid;
+  border-color: $root_border;
+
+  background-color: $root_backgroundcolor;
+  //background-color: #eae7dc;
 }
