@@ -18,12 +18,12 @@ class App extends Component {
   
   componentDidMount() {
     this.callApi()
-      .then(res => this.setState({ response: res.id }))
+      .then(res => this.setState({ response: 'res' }))
       .catch(err => console.log(err));
   }
   
   callApi = async () => {
-    const response = await fetch('/api/tweets/new');
+    const response = await fetch('/api/users');
     const body = await response.json();
     if (response.status !== 200) throw Error(body.message);
     
