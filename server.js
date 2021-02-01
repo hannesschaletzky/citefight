@@ -59,6 +59,8 @@ function getTwitterClient(version) {
 
 app.get('/api/users', (req, res) => {
   
+  console.log(req.headers.testkey)
+
   let params = {
     q: 'Götze',
     page: 1,

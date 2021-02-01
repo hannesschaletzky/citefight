@@ -6,9 +6,13 @@ import st from './Setup.module.scss'
 
 
 export default function Match_Setup() {
+    //state hook
     const [response, setResponse] = useState("");
     const [post, setPost] = useState("");
     const [responseToPost, setresponseToPost] = useState("");
+    const [searchInput, setSearchInput] = useState("");
+    const [buttonDisabled, setButtonDisabled] = useState(true);
+    //params hook
     const { id } = useParams<Record<string, string | undefined>>()
 
     // Similar to componentDidMount and componentDidUpdate:
@@ -19,7 +23,14 @@ export default function Match_Setup() {
     });
 
     const callApi = async () => {
-        const response = await fetch('/api/users');
+
+        //passing additional parameters in header
+        var requestOptions = {
+            headers: {'testkey': 'TESTPASSEDVARIABLE'}
+        };
+        let request = new Request('/api/users', requestOptions)
+
+        const response = await fetch(request);
         const body = await response.json();
         if (response.status !== 200) throw Error(body.message);
         
@@ -40,26 +51,71 @@ export default function Match_Setup() {
         setresponseToPost(body)
     };
 
+
+    const userNameChanged = (name: string) => {
+        setSearchInput(name)
+
+        if (name.length === 0) {
+            setButtonDisabled(true)
+        }
+        else {
+            setButtonDisabled(false)
+        }
+    }
+
+    const findUser = () => {
+        alert(searchInput)
+
+        //start loading symbol
+        //call async function
+    }
+
+    const getUsersForInput = async (input: string) => {
+        const response = await fetch('/api/users');
+        const body = await response.json();
+        if (response.status !== 200) throw Error(body.message);
+        
+        return body;
+    };
+
   return (
     <div >
+        <div className={st.Search_Con}>
+            Search for users here
+            <input type="search" autoComplete="off" onChange={e => userNameChanged(e.target.value)}/>
+            <button className={st.searchButton} disabled={buttonDisabled} onClick={findUser}>Search</button>
+        </div>
+
         <div className={st.App}>
-        <p>{response}</p>
-        <form onSubmit={handleSubmit}>
-            <p>
-            <strong>Post to Server from match with id: {id}</strong>
-            </p>
-            <input
-            type="text"
-            value={post}
-            onChange={e => setPost(e.target.value)}
-            />
-            <button type="submit">Submit</button>
-        </form>
-        <p>{responseToPost}</p>
+            <p>{response}</p>
+            <form onSubmit={handleSubmit}>
+                <p>
+                <strong>Post to Server from match with id: {id}</strong>
+                </p>
+                <input
+                type="text"
+                value={post}
+                onChange={e => setPost(e.target.value)}
+                />
+                <button type="submit">Submit</button>
+            </form>
+            <p>{responseToPost}</p>
         </div>
     </div>
   );
 }
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 /*
