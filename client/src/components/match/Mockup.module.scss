@@ -1,0 +1,111 @@
+//debugging
+$sdbg: false; //show debugging background = sdbg
+
+.Content_Con {
+  //flexbox
+  display: flex;
+  justify-content: center;
+
+  @if $sdbg {
+    background-color: rgba(201, 200, 196, 0.514);
+  }
+}
+
+.Left_Panel {
+  margin-top: 25px;
+  margin-left: 25px;
+  margin-right: 25px;
+
+  flex: 1; //fill space
+
+  @if $sdbg {
+    background-color: rgba(122, 222, 247, 0.514);
+  }
+}
+
+.Center_Panel {
+  margin-top: 25px;
+  width: 550px;
+
+  @if $sdbg {
+    background-color: rgba(39, 19, 216, 0.514);
+  }
+}
+
+.Right_Panel {
+  margin-top: 25px;
+  margin-left: 25px;
+  margin-right: 25px;
+
+  flex: 1; //fill space
+
+  @if $sdbg {
+    background-color: rgba(216, 196, 19, 0.514);
+  }
+}
+
+.Game_Info_Panel {
+  height: 50px;
+  display: flex;
+}
+
+.Playclock {
+  width: 100%;
+  margin-right: 5px;
+
+  //center vertically
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+  text-align: center;
+
+  //font
+  font-family: STCaiyun;
+  font-size: calc(14px + 2vmin);
+
+  //border
+  border: 1.7px solid;
+  border-color: rgba(194, 192, 192, 0.75);
+  border-radius: 8px;
+
+  @if $sdbg {
+    background-color: rgba(233, 61, 61, 0.514);
+  }
+}
+
+.RoundCount {
+  width: 100%;
+  margin-left: 5px;
+
+  //center vertically
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+  text-align: center;
+
+  //font
+  font-family: STCaiyun;
+  font-size: calc(14px + 2vmin);
+
+  //border
+  border: 1.7px solid;
+  border-color: rgba(194, 192, 192, 0.75);
+  border-radius: 8px;
+
+  @if $sdbg {
+    background-color: rgba(10, 157, 241, 0.514);
+  }
+}
+
+.Navigation_Con {
+  margin-top: 10px;
+  margin-bottom: 10px;
+
+  border: 1.7px solid;
+  border-color: rgba(194, 192, 192, 0.75);
+  border-radius: 8px;
+
+  @if $sdbg {
+    background-color: rgba(52, 216, 19, 0.514);
+  }
+}

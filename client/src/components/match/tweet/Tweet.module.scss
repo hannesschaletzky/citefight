@@ -1,0 +1,87 @@
+//debugging
+$sdbg: false; //show debugging background = sdbg
+
+/*
+  settings according to: https://about.twitter.com/en_us/company/brand-resources.html
+  Tweet treatments
+  -> used variable $x as consistent measure
+*/
+$box_width: 550px;
+$x: 40px;
+$marginToSides: $x * 0.5;
+$topConHeight: $x;
+//text height automatically grows depending on content
+$bottomConHeight: $x/2;
+
+.HelveticaNeueRegularFont {
+  font-family: "HelveticaNeueRegular";
+  color: rgb(136, 153, 166);
+  font-size: 12pt;
+  font-weight: bold;
+  letter-spacing: 1px;
+}
+.HelveticaNeueBoldFont {
+  font-family: "HelveticaNeueBold";
+  font-size: 13pt;
+}
+
+.Box {
+  //mark as flexbox to let content grow
+  display: flex;
+  flex-direction: column;
+
+  //size
+  width: $box_width;
+  min-height: 200px;
+  margin: 0 !important; //otherwise it will be inherited from outside box
+
+  //border
+  border: 1.7px solid;
+  border-color: rgba(194, 192, 192, 0.75);
+  border-radius: 8px;
+}
+
+.Top_Con {
+  margin-left: $marginToSides;
+  margin-top: $marginToSides;
+  margin-right: $marginToSides;
+}
+
+.Mid_Con {
+  flex: 1; //enables growing
+
+  //give space
+  padding-top: 15px;
+  padding-bottom: 25px;
+  margin-left: $marginToSides;
+  margin-right: $marginToSides;
+
+  @if $sdbg {
+    background-color: rgba(24, 10, 150, 0.445);
+  }
+}
+
+.Text {
+  //vertically center text
+  display: flex;
+  justify-content: center;
+  align-content: center;
+  flex-direction: column;
+
+  //word wrap
+  overflow-wrap: break-word;
+
+  //font
+  font-family: "HelveticaNeueBold";
+  font-size: 17pt;
+
+  @if $sdbg {
+    background-color: rgba(228, 17, 147, 0.445);
+  }
+}
+
+.Bottom_Con {
+  margin-left: $marginToSides;
+  margin-bottom: $marginToSides;
+  margin-right: $marginToSides;
+}

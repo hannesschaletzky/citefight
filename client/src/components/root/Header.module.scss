@@ -1,0 +1,22 @@
+.Menu {
+  position: absolute;
+  padding-top: 12px;
+  left: 25px;
+}
+
+.Headline_Container {
+  padding-top: 12px;
+  //center content
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.Headline {
+  text-align: center;
+  font-weight: lighter;
+  text-decoration: none;
+  color: black;
+  font-family: STCaiyun;
+  font-size: calc(20px + 2vmin);
+}

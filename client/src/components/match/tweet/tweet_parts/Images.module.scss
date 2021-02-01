@@ -1,0 +1,170 @@
+@import "../Tweet.module.scss";
+
+$height: 290px;
+$border_radius: 8px;
+$padding_between: 1px;
+
+.Images_Con {
+  margin-top: 10px;
+  @if $sdbg {
+    background-color: rgba(17, 228, 112, 0.61);
+  }
+}
+
+/*
+    1
+*/
+.One {
+  width: 100%;
+  height: $height;
+  object-fit: cover;
+  vertical-align: middle;
+
+  border-radius: $border_radius;
+}
+
+/*
+    2
+*/
+.Two_Con {
+  width: 100%;
+  height: $height;
+  display: flex;
+}
+
+.Two_Left_Con {
+  width: 100%;
+  height: 100%;
+  padding-right: $padding_between;
+}
+
+.Two_Left {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  vertical-align: middle;
+
+  border-top-left-radius: $border_radius;
+  border-bottom-left-radius: $border_radius;
+}
+
+.Two_Right_Con {
+  width: 100%;
+  height: 100%;
+}
+
+.Two_Right {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  vertical-align: middle;
+
+  border-top-right-radius: $border_radius;
+  border-bottom-right-radius: $border_radius;
+}
+
+/*
+    3
+*/
+.Three_Con {
+  width: 100%;
+  height: $height;
+  display: flex;
+}
+
+.Three_Left_Con {
+  width: 100%;
+  height: 100%;
+  padding-right: $padding_between;
+}
+
+.Three_Left {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+
+  border-top-left-radius: $border_radius;
+  border-bottom-left-radius: $border_radius;
+}
+
+.Three_Right_Con {
+  width: 100%;
+  height: 100%;
+}
+
+.Three_Right_Top {
+  width: 100%;
+  height: 50%;
+  object-fit: cover;
+  vertical-align: middle;
+
+  padding-bottom: $padding_between;
+  border-top-right-radius: $border_radius;
+}
+
+.Three_Right_Bottom {
+  width: 100%;
+  height: 50%;
+  object-fit: cover;
+  vertical-align: middle;
+
+  border-bottom-right-radius: $border_radius;
+}
+
+/*
+    4
+*/
+.Four_Con {
+  width: 100%;
+  height: $height;
+  display: flex;
+}
+
+.Four_Left_Con {
+  width: 100%;
+  height: 100%;
+  padding-right: $padding_between;
+}
+
+.Four_Left_Top {
+  width: 100%;
+  height: 50%;
+  object-fit: cover;
+  vertical-align: middle;
+
+  padding-bottom: $padding_between;
+  border-top-left-radius: $border_radius;
+}
+
+.Four_Left_Bottom {
+  width: 100%;
+  height: 50%;
+  object-fit: cover;
+  vertical-align: middle;
+
+  border-bottom-left-radius: $border_radius;
+}
+
+.Four_Right_Con {
+  width: 100%;
+  height: 100%;
+}
+
+.Four_Right_Top {
+  width: 100%;
+  height: 50%;
+  object-fit: cover;
+  vertical-align: middle;
+
+  padding-bottom: $padding_between;
+  border-top-right-radius: $border_radius;
+}
+
+.Four_Right_Bottom {
+  width: 100%;
+  height: 50%;
+  object-fit: cover;
+  vertical-align: middle;
+
+  border-bottom-right-radius: $border_radius;
+}

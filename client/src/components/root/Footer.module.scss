@@ -1,0 +1,35 @@
+.Icon_Container {
+  padding-top: 10px;
+  //center content
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  //background-color: rgb(39, 228, 228);
+}
+
+.Link_Container {
+  padding-top: 5px;
+  //center content
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  //background-color: dodgerblue;
+}
+
+.Icon {
+  padding-left: 10px;
+  padding-right: 10px;
+}
+
+.Link {
+  padding-left: 12px;
+  padding-right: 12px;
+
+  //font-family: Courier New;
+  font-family: STCaiyun;
+  text-align: center;
+  font-weight: lighter;
+  text-decoration: none;
+  color: black;
+  font-size: calc(3px + 2vmin);
+}

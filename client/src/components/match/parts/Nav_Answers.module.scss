@@ -1,0 +1,64 @@
+$sdbg: false;
+$x: 40px;
+
+.disableUserSelection {
+  //disable selection by user, so it cannot be marked by use
+  -ms-user-select: none;
+  user-select: none;
+  -o-user-select: none;
+}
+
+.HelveticaNeueRegularFont {
+  font-family: "HelveticaNeueRegular";
+  color: rgb(136, 153, 166);
+  font-size: 12pt;
+  font-weight: bold;
+  letter-spacing: 1px;
+}
+.HelveticaNeueBoldFont {
+  font-family: "HelveticaNeueBold";
+  font-size: 13pt;
+}
+
+//general outside container
+.Con {
+  padding-top: 10px;
+  padding-bottom: 10px;
+  padding-left: 5px;
+  padding-right: 5px;
+
+  width: auto;
+
+  cursor: pointer;
+  @extend .disableUserSelection;
+
+  @if $sdbg {
+    background-color: blue;
+  }
+}
+
+.User_Pic {
+  border-radius: 50%;
+  width: $x;
+}
+
+.Name_Con {
+  margin-left: 5px;
+}
+
+.UserName {
+  height: 21px;
+  overflow-x: hidden;
+  @extend .HelveticaNeueBoldFont;
+}
+
+.UserTag {
+  @extend .HelveticaNeueRegularFont;
+}
+
+.Verified_Icon {
+  padding-top: 3px;
+  padding-left: 5px;
+  width: $x * 0.4;
+  height: $x * 0.4;
+}

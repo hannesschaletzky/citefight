@@ -7,7 +7,7 @@ import { BrowserRouter, Route, Switch } from 'react-router-dom'
 
 import Test_Comp from './components/Test'
 import TestRouteComp from './components/TestRouteComp'
-import NotFound from './components/errorpages/NotFound'
+import NotFound from './components/pages/errorpages/NotFound'
 
 class App extends Component {
   state = {

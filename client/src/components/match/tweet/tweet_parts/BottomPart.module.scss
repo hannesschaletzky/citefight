@@ -1,0 +1,47 @@
+@import "../Tweet.module.scss";
+
+.BottomPart_Con {
+  display: flex;
+  height: $bottomConHeight;
+
+  @if $sdbg {
+    background-color: teal;
+  }
+}
+
+.Reply_Con {
+  display: inherit;
+}
+
+.Retweet_Con {
+  display: inherit;
+  margin-left: $x * 1.5;
+}
+
+.Like_Con {
+  display: inherit;
+  margin-left: $x * 1.5;
+}
+
+.Reply_Icon {
+  width: $x * 0.5;
+}
+
+.Retweet_Icon {
+  width: $x * 0.6;
+}
+
+.Like_Icon {
+  width: $x * 0.55;
+}
+
+.IconText {
+  padding-left: $x/4;
+  @extend .HelveticaNeueRegularFont;
+}
+
+.Date {
+  margin-left: auto;
+  margin-right: 0;
+  @extend .HelveticaNeueBoldFont;
+}
