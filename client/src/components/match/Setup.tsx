@@ -7,13 +7,15 @@ import st from './Setup.module.scss'
 import CircularProgress from '@material-ui/core/CircularProgress';
 import {Twitter_User} from 'components/Interfaces'
 
-//const stateInitArray:Twitter_User[] = []
-const stateUIInitArray = [<div key="init"></div>]
+const stateInitArray:Twitter_User[] = []
+const stateUserCardsInit = [<div key="init"></div>]
 
 export default function Match_Setup() {
     //state hook
     const [response, setResponse] = useState("");
-    const [userCards, setUserCards] = useState(stateUIInitArray);
+    const [page, setPage] = useState(1);
+    const [userObjects, setUserObjects] = useState(stateInitArray);
+    const [userCards, setUserCards] = useState(stateUserCardsInit);
     //const [post, setPost] = useState("");
     //const [responseToPost, setresponseToPost] = useState("");
     const [searchInput, setSearchInput] = useState("");
@@ -21,6 +23,11 @@ export default function Match_Setup() {
     const [loading, setLoading] = useState(false);
     //params hook
     //const { id } = useParams<Record<string, string | undefined>>()
+
+    enum RequestType {
+        inital,
+        more
+    }
 
     // Similar to componentDidMount and componentDidUpdate:
     useEffect(() => {
@@ -31,18 +38,8 @@ export default function Match_Setup() {
         */
     });
 
-    const userNameChanged = (name: string) => {
-        setSearchInput(name)
 
-        if (name.length === 0) {
-            setButtonDisabled(true)
-        }
-        else {
-            setButtonDisabled(false)
-        }
-    }
-
-    const onSearchButtonClick = () => {
+    const onSearchButtonClick = (type: RequestType) => {
 
         //dont fire mutiple requests
         if (loading) {
@@ -50,25 +47,63 @@ export default function Match_Setup() {
             return
         }
 
+        //check if user loads more users or searches for new
+        let newPage = page
+        if (type === RequestType.inital) {
+            setPage(1)
+            //reset state arrays
+            let _userCards = userCards 
+            let length = _userCards.length
+            while (length >= 0) {
+                _userCards.pop()
+                length--
+            }
+            setUserCards(_userCards) 
+
+            let _userObjects = userObjects 
+            length = _userObjects.length
+            while (length >= 0) {
+                _userObjects.pop()
+                length--
+            }
+            setUserObjects(_userObjects) 
+            
+        }
+        else if (type === RequestType.more) {
+            newPage++
+            setPage(newPage)
+        }
+
         //start request
         setLoading(true)
-        getUsers(searchInput)
+        getUsers(searchInput, newPage)
             .then(res => {
-                parseReponse(res.data)
-                setResponse(res.data.length) //can be removed
+                if (res.status !== 200) {
+                    //error
+                    console.log('error occured: ' + res.message)
+                    if (res.status === 44) {
+                        //-> no more users to show
+                    }
+                }
+                else {
+                    //success
+                    parseReponse(res.data)
+                    setResponse(res.data.length) //can be removed
+                }
                 setLoading(false)
             }) 
             .catch(err => {
-                setLoading(false)
                 console.log(err)
+                setLoading(false)
             });
     }
 
-    const getUsers = async (name: string) => {
+    const getUsers = async (name: string, page: number) => {
         //passing additional parameters in header
         var requestOptions = {
             headers: {
-                'q': name
+                'q': name,
+                'page': page.toString()
             }
         };
         let request = new Request('/api/users', requestOptions)
@@ -97,7 +132,21 @@ export default function Match_Setup() {
                 profile_image_url_https: item.profile_image_url_https,
 
             } 
-            parsedUsers.push(newUser)
+            //check if already included
+            let included = false
+            for(let j=0;j<userObjects.length;j++) {
+                if (userObjects[j].id === newUser.id)  {
+                    included = true
+                    break
+                }
+            }
+            if (!included) {
+                console.log('adding user: ' + newUser.name)
+                parsedUsers.push(newUser)
+            }
+            else {
+                console.log('skipping user ' + newUser.name)
+            }
         }
         addUsersToUI(parsedUsers)
     }
@@ -115,12 +164,37 @@ export default function Match_Setup() {
             cards.push(userCard)
         }
 
-        setUserCards(cards)
+        //UI
+        let _userCards = userCards //get state array
+        let concatedArray = _userCards.concat(cards)
+        setUserCards(concatedArray)
+
+        //internal
+        let _userObjects = userObjects //get state array
+        let concat = _userObjects.concat(users)
+        setUserObjects(concat) 
+        
+    }
+
+    /*
+        BUTTON HANDLERS
+    */
+    const userNameChanged = (name: string) => {
+        setSearchInput(name)
+
+        if (name.length === 0 || !name.trim()) {
+            setButtonDisabled(true)
+        }
+        else {
+            setButtonDisabled(false)
+        }
     }
 
     const keyPressed = (event: any) => {
-        if (event.key === 'Enter') {
-            onSearchButtonClick()
+        if (!buttonDisabled) {
+            if (event.key === 'Enter') {
+                onSearchButtonClick(RequestType.inital)
+            }
         }
     }
 
@@ -129,13 +203,15 @@ export default function Match_Setup() {
         <div className={st.Search_Con}>
             Search for users here
             <input type="search" autoComplete="off" onChange={e => userNameChanged(e.target.value)} onKeyPress={e => keyPressed(e)}/>
-            <button className={st.searchButton} disabled={buttonDisabled} onClick={onSearchButtonClick}>Search</button>
+            <button className={st.searchButton} disabled={buttonDisabled} onClick={e => onSearchButtonClick(RequestType.inital)}>Search</button>
             {loading && <CircularProgress/>}
-            <p>{response} users found</p>
+            <p>{response} users found {userCards.length}</p>
             <div className={st.userList_Con}>
                 {userCards}
             </div>
-            
+            <div>
+                {(userCards.length % 20 === 0) && (userCards.length !== 0) && <button className={st.button_moreUsers} onClick={e => onSearchButtonClick(RequestType.more)}>Show more...</button>}
+            </div>
         </div>
     </div>
   );

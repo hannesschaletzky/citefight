@@ -61,10 +61,15 @@ app.get('/api/users', (req, res) => {
   
   //console.log(req.headers.testkey)
   let q = req.headers.q
+  let page = req.headers.page
+
+  console.log(req.headers.q)
+  console.log(req.headers.page)
+
 
   let params = {
     q: q,
-    page: 1,
+    page: page,
     count: 20,
     include_entities: false
   };
@@ -72,16 +77,19 @@ app.get('/api/users', (req, res) => {
     if (!error) {
       //console.log(users)
       console.log('retrieved ' + users.length + 'users')
-      /*
-      for(let i=0;i<users.length;i++) {
-        console.log(users[i].screen_name)
-      }
-      */
-      res.send({ data: users})
+      res.send({ 
+        status: 200,
+        data: users
+      })
     }
     else {
       console.log(error);
-      res.send({ data: 'ERROR: ' + error})
+      let status = error[0].status
+      let message = error[0].message
+      res.send({
+        status: status,
+        message: message
+      })
     }
   });
 
