@@ -10,5 +10,25 @@
 }
 
 .searchButton {
-  //background-color: chocolate;
+  border: 1.7px solid;
+  border-color: transparent;
+  border-radius: 8px;
+
+  background-color: rgba(221, 220, 218, 0.705);
+}
+
+.userList_Con {
+  width: 400px;
+  min-height: 150px;
+
+  background-color: rgba(0, 100, 0, 0.226);
+}
+
+.userCard_Con {
+  height: 30px;
+  width: auto;
+  margin-top: 5px;
+  margin-left: 2%;
+  margin-right: 2%;
+  background-color: rgba(22, 73, 133, 0.226);
 }

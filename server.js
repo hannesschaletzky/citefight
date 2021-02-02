@@ -59,10 +59,11 @@ function getTwitterClient(version) {
 
 app.get('/api/users', (req, res) => {
   
-  console.log(req.headers.testkey)
+  //console.log(req.headers.testkey)
+  let q = req.headers.q
 
   let params = {
-    q: 'Götze',
+    q: q,
     page: 1,
     count: 20,
     include_entities: false
