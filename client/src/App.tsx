@@ -9,7 +9,7 @@ import Root_Header from 'components/root/Header'
 import Landing from 'components/pages/Landing'
 
 import Match from 'components/match/Match'
-import Setup from 'components/match/Setup'
+import Setup from 'components/match/setup/Setup'
 import Mockup from 'components/match/Mockup'
 
 import Root_Footer from 'components/root/Footer'

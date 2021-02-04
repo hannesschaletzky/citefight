@@ -75,7 +75,7 @@ app.get('/api/users', (req, res) => {
   };
   clientv1.get('users/search', params, function(error, users, response) {
     if (!error) {
-      //console.log(users)
+      //console.log(users) 
       console.log('retrieved ' + users.length + 'users')
       res.send({ 
         status: 200,
