@@ -5,11 +5,12 @@ export interface Twitter_User {
     id: bigint;
     screen_name: string;
     name: string;
+    description: string;
     location: string;
     verified: boolean;
     protected: boolean;
     following: boolean;
-    followers_count: bigint;
+    followers_count: number;
     statuses_count: number;
     profile_image_url_https: string;
 }

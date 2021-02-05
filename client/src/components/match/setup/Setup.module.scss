@@ -1,9 +1,43 @@
-.Search_Con {
-  margin-left: 2%;
-  margin-top: 2%;
+//debugging
+$sdbg: false; //show debugging background = sdbg
 
-  width: 400px;
-  height: 500px;
+.Content_Con {
+  //flexbox
+  display: flex;
+  justify-content: center;
 
-  background-color: red;
+  @if $sdbg {
+    background-color: rgba(201, 200, 196, 0.514);
+  }
+}
+
+.Left_Panel {
+  margin-top: 25px;
+  margin-left: 25px;
+  margin-right: 25px;
+  flex: 1; //fill space
+
+  @if $sdbg {
+    background-color: rgba(122, 222, 247, 0.514);
+  }
+}
+
+.Center_Panel {
+  margin-top: 25px;
+  flex: 1; //fill space
+
+  @if $sdbg {
+    background-color: rgba(39, 19, 216, 0.514);
+  }
+}
+
+.Right_Panel {
+  margin-top: 25px;
+  margin-left: 25px;
+  margin-right: 25px;
+  flex: 1; //fill space
+
+  @if $sdbg {
+    background-color: rgba(216, 196, 19, 0.514);
+  }
 }

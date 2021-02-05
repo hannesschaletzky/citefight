@@ -1,41 +1,233 @@
-.App {
-  background-color: rgba(127, 255, 212, 0.192);
+//debugging
+$sdbg: false; //show debugging background = sdbg
+
+.HelveticaNeueRegularFont {
+  font-family: "HelveticaNeueRegular";
+  color: rgb(136, 153, 166);
+  font-size: 12pt;
+  font-weight: bold;
+  letter-spacing: 1px;
+}
+.HelveticaNeueBoldFont {
+  font-family: "HelveticaNeueBold";
+  font-size: 13pt;
 }
 
 .Con {
-  width: 100%;
-  height: 100%;
-  background-color: blueviolet;
+  width: 400px;
+  min-height: 130px;
+  max-height: 500px;
+  overflow-y: scroll;
+
+  //border
+  border: 1.7px solid;
+  border-color: rgba(194, 192, 192, 0.75);
+  border-radius: 8px;
+
+  @if $sdbg {
+    background-color: rgba(43, 226, 43, 0.233);
+  }
+}
+
+.Top_Con {
+  display: flex;
+  margin-left: 10px;
+  margin-right: 10px;
+}
+
+.Input {
+  margin-top: 10px;
+  height: 40px;
+  flex: 2;
+
+  @extend .HelveticaNeueBoldFont;
+
+  //border
+  border: 1.7px solid;
+  border-color: rgba(194, 192, 192, 0.75);
+  border-radius: 8px;
+
+  //background-color: rgba(204, 204, 197, 0.123);
+  outline-color: transparent;
+
+  &:focus {
+    outline-color: rgb(29, 161, 242);
+  }
+}
+
+.buttonCon {
+  margin-left: 10px;
+  margin-top: 10px;
+  display: flex;
+
+  //border
+  border: 1.7px solid;
+  border-color: transparent;
+  border-radius: 8px;
+
+  //shadow
+  box-shadow: 2px 2px rgba(5, 19, 19, 0.527);
+
+  cursor: pointer;
+
+  background-color: rgba(236, 236, 234, 0.705);
+}
+
+.Icon {
+  padding-top: 7px;
+  padding-left: 8px;
+  width: 25px;
+  height: 25px;
+  cursor: inherit;
 }
 
 .searchButton {
-  margin-left: 1%;
+  //text
+  @extend .HelveticaNeueBoldFont;
+  color: rgb(29, 161, 242);
+  cursor: inherit;
 
-  border: 1.7px solid;
-  border-color: transparent;
-  border-radius: 8px;
-
-  background-color: rgba(221, 220, 218, 0.705);
+  outline: none;
+  border: none;
+  background-color: transparent;
 }
 
 .List_Con {
-  width: 400px;
-  min-height: 150px;
-
-  background-color: rgba(0, 100, 0, 0.226);
+  @if $sdbg {
+    background-color: rgba(0, 100, 0, 0.226);
+  }
 }
 
 .userCard_Con {
-  height: 30px;
-  width: auto;
   margin: 10px;
-  background-color: rgba(22, 73, 133, 0.226);
+  margin-bottom: 12px;
+
+  display: flex;
+
+  //height: 50px;
+  width: auto;
+
+  //border
+  border: 1.7px solid;
+  border-color: rgba(194, 192, 192, 0.384);
+  border-radius: 8px;
+
+  //shadow
+  box-shadow: 2px 2px rgba(5, 19, 19, 0.267);
+
+  cursor: pointer;
+
+  //background-color: rgb(245, 248, 250);
 }
 
-.button_moreUsers {
+.userCard_Con_Disabled {
+  @extend .userCard_Con;
+  opacity: 0.2 !important; //make it see through
+}
+
+.UserCard_DataCon {
+  margin-left: 5px;
+  width: 85%;
+}
+
+.User_Pic {
+  width: 50px;
+  height: 50px;
+
+  margin-top: 5px;
+  margin-left: 5px;
+  margin-bottom: 5px;
+
+  border-radius: 50%;
+}
+
+.Names_Con {
+  margin-top: 5px;
+  max-width: 75%;
+}
+
+.UserName_Con {
+  display: flex;
+  width: inherit;
+}
+
+.UserName {
+  display: block;
+  height: 20px;
+  word-break: break-all;
+  overflow: hidden;
+  @extend .HelveticaNeueBoldFont;
+
+  //background-color: violet;
+}
+
+.Verified_Icon {
+  margin-top: 3px;
+  margin-left: 3px;
+  width: 40px * 0.4;
+  height: 40px * 0.4;
+}
+
+.UserTag {
+  width: fit-content;
+  height: 19px;
+  overflow-x: hidden;
+  @extend .HelveticaNeueRegularFont;
+}
+
+.Numbers_Con {
+  display: flex;
+  justify-content: space-between;
+  height: 20px;
+}
+
+.Flag_Icon {
+  float: right;
+  padding-top: 8px;
+  padding-right: 5px;
+  width: 15px;
+  height: 15px;
+}
+
+.Tweet_Count {
+  @extend .HelveticaNeueRegularFont;
+}
+
+.Follower_Count {
+  padding-right: 5px;
+  @extend .HelveticaNeueRegularFont;
+}
+
+.buttonMore_Con {
+  margin-bottom: 10px;
+  display: flex;
+  justify-content: center;
+}
+
+.buttonMore {
+  height: 40px;
+
+  //border
   border: 1.7px solid;
   border-color: transparent;
   border-radius: 8px;
 
-  background-color: rgba(238, 173, 44, 0.705);
+  //text
+  @extend .HelveticaNeueBoldFont;
+  color: rgb(29, 161, 242);
+
+  //shadow
+  box-shadow: 2px 2px rgba(5, 19, 19, 0.527);
+
+  cursor: pointer;
+
+  outline: none;
+  background-color: rgba(236, 236, 234, 0.705);
+}
+
+.loading_Con {
+  margin-top: 10px;
+  margin-bottom: 10px;
+  display: flex;
+  justify-content: center;
 }

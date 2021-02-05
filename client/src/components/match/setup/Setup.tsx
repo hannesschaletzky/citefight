@@ -17,8 +17,17 @@ export default function Setup() {
     });
 
   return (
-    <div className={st.Search_Con}>
-        {Search()}
+
+    <div className={st.Content_Con}>
+        <div className={st.Left_Panel}>
+            {Search()}
+        </div>
+        <div className={st.Center_Panel}>
+            CENTER PANEL
+        </div>
+        <div className={st.Right_Panel}>
+            RIGHT PANEL
+        </div>
     </div>
   );
 }

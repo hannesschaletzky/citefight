@@ -3,6 +3,9 @@ import st from './Search.module.scss'
 
 import CircularProgress from '@material-ui/core/CircularProgress';
 import {Twitter_User} from 'components/Interfaces'
+import TwitterIcon from 'assets/footer/Twitter_Icon.png'
+import VerifiedIcon from 'assets/tweet/VerifiedIcon.png'
+
 
 const stateInitArray:Twitter_User[] = []
 const stateUserCardsInit = [<div key="init"></div>]
@@ -13,7 +16,8 @@ export default function Search() {
     const [userObjects, setUserObjects] = useState(stateInitArray);
     const [userCards, setUserCards] = useState(stateUserCardsInit);
     const [searchInput, setSearchInput] = useState("");
-    const [buttonDisabled, setButtonDisabled] = useState(true);
+    const [lastSearchString, setLastSearchString] = useState("");
+    const [searchEnabled, setSearchEnabled] = useState(false);
     const [loading, setLoading] = useState(false);
 
     enum RequestType {
@@ -35,10 +39,18 @@ export default function Search() {
             return
         }
 
+        if (!searchEnabled && RequestType.inital) {
+            console.log('no input string')
+            return
+        }
+
         //check if user loads more users or searches for new
-        let newPage = page
+        let qString = ""
+        let newPage = -1
         if (type === RequestType.inital) {
             setPage(1)
+            newPage = 1
+            qString = searchInput
             //reset state arrays
             let _userCards = userCards 
             let length = _userCards.length
@@ -58,13 +70,19 @@ export default function Search() {
             
         }
         else if (type === RequestType.more) {
-            newPage++
+            newPage = page + 1
             setPage(newPage)
+            qString = lastSearchString
+        }
+
+        if (qString === "" || newPage === -1) {
+            console.log('not all query parameters given')
+            return
         }
 
         //start request
         setLoading(true)
-        getUsers(searchInput, newPage)
+        getUsers(qString, newPage)
             .then(res => {
                 if (res.status !== 200) {
                     //error
@@ -76,6 +94,14 @@ export default function Search() {
                 else {
                     //success
                     parseReponse(res.data)
+                    //if user clicks mutiple times on more but no input string entered
+                    if (searchInput.length === 0) {
+                        setLastSearchString(lastSearchString)
+                    }
+                    else {
+                        setLastSearchString(searchInput)
+                    }
+                    
                 }
                 setLoading(false)
             }) 
@@ -112,6 +138,7 @@ export default function Search() {
                 id: item.id,
                 screen_name: item.screen_name,
                 name: item.name,
+                description: item.description,
                 location: item.location,
                 verified: item.verified,
                 protected: item.protected,
@@ -146,10 +173,47 @@ export default function Search() {
         let cards = []
         for(let i=0;i<users.length;i++) {
             let user:Twitter_User = users[i]
+            //construct twitter user url
+            let profileUrl = "https://twitter.com/" + user.screen_name
+
+            //protected profile settings
+            let topClassName = st.userCard_Con
+            let topTitle = user.description
+            if (user.protected) {
+                topClassName = st.userCard_Con_Disabled
+                topTitle = 'This profile is not public, if youre logged in with your user, you can follow it'
+            }
+
+
             let userCard = 
-                <div className={st.userCard_Con} key={user.screen_name}>
-                    {user.name}
+            <div className={topClassName} key={user.screen_name} title={topTitle} onClick={() => cardClicked(user.screen_name, user.protected)}>
+                <a href={profileUrl} target="_blank" rel="noreferrer" title="View twitter profile">
+                    <img className={st.User_Pic} src={user.profile_image_url_https} alt="User"/>
+                </a>
+                <div className={st.UserCard_DataCon}>
+                    <div className={st.Names_Con}>
+                        <div className={st.UserName_Con}>
+                            <div className={st.UserName} title={user.name}>
+                                {user.name}
+                            </div>
+                            {user.verified && <img className={st.Verified_Icon} src={VerifiedIcon} title="User is verified" alt="Verified"/>}
+                        </div>
+                        <div className={st.UserTag}>
+                            @{user.screen_name}
+                        </div>
+                    </div>
+                    <div className={st.Numbers_Con}>
+                        <div className={st.Tweet_Count} title="Tweets" >
+                            {numberWithThousandSep(user.statuses_count)}
+                        </div>
+                        <div className={st.Follower_Count} title="Followers" >
+                            {numberWithThousandSep(user.followers_count)}
+                        </div>
+                    </div>
                 </div>
+                
+            </div>
+                
             cards.push(userCard)
         }
 
@@ -165,6 +229,20 @@ export default function Search() {
         
     }
 
+
+    /*
+        USER CARD HANDLER
+    */
+
+    const cardClicked = (key: string, userProtected: boolean) => {
+        if (userProtected) {
+            console.log('cannot add protected profiles')
+            return
+        }
+        alert('public card clicked: ' + key)
+    }
+
+
     /*
         BUTTON HANDLERS
     */
@@ -172,37 +250,46 @@ export default function Search() {
         setSearchInput(name)
 
         if (name.length === 0 || !name.trim()) {
-            setButtonDisabled(true)
+            setSearchEnabled(false)
         }
         else {
-            setButtonDisabled(false)
+            setSearchEnabled(true)
         }
     }
 
     const keyPressed = (event: any) => {
-        if (!buttonDisabled) {
-            if (event.key === 'Enter') {
-                onSearchButtonClick(RequestType.inital)
-            }
+        if (event.key === 'Enter' && searchInput !== "") {
+            onSearchButtonClick(RequestType.inital)
         }
     }
 
   return (
     <div >
         <div className={st.Con}>
-            <input type="search" autoComplete="off" onChange={e => userNameChanged(e.target.value)} onKeyPress={e => keyPressed(e)}/>
-            <button className={st.searchButton} disabled={buttonDisabled} onClick={e => onSearchButtonClick(RequestType.inital)}>Search</button>
-            {loading && <CircularProgress/>}
-            <p>displaying: {userCards.length} users</p>
+            <div className={st.Top_Con}>
+                <input className={st.Input} type="search" autoComplete="off" placeholder="Type name or usertag" onChange={e => userNameChanged(e.target.value)} onKeyPress={e => keyPressed(e)}/>
+                {searchEnabled && <div className={st.buttonCon}>
+                    <img className={st.Icon} src={TwitterIcon} alt="Twitter" onClick={e => onSearchButtonClick(RequestType.inital)}/>
+                    <button className={st.searchButton} onClick={e => onSearchButtonClick(RequestType.inital)}>Search</button>
+                </div>}
+            </div>
             <div className={st.List_Con}>
                 {userCards}
             </div>
-            <div>
-                {(userCards.length % 20 === 0) && (userCards.length !== 0) && <button className={st.button_moreUsers} onClick={e => onSearchButtonClick(RequestType.more)}>Show more...</button>}
+            <div className={st.buttonMore_Con}>
+                {(userCards.length % 20 === 0) && (userCards.length !== 0) && <button className={st.buttonMore} onClick={e => onSearchButtonClick(RequestType.more)}>Show more...</button>}
+            </div>
+            <div className={st.loading_Con}>
+                {loading && <CircularProgress/>}
             </div>
         </div>
     </div>
   );
+}
+
+
+function numberWithThousandSep(x: number) {
+    return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
 }
 
 

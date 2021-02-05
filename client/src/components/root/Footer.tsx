@@ -1,11 +1,11 @@
 import React, { Component } from 'react'
 import st from './Footer.module.scss'
 
-import twitterIcon from '../../assets/footer/Twitter_Icon.png'
-import GithubIcon from '../../assets/footer/GitHub_Icon.png'
-import Back4AppIcon from '../../assets/footer/Back4App_Icon.png'
-import VSCodeIcon from '../../assets/footer/VSCode_Icon.png'
-import PostmanIcon from '../../assets/footer/Postman_Icon.png'
+import twitterIcon from 'assets/footer/Twitter_Icon.png'
+import GithubIcon from 'assets/footer/GitHub_Icon.png'
+import Back4AppIcon from 'assets/footer/Back4App_Icon.png'
+import VSCodeIcon from 'assets/footer/VSCode_Icon.png'
+import PostmanIcon from 'assets/footer/Postman_Icon.png'
 
 class Root_Footer extends Component {
 
