@@ -66,15 +66,13 @@ class Nav_Answers extends Component <any, any> {
 
     render() { 
 
-        //var values = Object.values(this.props.data) get objects into an array
-        let count = Object.keys(this.props.data).length //get count of objects passed 
-        
         //loop array & add each answer option as new card
-        var answers=[];
-        for(let i=0;i<count;i++){
+        let answers:Answer[] = this.props.data
+        let cards=[];
+        for(let i=0;i<answers.length;i++){
+
             //get item
-            let key = Object.keys(this.props.data)[i];
-            var item:Answer = this.props.data[key]
+            var item:Answer = answers[i]
 
             //read values
             let picURL = item.picURL
@@ -85,7 +83,7 @@ class Nav_Answers extends Component <any, any> {
             //name for active/inactive state
             let conName:string = 'answer' + i
 
-            answers.push(
+            cards.push(
                 <this.Answer_Con className={this.checkActive(conName)} onClick={() => this.toogleCurrentCon(conName)} key={tag}>
                     <img className={st.User_Pic} src={picURL} alt="User"/>
                     <div className={st.Name_Con}>
@@ -103,7 +101,7 @@ class Nav_Answers extends Component <any, any> {
 
         return (  
             <div className={st.Con}>
-                {answers}
+                {cards}
             </div>
         );
     }

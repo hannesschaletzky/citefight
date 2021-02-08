@@ -2,6 +2,8 @@
 $sdbg: false; //show debugging background = sdbg
 
 .Content_Con {
+  height: 100%;
+
   //flexbox
   display: flex;
   justify-content: center;

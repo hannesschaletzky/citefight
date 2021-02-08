@@ -17,12 +17,10 @@ class Search_List extends Component <any, any> {
         if (this.state.activeCard === newKey) {
             //deselect
             this.setState({activeCard: ''})
-            //this.props.onSelectAnswer(''); //remove con from parent 
         }
         else {
             //select
             this.setState({activeCard: newKey})
-            //this.props.onSelectAnswer(conClicked); //add con to parent 
         }
     }
 
@@ -35,8 +33,18 @@ class Search_List extends Component <any, any> {
     }
 
     addUser(user: Twitter_User) {
-        console.log('Trying to add: ' + user.screen_name)
+
+        let addedUsers:Twitter_User[] = this.props.addedUsers
+        for(let i=0;i<addedUsers.length;i++) {
+            let item = addedUsers[i]
+            if (item.screen_name === user.screen_name) {
+                console.log(user.screen_name + ' already added')
+                return
+            }
+        }
+
         this.props.onAddUser(user)
+        console.log('added user: ' + user.screen_name)
     }
 
     followUser(user: Twitter_User) {
@@ -45,15 +53,12 @@ class Search_List extends Component <any, any> {
 
     render() { 
 
-        //var values = Object.values(this.props.data) get objects into an array
-        let count = Object.keys(this.props.data).length //get count of objects passed 
-        
         //loop array & add each answer option as new card
-        var cards=[];
-        for(let i=0;i<count;i++){
-            //get item
-            let key = Object.keys(this.props.data)[i];
-            let user:Twitter_User = this.props.data[key]
+        let users:Twitter_User[] = this.props.data
+        let cards=[];
+        for(let i=0;i<users.length;i++){
+
+            let user:Twitter_User = users[i]
 
             //construct twitter user url
             let profileUrl = "https://twitter.com/" + user.screen_name

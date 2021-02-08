@@ -10,7 +10,7 @@ import TwitterIcon from 'assets/footer/Twitter_Icon.png'
 
 const stateInitArray:Twitter_User[] = []
 
-export default function Search(addUserFunc:(par1: any) => void) {
+export default function Search(addUserFunc:(par1: Twitter_User) => void, addedUsers:Twitter_User[]) {
     const [page, setPage] = useState(1);
     const [userObjects, setUserObjects] = useState(stateInitArray);
     const [searchInput, setSearchInput] = useState("");
@@ -159,6 +159,7 @@ export default function Search(addUserFunc:(par1: any) => void) {
         </div>
         <SearchList 
             data={userObjects}
+            addedUsers={addedUsers}
             onAddUser={addUserFunc}
             />
         <div className={st.buttonMore_Con}>

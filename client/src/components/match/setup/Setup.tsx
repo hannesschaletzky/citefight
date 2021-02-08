@@ -4,6 +4,8 @@ import st from './Setup.module.scss'
 import { useParams } from 'react-router-dom';
 
 import Search from './search/Search'
+import Players from './players/Players'
+import Chat from './chat/Chat'
 
 import {Twitter_User} from 'components/Interfaces'
 
@@ -11,7 +13,7 @@ const stateInitArray:Twitter_User[] = []
 
 export default function Setup() {
     //state hook
-    const [userObjects, setUserObjects] = useState(stateInitArray);
+    const [addedUsers, setAddedUsers] = useState(stateInitArray);
 
     //params hook
     //const { id } = useParams<Record<string, string | undefined>>()
@@ -22,23 +24,33 @@ export default function Setup() {
     });
 
     const addUserFromSearch = (newUser: Twitter_User):void => {
-        console.log('adding user in setup top screen: ' + newUser.screen_name)
-        let _userObjects = userObjects
-        _userObjects.push(newUser)
-        setUserObjects(_userObjects)
+        //you have to put a new object entirely
+        //-> see https://stackoverflow.com/questions/59690934/react-hook-usestate-not-updating-ui
+        let arr:Twitter_User[] = []
+        for(let i = 0;i<addedUsers.length;i++) {
+            arr.push(addedUsers[i])
+        }
+        arr.push(newUser)
+        setAddedUsers(arr)
+        /*
+        setUserObjects(prev => {
+            prev.push(newUser)
+            return prev
+        })
+        */
     }
 
   return (
-
     <div className={st.Content_Con}>
         <div className={st.Left_Panel}>
-            {Search(addUserFromSearch)}
+            {Search(addUserFromSearch, addedUsers)}
         </div>
         <div className={st.Center_Panel}>
-            {userObjects.length}
+            {addedUsers.length}
         </div>
         <div className={st.Right_Panel}>
-            RIGHT PANEL
+            {Players()}
+            {Chat()}
         </div>
     </div>
   );

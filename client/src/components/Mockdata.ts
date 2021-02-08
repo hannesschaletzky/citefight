@@ -27,12 +27,12 @@ export class Mockdata {
         picURL: 'http://pbs.twimg.com/profile_images/1068108475832635392/C9iHIj2z_normal.jpg'
     }
 
-    getAnswers() {
-        return  {
-            answer1: this.answer1,
-            answer2: this.answer2,
-            answer3: this.answer3
-        }
+    getAnswers(): Answer[] {
+        let rtnArr: Answer[] = []
+        rtnArr.push(this.answer1)
+        rtnArr.push(this.answer2)
+        rtnArr.push(this.answer3)
+        return  rtnArr
     }
 
 
@@ -151,27 +151,30 @@ export class Mockdata {
         totalTime: 162
     };
 
-    getRanking() {
-        return  {
-            user1: this.rankUser1,
-            user2: this.rankUser2,
-            user3: this.rankUser3,
-            user4: this.rankUser4,
-            user5: this.rankUser5,
-            user6: this.rankUser6,
-            user7: this.rankUser7,
-            user8: this.rankUser8,
-            user9: this.rankUser9,
-            user10: this.rankUser10,
-            user11: this.rankUser11,
-            user12: this.rankUser12,
-            user13: this.rankUser13,
-            user14: this.rankUser14,
-            user15: this.rankUser15,
-            user16: this.rankUser16,
-            user17: this.rankUser17,
-            user18: this.rankUser18
-        }
+    getRanking(): Ranking_User[] {
+
+        let rtnArr: Ranking_User[] = []
+
+        rtnArr.push(this.rankUser1)
+        rtnArr.push(this.rankUser2)
+        rtnArr.push(this.rankUser3)
+        rtnArr.push(this.rankUser4)
+        rtnArr.push(this.rankUser5)
+        rtnArr.push(this.rankUser6)
+        rtnArr.push(this.rankUser7)
+        rtnArr.push(this.rankUser8)
+        rtnArr.push(this.rankUser9)
+        rtnArr.push(this.rankUser10)
+        rtnArr.push(this.rankUser11)
+        rtnArr.push(this.rankUser12)
+        rtnArr.push(this.rankUser13)
+        rtnArr.push(this.rankUser14)
+        rtnArr.push(this.rankUser15)
+        rtnArr.push(this.rankUser16)
+        rtnArr.push(this.rankUser17)
+        rtnArr.push(this.rankUser18)
+
+        return  rtnArr
     }
 
 
@@ -288,7 +291,7 @@ export class Mockdata {
     }
 
     //THIS HAS TO BE AT THE BOTTOM of everything, otherwise it will return undefined values
-    getTweet() {
+    getTweet(): Tweet {
         return this.tweet
     }
 

@@ -18,15 +18,12 @@ class Nav_Ranking extends Component <any, any> {
 
     render() { 
 
-        //get count of objects passed
-        let count = Object.keys(this.props.data).length 
-        var sortedRanking:Ranking_User[]=[];
-
         //loop array & sort
-        for(let i=0;i<count;i++){
+        let users:Ranking_User[] = this.props.data
+        let sortedRanking:Ranking_User[]=[];
+        for(let i=0;i<users.length;i++){
             //get item
-            let key = Object.keys(this.props.data)[i];
-            let item:Ranking_User = this.props.data[key]
+            let item:Ranking_User = users[i]
 
             //insert into sorted array
             insertIntoArray(item)

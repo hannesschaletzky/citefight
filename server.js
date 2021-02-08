@@ -1,25 +1,90 @@
 const express = require('express');
 const bodyParser = require('body-parser');
-const unirest = require('unirest');
-const { sign } = require('crypto');
+const cors = require('cors');
+//const unirest = require('unirest');
 const path = require('path');
 const app = express();
 const port = process.env.PORT || 5000;
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
+app.use(cors());
 
-//twitter npm package to manage calls 
-//-> https://www.npmjs.com/package/twitter
-//-> https://www.npmjs.com/package/twitter-v2
+
+
+
+
+
+/*
+  PUSHER API
+  https://github.com/pusher/pusher-js
+  https://pusher.com/tutorials/react-websockets
+*/
+const PusherClient = require('pusher');
+const pusher = getPusherClient()
+
+function getPusherClient() {
+  //get env vars
+  const dotenv = require('dotenv');
+  dotenv.config(); 
+  const SERVER_PUSHER_APP_ID = process.env.SERVER_PUSHER_APP_ID
+  const SERVER_PUSHER_KEY = process.env.SERVER_PUSHER_KEY
+  const SERVER_PUSHER_SECRET = process.env.SERVER_PUSHER_SECRET
+  const SERVER_PUSHER_CLUSTER = process.env.SERVER_PUSHER_CLUSTER
+  /*
+  console.log('SERVER_PUSHER_APP_ID: ' + SERVER_PUSHER_APP_ID)
+  console.log('SERVER_PUSHER_KEY: ' + SERVER_PUSHER_KEY)
+  console.log('SERVER_PUSHER_SECRET: ' + SERVER_PUSHER_SECRET)
+  console.log('SERVER_PUSHER_CLUSTER: ' + SERVER_PUSHER_CLUSTER)
+  */
+  let client = new PusherClient({
+    appId: SERVER_PUSHER_APP_ID,
+    key: SERVER_PUSHER_KEY,
+    secret: SERVER_PUSHER_SECRET,
+    cluster: SERVER_PUSHER_CLUSTER,
+    encrypted: true
+  });
+  return client
+}
+
+app.post('api/pusher/message', (req, res) => {
+  //const payload = req.body;
+  const payload = {
+    username: 'testUser',
+    message: 'this is a test message'
+  };
+  pusher.trigger('chat', 'message', payload);
+  console.log(payload)
+  res.send(payload)
+});
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*
+  Twitter API
+  twitter npm package to manage calls 
+  -> https://www.npmjs.com/package/twitter
+  -> https://www.npmjs.com/package/twitter-v2
+*/
 const TwitterV1 = require('twitter');
 const TwitterV2 = require('twitter-v2');
 const clientv1 = getTwitterClient(1)
 const clientv2 = getTwitterClient(2)
 
-/*
-Twitter API Calls
-*/
+
 function getTwitterClient(version) {
 
   //get env vars

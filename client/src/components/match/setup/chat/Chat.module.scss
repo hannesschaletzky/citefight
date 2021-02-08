@@ -1,0 +1,13 @@
+//debugging
+$sdbg: true; //show debugging background = sdbg
+
+.Con {
+  width: 100%;
+  height: 250px;
+
+  margin-top: 25px;
+
+  @if ($sdbg) {
+    background-color: rgba(229, 233, 20, 0.219);
+  }
+}
