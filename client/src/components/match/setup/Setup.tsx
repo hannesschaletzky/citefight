@@ -3,7 +3,7 @@ import st from './Setup.module.scss'
 
 import { useParams } from 'react-router-dom';
 
-import Search from './parts/Search'
+import Search from './search/Search'
 
 export default function Setup() {
     //state hook
