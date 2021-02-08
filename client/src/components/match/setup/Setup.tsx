@@ -5,9 +5,14 @@ import { useParams } from 'react-router-dom';
 
 import Search from './search/Search'
 
+import {Twitter_User} from 'components/Interfaces'
+
+const stateInitArray:Twitter_User[] = []
+
 export default function Setup() {
     //state hook
-    //const [test, setTest] = useState("");
+    const [userObjects, setUserObjects] = useState(stateInitArray);
+
     //params hook
     //const { id } = useParams<Record<string, string | undefined>>()
 
@@ -16,14 +21,21 @@ export default function Setup() {
         
     });
 
+    const addUserFromSearch = (newUser: Twitter_User):void => {
+        console.log('adding user in setup top screen: ' + newUser.screen_name)
+        let _userObjects = userObjects
+        _userObjects.push(newUser)
+        setUserObjects(_userObjects)
+    }
+
   return (
 
     <div className={st.Content_Con}>
         <div className={st.Left_Panel}>
-            {Search()}
+            {Search(addUserFromSearch)}
         </div>
         <div className={st.Center_Panel}>
-            CENTER PANEL
+            {userObjects.length}
         </div>
         <div className={st.Right_Panel}>
             RIGHT PANEL

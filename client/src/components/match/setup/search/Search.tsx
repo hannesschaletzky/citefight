@@ -1,27 +1,22 @@
 import React, { useState, useEffect } from 'react';
 import st from './Search.module.scss'
 
+import SearchList from './SearchList'
 import CircularProgress from '@material-ui/core/CircularProgress';
+
 import {Twitter_User} from 'components/Interfaces'
+
 import TwitterIcon from 'assets/footer/Twitter_Icon.png'
 
-import SearchList from './SearchList'
-
-//import TwitterIcon_Black from 'assets/user/Twitter_Black.png'
-
 const stateInitArray:Twitter_User[] = []
-const stateUserCardsInit = [<div key="init"></div>]
 
-export default function Search() {
-    //state hook
+export default function Search(addUserFunc:(par1: any) => void) {
     const [page, setPage] = useState(1);
     const [userObjects, setUserObjects] = useState(stateInitArray);
-    const [userCards, setUserCards] = useState(stateUserCardsInit);
     const [searchInput, setSearchInput] = useState("");
     const [lastSearchString, setLastSearchString] = useState("");
     const [searchEnabled, setSearchEnabled] = useState(false);
     const [loading, setLoading] = useState(false);
-    const [actionCard, setActionCard] = useState("");
 
     enum RequestType {
         inital,
@@ -42,6 +37,7 @@ export default function Search() {
             return
         }
 
+        //check if search string is provided
         if (!searchEnabled && RequestType.inital) {
             console.log('no input string')
             return
@@ -54,17 +50,10 @@ export default function Search() {
             setPage(1)
             newPage = 1
             qString = searchInput
-            //reset state arrays
-            let _userCards = userCards 
-            let length = _userCards.length
-            while (length >= 0) {
-                _userCards.pop()
-                length--
-            }
-            setUserCards(_userCards) 
 
+            //reset user objects
             let _userObjects = userObjects 
-            length = _userObjects.length
+            let length = _userObjects.length
             while (length >= 0) {
                 _userObjects.pop()
                 length--
@@ -98,7 +87,7 @@ export default function Search() {
                     //success
                     console.log('successfully got data for "' + qString + '" at page ' + newPage)
 
-                    //if user clicks mutiple times on more but no input string entered
+                    //if user clicks on more but deleted search string already
                     if (searchInput.length === 0) {
                         setLastSearchString(lastSearchString)
                     }
@@ -106,9 +95,8 @@ export default function Search() {
                         setLastSearchString(searchInput)
                     }
 
-                    //save new user objects
-                     //internal
-                    let _userObjects = userObjects //get state array
+                    //append new user objects to current
+                    let _userObjects = userObjects
                     let concat = _userObjects.concat(res.data)
                     setUserObjects(concat) 
                 }
@@ -140,11 +128,12 @@ export default function Search() {
 
 
     /*
-        BUTTON HANDLERS
+        HANDLERS
     */
     const userNameChanged = (name: string) => {
         setSearchInput(name)
 
+        //check empty or only spaces
         if (name.length === 0 || !name.trim()) {
             setSearchEnabled(false)
         }
@@ -160,27 +149,23 @@ export default function Search() {
     }
 
   return (
-    <div >
-        <div className={st.Con}>
-            <div>
-                {actionCard}
-            </div>
-            <div className={st.Top_Con}>
-                <input className={st.Input} type="search" autoComplete="off" placeholder="Type name or usertag" onChange={e => userNameChanged(e.target.value)} onKeyPress={e => keyPressed(e)}/>
-                {searchEnabled && <div className={st.buttonCon}>
-                    <img className={st.Icon} src={TwitterIcon} alt="Twitter" onClick={e => onSearchButtonClick(RequestType.inital)}/>
-                    <button className={st.searchButton} onClick={e => onSearchButtonClick(RequestType.inital)}>Search</button>
-                </div>}
-            </div>
-            <div className={st.List_Con}>
-                <SearchList data={userObjects}/>
-            </div>
-            <div className={st.buttonMore_Con}>
-                {(userObjects.length % 20 === 0) && (userObjects.length !== 0) && <button className={st.buttonMore} onClick={e => onSearchButtonClick(RequestType.more)}>Show more...</button>}
-            </div>
-            <div className={st.loading_Con}>
-                {loading && <CircularProgress/>}
-            </div>
+    <div className={st.Con}>
+        <div className={st.Top_Con}>
+            <input className={st.Input} type="search" autoComplete="off" placeholder="Type name or usertag" onChange={e => userNameChanged(e.target.value)} onKeyPress={e => keyPressed(e)}/>
+            {searchEnabled && <div className={st.buttonCon}>
+                <img className={st.Icon} src={TwitterIcon} alt="Twitter" onClick={e => onSearchButtonClick(RequestType.inital)}/>
+                <button className={st.searchButton} onClick={e => onSearchButtonClick(RequestType.inital)}>Search</button>
+            </div>}
+        </div>
+        <SearchList 
+            data={userObjects}
+            onAddUser={addUserFunc}
+            />
+        <div className={st.buttonMore_Con}>
+            {(userObjects.length % 20 === 0) && (userObjects.length !== 0) && <button className={st.buttonMore} onClick={e => onSearchButtonClick(RequestType.more)}>Show more...</button>}
+        </div>
+        <div className={st.loading_Con}>
+            {loading && <CircularProgress/>}
         </div>
     </div>
   );

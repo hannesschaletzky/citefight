@@ -47,12 +47,12 @@ class Nav_Answers extends Component <any, any> {
         if (this.state.currentCon === conClicked) {
             //deselect
             this.setState({currentCon: ''})
-            this.props.onSelectAnswer(''); //remove con from parent 
+            this.props.onSelectAnswer('') //remove con from parent 
         }
         else {
             //select
             this.setState({currentCon: conClicked})
-            this.props.onSelectAnswer(conClicked); //add con to parent 
+            this.props.onSelectAnswer(conClicked) //add con to parent 
         }
     }
 

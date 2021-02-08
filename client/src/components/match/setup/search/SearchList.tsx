@@ -34,6 +34,15 @@ class Search_List extends Component <any, any> {
         return st.actions_Con_Hidden
     }
 
+    addUser(user: Twitter_User) {
+        console.log('Trying to add: ' + user.screen_name)
+        this.props.onAddUser(user)
+    }
+
+    followUser(user: Twitter_User) {
+        console.log('Trying to follow: ' + user.screen_name)
+    }
+
     render() { 
 
         //var values = Object.values(this.props.data) get objects into an array
@@ -68,7 +77,7 @@ class Search_List extends Component <any, any> {
                                 <div className={st.UserName} title={user.name}>
                                     {user.name}
                                 </div>
-                                {user.verified && <img className={st.Verified_Icon} src={VerifiedIcon} title="User is verified" alt="Verified"/>}
+                                {user.verified && <img className={st.Verified_Icon} src={VerifiedIcon} title="Verified User" alt="Verified"/>}
                             </div>
                             <div className={st.UserTag}>
                                 @{user.screen_name}
@@ -83,7 +92,12 @@ class Search_List extends Component <any, any> {
                             </div>
                         </div>
                         <div className={this.checkActive(user.screen_name)} onClick={() => this.toogleActiveCard(user.screen_name, user.protected)}>
-                            Actions
+                            <button onClick={() => this.followUser(user)}>
+                                Follow
+                            </button>
+                            <button onClick={() => this.addUser(user)}>
+                                Add
+                            </button>
                         </div>
                     </div>
                 </div>
