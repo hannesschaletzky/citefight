@@ -31,18 +31,23 @@ export default function Players() {
         console.log('success subscribing???')
     }
 
-    const sendMessage = async () => {
+    const sendMessageAsync = async () => {
+        /*
         var requestOptions = {
             method: 'POST'
         };
         let request = new Request('/api/pusher/message', requestOptions)
+        */
+       
+        let request = new Request('/api/pusher/message')
         const response = await fetch(request);
         const body = await response.json();
         if (response.status !== 200) throw Error(body.message);
         
+
         console.log(body)
         setStateData(body)
-        //return body;
+        return body;
     }
 
   return (
@@ -51,7 +56,7 @@ export default function Players() {
         <button onClick={() => joinGame()}>
             JOIN
         </button>
-        <button onClick={() => sendMessage()}>
+        <button onClick={() => sendMessageAsync()}>
             SEND MESSAGE
         </button>
         <div>

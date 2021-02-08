@@ -8,7 +8,7 @@ const port = process.env.PORT || 5000;
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-app.use(cors());
+//app.use(cors());
 
 
 
@@ -41,11 +41,12 @@ function getPusherClient() {
     appId: SERVER_PUSHER_APP_ID,
     key: SERVER_PUSHER_KEY,
     secret: SERVER_PUSHER_SECRET,
-    cluster: SERVER_PUSHER_CLUSTER,
-    encrypted: true
+    cluster: SERVER_PUSHER_CLUSTER
+    //encrypted: true
   });
   return client
 }
+
 
 app.post('api/pusher/message', (req, res) => {
   //const payload = req.body;
@@ -58,8 +59,18 @@ app.post('api/pusher/message', (req, res) => {
   res.send(payload)
 });
 
-
-
+/*
+app.get('api/pusher/message', (req, res) => {
+  //const payload = req.body;
+  const payload = {
+    username: 'testUser',
+    message: 'this is a test message'
+  };
+  pusher.trigger('chat', 'message', payload);
+  console.log(payload)
+  res.send(payload)
+});
+*/
 
 
 

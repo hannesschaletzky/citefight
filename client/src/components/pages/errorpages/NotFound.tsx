@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
-import st from './NotFound.module.scss'
+//import st from './NotFound.module.scss'
 
 
 class NotFound extends Component {
