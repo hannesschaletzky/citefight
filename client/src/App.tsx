@@ -17,7 +17,7 @@ import Root_Footer from 'components/root/Footer'
 import Legal from 'components/pages/Legal'
 import About from 'components/pages/About'
 import Donate from 'components/pages/Donate'
-import Credits from 'components/pages/Credits.module'
+import Credits from 'components/pages/Credits'
 
 import NotFound from 'components/pages/errorpages/NotFound'
 

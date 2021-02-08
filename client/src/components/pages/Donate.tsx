@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import st from './Donate.module.scss'
+//import st from './Donate.module.scss'
 
 class Donate extends Component {
 

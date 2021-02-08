@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import st from './About.module.scss'
+//import st from './About.module.scss'
 
 class About extends Component {
 

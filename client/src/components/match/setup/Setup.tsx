@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import st from './Setup.module.scss'
 
-import { useParams } from 'react-router-dom';
+//import { useParams } from 'react-router-dom';
 
 import Search from './search/Search'
 import Players from './players/Players'

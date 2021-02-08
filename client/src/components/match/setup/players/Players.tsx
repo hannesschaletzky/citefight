@@ -5,7 +5,6 @@ const Pusher = require('pusher-js');
 
 export default function Players() {
     //state hook
-    const [players, setPlayers] = useState([])
     const [stateData, setStateData] = useState("")
 
     // Similar to componentDidMount and componentDidUpdate:
@@ -56,7 +55,7 @@ export default function Players() {
             SEND MESSAGE
         </button>
         <div>
-            Joined Players: {players.length} and {stateData}
+            Joined Players: and {stateData}
         </div>
     </div>
   );

@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import st from './Credits.module.scss'
+//import st from './Credits.module.scss'
 
 class Credits extends Component {
 
