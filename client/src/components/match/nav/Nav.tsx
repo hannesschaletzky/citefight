@@ -9,8 +9,8 @@ import Ranking from 'assets/nav/Ranking.png'
 import Chat from 'assets/nav/Chat.png'
 import Settings from 'assets/nav/Settings.png'
 
-import NavAnswers from './Nav_Answers'
-import NavRanking from './Nav_Ranking'
+import NavAnswers from './pages/Nav_Answers'
+import NavRanking from './pages/Nav_Ranking'
 
 class Nav extends Component <any, any> {
 

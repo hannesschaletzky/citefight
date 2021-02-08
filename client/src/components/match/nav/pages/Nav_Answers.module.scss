@@ -1,24 +1,7 @@
 $sdbg: false;
 $x: 40px;
 
-.disableUserSelection {
-  //disable selection by user, so it cannot be marked by use
-  -ms-user-select: none;
-  user-select: none;
-  -o-user-select: none;
-}
-
-.HelveticaNeueRegularFont {
-  font-family: "HelveticaNeueRegular";
-  color: rgb(136, 153, 166);
-  font-size: 12pt;
-  font-weight: bold;
-  letter-spacing: 1px;
-}
-.HelveticaNeueBoldFont {
-  font-family: "HelveticaNeueBold";
-  font-size: 13pt;
-}
+@import "styles/app.global.scss";
 
 //general outside container
 .Con {

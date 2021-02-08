@@ -1,17 +1,7 @@
 //debugging
 $sdbg: false; //show debugging background = sdbg
 
-.HelveticaNeueRegularFont {
-  font-family: "HelveticaNeueRegular";
-  color: rgb(136, 153, 166);
-  font-size: 12pt;
-  font-weight: bold;
-  letter-spacing: 1px;
-}
-.HelveticaNeueBoldFont {
-  font-family: "HelveticaNeueBold";
-  font-size: 13pt;
-}
+@import "styles/app.global.scss";
 
 .userCard_Con {
   position: relative;
@@ -20,7 +10,7 @@ $sdbg: false; //show debugging background = sdbg
   margin-bottom: 12px;
   display: flex;
 
-  user-select: none;
+  @extend .disableUserSelection;
   cursor: pointer;
 
   //border

@@ -1,9 +1,9 @@
 import React, { Component } from 'react';
 import st from './Tweet.module.scss'
 
-import TopPart from './tweet_parts/TopPart'
-import Images from './tweet_parts/Images'
-import BottomPart from './tweet_parts/BottomPart'
+import TopPart from './parts/TopPart'
+import Images from './parts/Images'
+import BottomPart from './parts/BottomPart'
 
 import {Tweet} from 'components/Interfaces'
 

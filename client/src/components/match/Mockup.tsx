@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import st from './Mockup.module.scss'
 
 import TweetComponent from './tweet/Tweet'
-import Navigation from './parts/Nav'
+import Navigation from './nav/Nav'
 
 import {Mockdata} from '../Mockdata'
 import {Tweet} from 'components/Interfaces'

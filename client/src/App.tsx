@@ -2,6 +2,7 @@
 
 import React, { Component } from 'react';
 import st from './App.module.scss';
+import 'styles/app.global.scss'; //import global styles that can be used in entire app now
 
 import { BrowserRouter, Route, Switch } from 'react-router-dom'
 
