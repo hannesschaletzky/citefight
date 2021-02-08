@@ -153,7 +153,7 @@ class Nav_Ranking extends Component <any, any> {
             let totalTime = item.totalTime
 
             rankingToDisplay.push(
-                <div className={st.User_Con}>
+                <div className={st.User_Con} key={placeCounter}>
                     <div className={st.Place}>
                         {placeCounter}.
                     </div>

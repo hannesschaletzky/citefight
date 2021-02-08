@@ -86,7 +86,7 @@ class Nav_Answers extends Component <any, any> {
             let conName:string = 'answer' + i
 
             answers.push(
-                <this.Answer_Con className={this.checkActive(conName)} onClick={() => this.toogleCurrentCon(conName)}>
+                <this.Answer_Con className={this.checkActive(conName)} onClick={() => this.toogleCurrentCon(conName)} key={tag}>
                     <img className={st.User_Pic} src={picURL} alt="User"/>
                     <div className={st.Name_Con}>
                         <div className={st.UserName}>

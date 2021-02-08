@@ -6,6 +6,7 @@ import {Twitter_User} from 'components/Interfaces'
 import TwitterIcon from 'assets/footer/Twitter_Icon.png'
 import VerifiedIcon from 'assets/tweet/VerifiedIcon.png'
 
+//import TwitterIcon_Black from 'assets/user/Twitter_Black.png'
 
 const stateInitArray:Twitter_User[] = []
 const stateUserCardsInit = [<div key="init"></div>]
@@ -19,6 +20,7 @@ export default function Search() {
     const [lastSearchString, setLastSearchString] = useState("");
     const [searchEnabled, setSearchEnabled] = useState(false);
     const [loading, setLoading] = useState(false);
+    const [actionCard, setActionCard] = useState("");
 
     enum RequestType {
         inital,
@@ -93,6 +95,7 @@ export default function Search() {
                 }
                 else {
                     //success
+                    console.log('successfully got data for "' + qString + '" at page ' + newPage)
                     parseReponse(res.data)
                     //if user clicks mutiple times on more but no input string entered
                     if (searchInput.length === 0) {
@@ -146,7 +149,6 @@ export default function Search() {
                 followers_count: item.followers_count,
                 statuses_count: item.statuses_count,
                 profile_image_url_https: item.profile_image_url_https,
-
             } 
             //check if already included
             let included = false
@@ -210,8 +212,10 @@ export default function Search() {
                             {numberWithThousandSep(user.followers_count)}
                         </div>
                     </div>
+                    <div className={getActiveState(user.screen_name)} onClick={() => cardClicked(user.screen_name, user.protected)}>
+                        Actions
+                    </div>
                 </div>
-                
             </div>
                 
             cards.push(userCard)
@@ -234,13 +238,45 @@ export default function Search() {
         USER CARD HANDLER
     */
 
-    const cardClicked = (key: string, userProtected: boolean) => {
-        if (userProtected) {
-            console.log('cannot add protected profiles')
-            return
+    const getActiveState = (key: string) => {
+        console.log('determine action state for card: ' + key)
+        if (actionCard === key) {
+            //show
+            return st.actions_Con_Show
         }
-        alert('public card clicked: ' + key)
+        else {
+            //dismiss
+            return st.actions_Con_Hidden
+        }
     }
+
+    const cardClicked = (key: string, userProtected: boolean) => {
+        console.log(actionCard)
+        if (userProtected) {
+            console.log('protected profile')
+        }
+        if (actionCard === "") {
+            //add
+            setActionCard(key);
+            console.log('add action card: ' + actionCard)
+        }
+        else if (actionCard === key) {
+            //remove
+            setActionCard("")
+            console.log('remove action card ' + actionCard)
+        }
+
+        /*
+        My explanatin for this behaviour is that the userCards component is being created with certain states
+        but not being rerendered when the actionCard changes... 
+        -> extract the UI of the user cards to a seperate component 
+        -> then it should be rerendered...
+
+        
+        the answers component also only gets a list of the objects as input...
+        */
+
+    }   
 
 
     /*
@@ -266,6 +302,9 @@ export default function Search() {
   return (
     <div >
         <div className={st.Con}>
+            <div>
+                {actionCard}
+            </div>
             <div className={st.Top_Con}>
                 <input className={st.Input} type="search" autoComplete="off" placeholder="Type name or usertag" onChange={e => userNameChanged(e.target.value)} onKeyPress={e => keyPressed(e)}/>
                 {searchEnabled && <div className={st.buttonCon}>
