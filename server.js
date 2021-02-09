@@ -48,17 +48,6 @@ function getPusherClient() {
 }
 
 
-app.post('api/pusher/message', (req, res) => {
-  //const payload = req.body;
-  const payload = {
-    username: 'testUser',
-    message: 'this is a test message'
-  };
-  pusher.trigger('chat', 'message', payload);
-  console.log(payload)
-  res.send(payload)
-});
-
 /*
 app.get('api/pusher/message', (req, res) => {
   //const payload = req.body;
@@ -94,7 +83,6 @@ const TwitterV1 = require('twitter');
 const TwitterV2 = require('twitter-v2');
 const clientv1 = getTwitterClient(1)
 const clientv2 = getTwitterClient(2)
-
 
 function getTwitterClient(version) {
 
@@ -254,9 +242,19 @@ app.get('/api/tweets', (req, res) => {
   });
   */
 
+app.post('/api/pusher', (req, res) => {
+  //const payload = req.body;
+  const payload = {
+    username: 'testUser',
+    message: 'this is a test message'
+  };
+  pusher.trigger('chat', 'message', payload);
+  console.log(payload)
+  res.send(payload)
+});
+
 app.get('/api/hello', (req, res) => {
-  const { TEST_VAR } = require('./config'); //get env var from config.js
-  res.send({ express: 'Hello From Express: ' + TEST_VAR});
+  res.send({ data: 'Hello From Express'});
 });
 
 app.post('/api/world', (req, res) => {

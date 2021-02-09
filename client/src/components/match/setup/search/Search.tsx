@@ -119,9 +119,9 @@ export default function Search(addUserFunc:(par1: Twitter_User) => void, addedUs
         };
         let request = new Request('/api/users', requestOptions)
 
-        const response = await fetch(request);
-        const body = await response.json();
-        if (response.status !== 200) throw Error(body.message);
+        const response = await fetch(request)
+        const body = await response.json()
+        if (response.status !== 200) throw Error(body.message)
         
         return body;
     };

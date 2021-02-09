@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import st from './Players.module.scss'
 
 const Pusher = require('pusher-js');
@@ -16,9 +16,6 @@ export default function Players() {
         let appKey = process.env.REACT_APP_PUSHER_KEY
         let cluster = process.env.REACT_APP_PUSHER_CLUSTER
 
-        //console.log(appKey)
-        //console.log(cluster)
-
         const pusher = new Pusher(appKey, {
           cluster: cluster,
           encrypted: true
@@ -26,32 +23,28 @@ export default function Players() {
         const channel = pusher.subscribe('chat');
         channel.bind('message', (data:any) => {
             console.log('new msg: ' + data)
-            setStateData(data)
+            
+            //set new state
+            let newString = data.username + ': ' + data.message
+            setStateData(newString)
         })
         console.log('success subscribing???')
     }
 
     const sendMessageAsync = async () => {
-        /*
-        var requestOptions = {
-            method: 'POST'
-        };
-        let request = new Request('/api/pusher/message', requestOptions)
-        */
-       
-        let request = new Request('/api/pusher/message')
-        const response = await fetch(request);
-        const body = await response.json();
-        if (response.status !== 200) throw Error(body.message);
         
-
+        const response = await fetch('/api/pusher', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ testItem: 'testvalue' }),
+        });
+        const body = await response.text();
         console.log(body)
-        setStateData(body)
-        return body;
     }
 
   return (
-
     <div className={st.Con}>
         <button onClick={() => joinGame()}>
             JOIN
