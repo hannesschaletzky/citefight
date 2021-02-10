@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback, useReducer } from 'react';
 import st from './Setup.module.scss'
 //import { useParams } from 'react-router-dom';
 
@@ -46,7 +46,15 @@ export default function Setup() {
     const [pusherConState, setPusherConState] = useState(PusherConState.initialized)
         const [currentPlayers, setCurrentPlayers] = useState([testPusherObj])
         const stateRef = useRef(currentPlayers);
+        const [ignored, forceUpdate] = useReducer(x => x + 1, 0);
 
+        const setNewCurrentPlayers = useCallback((newPlayers: Setup_Player[]) => {
+            setCurrentPlayers(newPlayers)
+        }, []);
+
+        const getCurrentPlayers = useCallback(() => {
+            return currentPlayers;
+        }, [currentPlayers]);
     
     //params hook
     //const { id } = useParams<Record<string, string | undefined>>()
@@ -130,7 +138,9 @@ export default function Setup() {
                         }
                         let currentState:Setup_Player[] = [newUser]
                         stateRef.current = currentState
+                        //setNewCurrentPlayers(currentState)
                         //setCurrentPlayers(currentState)
+                        forceUpdate()
                     }
                     /*
                         one entry 
@@ -158,7 +168,9 @@ export default function Setup() {
                     */
                     else if (newPlayers.length >= 2) {
                         //setCurrentPlayers(newPlayers)
+                        //setNewCurrentPlayers(newPlayers)
                         stateRef.current = newPlayers
+                        forceUpdate()
                     }
                 })
 
