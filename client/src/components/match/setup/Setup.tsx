@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import st from './Setup.module.scss'
 //import { useParams } from 'react-router-dom';
 
@@ -9,26 +9,45 @@ import Players from './players/Players'
 import Chat from './chat/Chat'
 
 import {Twitter_User} from 'components/Interfaces'
-import {Pusher_Object} from 'components/Interfaces'
+import {Setup_Player} from 'components/Interfaces'
+
+enum PusherConState {
+    initialized = 'initialized',
+    connecting = 'connecting',
+    connected = 'connected',
+    unavailable = 'unavailable',
+    failed = 'failed',
+    disconnected = 'disconnected',
+}
+
+//let testPlayers = ["Leo","John","Adam"]
 
 const stateInitArray:Twitter_User[] = []
 
 const Pusher = require('pusher-js');
-const testPusherObj = {
-    userName: 'testUser',
-    message: 'this is a test object message'
+const testPusherObj:Setup_Player = {
+    name: 'testUser',
+    connected: true
 }
-const initArray:Pusher_Object[] = [testPusherObj]
 let pusherClient:any = null
 
 export default function Setup() {
     //state hook
+
+
+    //CENTER PANEL
     const [addedUsers, setAddedUsers] = useState(stateInitArray);
-    const [searchInput, setSearchInput] = useState("");
+
+    //RIGHT PANEL
+    const [userName, setUserName] = useState("");
     const [joinEnabled, setJoinEnabled] = useState(false);
     const [joined, setJoined] = useState(false);
     const [loading, setLoading] = useState(false)
+    const [pusherConState, setPusherConState] = useState(PusherConState.initialized)
+        const [currentPlayers, setCurrentPlayers] = useState([testPusherObj])
+        const stateRef = useRef(currentPlayers);
 
+    
     //params hook
     //const { id } = useParams<Record<string, string | undefined>>()
 
@@ -60,6 +79,14 @@ export default function Setup() {
           encrypted: true
         })
 
+        //bind to all events
+        //see: https://pusher.com/docs/channels/using_channels/connection#available-states
+        _pusherClient.connection.bind('state_change', (states:any) => {
+            //states = {previous: 'oldState', current: 'newState'}
+            console.log('new con state: ' + states.current)
+            setPusherConState(states.current) //-> also see enum PusherConState
+        });
+
         //bind error event
         _pusherClient.connection.bind('error', (err:any) => {
             setJoined(false)
@@ -76,28 +103,74 @@ export default function Setup() {
             setJoined(true)
             setLoading(false)
 
-            //sub to channel
-            const channelName = 'players'
-
-            //check if already subscribed
-            let _channel = pusherClient.channel(channelName)
-            if (_channel !== undefined) {
-                if (_channel.subscribed) {
-                    return
-                }
-            }
+            //sub to game channel
+            const channelName = 'Game1'
+            const event_NewPlayerJoined = 'Setup_players'
 
             const channel = pusherClient.subscribe(channelName)
             //bind sub success
             channel.bind('pusher:subscription_succeeded', () => {
                 console.log('subscribed to channel: ' + channelName)
-                //bind to event
-                channel.bind('message', (data:any) => {
-                    console.log('new: ' + data)
-                    //set new state
-                    //let newObj:Pusher_Object = data
-                    //setStateData([newObj])
+                //bind event 'new player joined'
+                channel.bind(event_NewPlayerJoined, (data:any) => {
+                    let str = JSON.stringify(data, null, 4);
+                    console.log(str)
+
+                    let newPlayers:Setup_Player[] = data.state
+                    let newPlayer:Setup_Player = newPlayers[0]
+                    /*
+                        one entry 
+                        && same as your username 
+                        ->  you are the only person in the room
+                    */
+                    if (newPlayers.length===1 && newPlayer.name === userName) {
+                        let newUser:Setup_Player = {
+                            name: newPlayer.name,
+                            connected: true
+                        }
+                        let currentState:Setup_Player[] = [newUser]
+                        stateRef.current = currentState
+                        //setCurrentPlayers(currentState)
+                    }
+                    /*
+                        one entry 
+                        && NOT same as your username 
+                        ->  reply current state with attached new user
+                    */
+                    else if (newPlayers.length===1 && newPlayer.name !== userName) {
+
+                        //attach new player
+                        let currentState:Setup_Player[] = stateRef.current
+                        let newUser:Setup_Player = {
+                            name: newPlayer.name,
+                            connected: true
+                        }
+                        currentState.push(newUser)
+                        //only first in current list gives reply -> reduce number of events triggered
+                        if (userName === currentState[0].name) {
+                            fireEvent_NewPlayerJoined(channelName, event_NewPlayerJoined, currentState)
+                        }
+                    }
+
+                    /*
+                        >= two entries 
+                        ->  current state of users, set in UI
+                    */
+                    else if (newPlayers.length >= 2) {
+                        //setCurrentPlayers(newPlayers)
+                        stateRef.current = newPlayers
+                    }
                 })
+
+                //tell others that you're here and receive current list of users as answer
+                let newUser:Setup_Player = {
+                    name: userName,
+                    connected: true
+                }
+                //setCurrentPlayers([newUser])
+                //stateRef.current = [newUser]
+                fireEvent_NewPlayerJoined(channelName, event_NewPlayerJoined, [newUser])
+        
             });
 
             //bind sub error
@@ -122,6 +195,25 @@ export default function Setup() {
         pusherClient.disconnect()
     }
 
+    const fireEvent_NewPlayerJoined = async (channelName:string, eventName: string, state:Setup_Player[]) => {
+
+        console.log('fireEvent_NewPlayerJoined: ' + userName)
+        let socketID = pusherClient.connection.socket_id;
+
+        const response = await fetch('/api/pusher/setup/players', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'pusherChannel': channelName,
+            'pusherEvent': eventName,
+            'pushersocketid': socketID
+        },
+        body: JSON.stringify({ state }), //msg
+        });
+        const body = await response.text();
+        console.log(body)
+    }
+
     //function passed to search component
     const addUserFromSearch = (newUser: Twitter_User):void => {
         //you have to put a new object entirely
@@ -138,7 +230,7 @@ export default function Setup() {
         HANDLERS
     */
     const userNameChanged = (name: string) => {
-        setSearchInput(name)
+        setUserName(name)
 
         //check empty or only spaces
         if (name.length === 0 || !name.trim()) {
@@ -150,7 +242,7 @@ export default function Setup() {
     }
 
     const keyPressed = (event: any) => {
-        if (event.key === 'Enter' && searchInput !== "") {
+        if (event.key === 'Enter' && userName !== "") {
             joinGame()
         }
     }
@@ -164,6 +256,12 @@ export default function Setup() {
             {addedUsers.length}
         </div>
         <div className={st.Right_Panel}>
+            <div>
+                {JSON.stringify(currentPlayers, null, 4)}
+            </div>
+            <div>
+                {JSON.stringify(stateRef.current, null, 4)}
+            </div>
             <div className={st.Interaction_Con}>
                 {!joined &&
                     <input className={st.Input} type="search" autoComplete="off" placeholder="Enter a name" onChange={e => userNameChanged(e.target.value)} onKeyUp={e => keyPressed(e)}/>
@@ -181,8 +279,9 @@ export default function Setup() {
                 {loading && 
                     <CircularProgress/>
                 }
+                {pusherConState}
             </div>
-            {Players()}
+            {Players(stateRef.current)}
             {joined && 
                 Chat()
             }
@@ -196,6 +295,16 @@ export default function Setup() {
 
 
 
+
+/*
+            //check if already subscribed
+            let _channel = pusherClient.channel(channelName)
+            if (_channel !== undefined) {
+                if (_channel.subscribed) {
+                    return
+                }
+            }
+            */
 
 
 

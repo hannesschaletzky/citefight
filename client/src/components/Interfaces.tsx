@@ -1,9 +1,9 @@
 /*
     API PUSHER
 */
-export interface Pusher_Object {
-    userName: string;
-    message: string;
+export interface Setup_Player {
+    name: string;
+    connected: boolean;
 }
 
 

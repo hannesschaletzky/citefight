@@ -117,7 +117,7 @@ export default function Search(addUserFunc:(par1: Twitter_User) => void, addedUs
                 'page': page.toString()
             }
         };
-        let request = new Request('/api/users', requestOptions)
+        let request = new Request('/api/twitter/users', requestOptions)
 
         const response = await fetch(request)
         const body = await response.json()

@@ -47,6 +47,7 @@ function getPusherClient() {
   return client
 }
 
+/* DEMO 
 app.post('/api/pusher', (req, res) => {
   //const payload = req.body;
   const payload = {
@@ -56,6 +57,23 @@ app.post('/api/pusher', (req, res) => {
   pusher.trigger('chat', 'message', payload);
   console.log(payload)
   res.send(payload)
+});
+*/
+
+
+app.post('/api/pusher/setup/players', (req, res) => {
+
+  //small letters for headers
+  let channel = req.headers.pusherchannel
+  let event = req.headers.pusherevent
+  let socketID = req.headers.pushersocketid
+  //console.log(socketID)
+
+  const payload = req.body;
+  pusher.trigger(channel, event, payload);
+  //pusher.trigger(channel, event, payload, socketID); -> indlucde socketID to exclude sender as recipient
+  
+  res.send({'status':'200'})
 });
 
 
@@ -118,7 +136,7 @@ function getTwitterClient(version) {
 
 }
 
-app.get('/api/users', (req, res) => {
+app.get('/api/twitter/users', (req, res) => {
   
   //console.log(req.headers.testkey)
   let q = req.headers.q
@@ -157,7 +175,7 @@ app.get('/api/users', (req, res) => {
 });
 
 
-app.get('/api/tweets', (req, res) => {
+app.get('/api/twitter/tweets', (req, res) => {
 
   let params = {
     user_id: '342599843',
@@ -179,7 +197,7 @@ app.get('/api/tweets', (req, res) => {
 
 });
 
-app.get('/api/tweetdetails', async(req, res) => {
+app.get('/api/twitter/tweetdetails', async(req, res) => {
   
   var params = {
     ids: '1345396853815312385,1352681729736241158', 
