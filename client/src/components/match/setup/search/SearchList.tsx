@@ -34,6 +34,11 @@ class Search_List extends Component <any, any> {
 
     addUser(user: Twitter_User) {
 
+        if (user.protected) {
+            console.log('cant add protected user')
+            return
+        }
+
         let addedUsers:Twitter_User[] = this.props.addedUsers
         for(let i=0;i<addedUsers.length;i++) {
             let item = addedUsers[i]

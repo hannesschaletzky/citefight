@@ -1,5 +1,17 @@
 /*
-API
+    API PUSHER
+*/
+export interface Pusher_Object {
+    userName: string;
+    message: string;
+}
+
+
+
+
+
+/*
+    API TWITTER
 */
 export interface Twitter_User {
     id: bigint;
@@ -17,8 +29,9 @@ export interface Twitter_User {
 
 
 
-
-
+/*
+    MATCH
+*/
 /*
     RIGHT PANEL
 */

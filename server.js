@@ -47,19 +47,16 @@ function getPusherClient() {
   return client
 }
 
-
-/*
-app.get('api/pusher/message', (req, res) => {
+app.post('/api/pusher', (req, res) => {
   //const payload = req.body;
   const payload = {
-    username: 'testUser',
-    message: 'this is a test message'
+    userName: 'testUserFromAPI',
+    message: 'this is a test message from API'
   };
   pusher.trigger('chat', 'message', payload);
   console.log(payload)
   res.send(payload)
 });
-*/
 
 
 
@@ -241,17 +238,6 @@ app.get('/api/tweets', (req, res) => {
     access_token_secret: SERVER_TWITTER_Access_Token_Secret
   });
   */
-
-app.post('/api/pusher', (req, res) => {
-  //const payload = req.body;
-  const payload = {
-    username: 'testUser',
-    message: 'this is a test message'
-  };
-  pusher.trigger('chat', 'message', payload);
-  console.log(payload)
-  res.send(payload)
-});
 
 app.get('/api/hello', (req, res) => {
   res.send({ data: 'Hello From Express'});
