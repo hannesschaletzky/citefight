@@ -11,7 +11,7 @@ import Chat from './chat/Chat'
 
 import {Twitter_User} from 'components/Interfaces'
 
-//import {Setup_State} from 'components/Interfaces'
+import {Setup_State} from 'components/Interfaces'
 import {Setup_Player} from 'components/Interfaces'
 import {Setup_ChatMsg} from 'components/Interfaces'
 
@@ -25,6 +25,7 @@ enum PusherConState {
 }
 
 //TEST CHAT
+/*
 let msg1:Setup_ChatMsg = {
     name: 'Leo',
     message: 'Hi Chat, gl all'
@@ -38,15 +39,24 @@ let msg3:Setup_ChatMsg = {
     message: 'Hi together, have a good game guys. I really wish you luck'
 }
 let testChat:Setup_ChatMsg[] = [msg1, msg2, msg3]
+*/
 
 const stateInitArray:Twitter_User[] = []
-const playersInitArr:Setup_Player[] = []
+const playersInit:Setup_Player[] = []
+const chatInit:Setup_ChatMsg[] = []
+
+const setupStateInit:Setup_State = {
+    players: playersInit,
+    chat: chatInit
+}
 
 const Pusher = require('pusher-js');
 let pusherClient:any = null
 
 export default function Setup() {
-    //state hook
+    //setup state for entire setup page
+    const ref_setupState = useRef(setupStateInit);
+    const [,forceUpdate] = useReducer(x => x + 1, 0);
 
     //CENTER PANEL
     const [addedUsers, setAddedUsers] = useState(stateInitArray);
@@ -57,9 +67,6 @@ export default function Setup() {
     const [joined, setJoined] = useState(false);
     const [loading, setLoading] = useState(false)
     const [pusherConState, setPusherConState] = useState(PusherConState.initialized)
-
-    const ref_currentPlayers = useRef(playersInitArr);
-    const [,forceUpdate] = useReducer(x => x + 1, 0);
     
 
     const channelName = 'Game1'
@@ -171,16 +178,16 @@ export default function Setup() {
         pusherClient.connection.bind('disconnected', () => {
 
             //remove user from players, share new state, empty players list
-            for (let i = 0; ref_currentPlayers.current.length;i++) {
-                let user = ref_currentPlayers.current[i]
+            for (let i = 0; ref_setupState.current.players.length;i++) {
+                let user = ref_setupState.current.players[i]
                 if (user.name === userName) {
                     console.log('removing player: ' + user.name)
-                    ref_currentPlayers.current.splice(i,1);
+                    ref_setupState.current.players.splice(i,1);
                     break
                 }
             }
-            fireEvent_NewPlayerJoined(channelName, event_NewPlayerJoined, ref_currentPlayers.current)
-            ref_currentPlayers.current = []
+            fireEvent_NewPlayerJoined(channelName, event_NewPlayerJoined, ref_setupState.current.players)
+            ref_setupState.current.players = []
 
             //reset vars
             setJoinEnabled(false)
@@ -219,7 +226,7 @@ export default function Setup() {
         */
         if (newPlayers.length===1 && newPlayer.name === userName) {
             let newUser = createPlayerObject(newPlayer.name)
-            ref_currentPlayers.current = [newUser]
+            ref_setupState.current.players = [newUser]
             forceUpdate()
         }
         /*
@@ -230,10 +237,10 @@ export default function Setup() {
         else if (newPlayers.length===1 && newPlayer.name !== userName) {
             //attach new player
             let newUser = createPlayerObject(newPlayer.name)
-            ref_currentPlayers.current.push(newUser)
+            ref_setupState.current.players.push(newUser)
             //only first in current list gives reply -> reduce number of events triggered
-            if (userName === ref_currentPlayers.current[0].name) {
-                fireEvent_NewPlayerJoined(channelName, event_NewPlayerJoined, ref_currentPlayers.current)
+            if (userName === ref_setupState.current.players[0].name) {
+                fireEvent_NewPlayerJoined(channelName, event_NewPlayerJoined, ref_setupState.current.players)
             }
         }
 
@@ -242,11 +249,11 @@ export default function Setup() {
             ->  current state of users, set in UI
         */
         else if (newPlayers.length >= 2) {
-            ref_currentPlayers.current = newPlayers
+            ref_setupState.current.players = newPlayers
             forceUpdate()
         }
     }
-
+    
     const fireEvent_NewPlayerJoined = async (channelName:string, eventName: string, state:Setup_Player[]) => {
 
         console.log('fireEvent_NewPlayerJoined: ' + userName)
@@ -344,10 +351,10 @@ export default function Setup() {
                 }
                 {pusherConState}
             </div>
-            {Players(ref_currentPlayers.current)}
+            {Players(ref_setupState.current.players)}
             {joined && 
                 <Chat 
-                    data={testChat}
+                    data={ref_setupState.current.chat}
                     onNewMsg={fireNewChatMessage}
                 />
             }

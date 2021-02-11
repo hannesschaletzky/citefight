@@ -1,6 +1,7 @@
 /*
-    API PUSHER
+    SETUP OBJECTS
 */
+
 export interface Setup_Player {
     name: string;
     
@@ -13,12 +14,11 @@ export interface Setup_ChatMsg {
     message: string;
 }
 
-
+//state container object of Setup
 export interface Setup_State {
     players: Setup_Player[];
     chat: Setup_ChatMsg[];
 }
-
 
 
 
