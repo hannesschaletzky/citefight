@@ -8,6 +8,11 @@ export interface Setup_Player {
     connected ? : boolean;
 }
 
+export interface Setup_ChatMsg {
+    name: string;
+    message: string;
+}
+
 
 
 

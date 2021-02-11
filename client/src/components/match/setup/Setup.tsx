@@ -1,3 +1,4 @@
+/* eslint-disable react/jsx-pascal-case */
 import { useState, useEffect, useRef, useReducer } from 'react';
 import st from './Setup.module.scss'
 //import { useParams } from 'react-router-dom';
@@ -10,6 +11,7 @@ import Chat from './chat/Chat'
 
 import {Twitter_User} from 'components/Interfaces'
 import {Setup_Player} from 'components/Interfaces'
+import {Setup_ChatMsg} from 'components/Interfaces'
 
 enum PusherConState {
     initialized = 'initialized',
@@ -19,6 +21,21 @@ enum PusherConState {
     failed = 'failed',
     disconnected = 'disconnected',
 }
+
+//TEST CHAT
+let msg1:Setup_ChatMsg = {
+    name: 'Leo',
+    message: 'Hi Chat, gl all'
+}
+let msg2:Setup_ChatMsg = {
+    name: 'Adam',
+    message: 'Hi Leo, ty u2'
+}
+let msg3:Setup_ChatMsg = {
+    name: 'Phil',
+    message: 'Hi together, have a good game guys. I really wish you luck'
+}
+let testChat:Setup_ChatMsg[] = [msg1, msg2, msg3]
 
 const stateInitArray:Twitter_User[] = []
 const playersInitArr:Setup_Player[] = []
@@ -59,6 +76,13 @@ export default function Setup() {
             name: name
         }
         return newPlayer
+    }
+
+    //pass to chat 
+    const fireNewChatMessage = (newMsg:Setup_ChatMsg) => {
+        console.log('new chat msg received: ' + newMsg.message)
+
+        
     }
 
     /*
@@ -294,7 +318,12 @@ export default function Setup() {
         <div className={st.Right_Panel}>
             <div className={st.Interaction_Con}>
                 {!joined &&
-                    <input className={st.Input} type="search" autoComplete="off" placeholder="Enter a name" onChange={e => userNameChanged(e.target.value)} onKeyUp={e => keyPressed(e)}/>
+                    <input  className={st.Input}
+                            type="search" 
+                            autoComplete="off" 
+                            placeholder="Enter a name"
+                            onChange={e => userNameChanged(e.target.value)} 
+                            onKeyUp={e => keyPressed(e)}/>
                 }
                 {joinEnabled && !joined &&
                     <button className={st.Button_Join} onClick={() => joinGame()}>
@@ -313,7 +342,10 @@ export default function Setup() {
             </div>
             {Players(ref_currentPlayers.current)}
             {joined && 
-                Chat()
+                <Chat 
+                    data={testChat}
+                    onNewMsg={fireNewChatMessage}
+                />
             }
         </div>
     </div>

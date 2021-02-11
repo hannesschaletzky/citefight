@@ -1,5 +1,6 @@
 //debugging
-$sdbg: true; //show debugging background = sdbg
+$sdbg: false; //show debugging background = sdbg
+@import "styles/app.global.scss";
 
 .Con {
   width: 100%;
@@ -7,7 +8,63 @@ $sdbg: true; //show debugging background = sdbg
 
   margin-top: 25px;
 
+  border: 1.7px solid;
+  border-color: rgba(194, 192, 192, 0.75);
+  border-radius: 8px;
+
   @if ($sdbg) {
     background-color: rgba(229, 233, 20, 0.219);
+  }
+}
+
+.Bottom_Con {
+  display: flex;
+}
+
+.Input {
+  height: 30px;
+
+  //@extend .HelveticaNeueBoldFont;
+
+  //border
+  border: 3px solid;
+  border-color: rgba(207, 212, 205, 0.8);
+  border-radius: 8px;
+
+  outline: none;
+  //color: white !important;
+  //background-color: rgba(28, 179, 28, 0.8);
+
+  &:focus {
+    border-color: rgba(8, 8, 8, 0.6);
+  }
+
+  &::placeholder {
+    /* Chrome, Firefox, Opera, Safari 10.1+ */
+    color: rgba(0, 0, 0, 0.2);
+    opacity: 1; /* Firefox */
+  }
+}
+
+.SendBtn {
+  height: 30px;
+  margin-left: 10px;
+  cursor: pointer;
+
+  //border
+  border-color: transparent;
+  border-radius: 8px;
+
+  //text
+  @extend .HelveticaNeueBoldFont;
+  color: rgba(255, 255, 255, 1);
+
+  //colour, shadow, outline
+  box-shadow: 2px 2px rgba(5, 19, 19, 0.527);
+  outline: none;
+  background-color: rgba(28, 179, 28, 0.4);
+
+  &:hover {
+    background-color: rgba(28, 179, 28, 0.2);
   }
 }
