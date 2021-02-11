@@ -67,9 +67,14 @@ app.post('/api/pusher/setup/players', (req, res) => {
   let channel = req.headers.pusherchannel
   let event = req.headers.pusherevent
   let socketID = req.headers.pushersocketid
+  const payload = req.body;
   //console.log(socketID)
 
-  const payload = req.body;
+  //print byte size of request, max 10KB for pusher
+  let str = JSON.stringify(payload);
+  console.log('bytes for request: ' + Buffer.byteLength(str, 'utf8'))
+
+  //trigger event
   pusher.trigger(channel, event, payload);
   //pusher.trigger(channel, event, payload, socketID); -> indlucde socketID to exclude sender as recipient
   

@@ -56,6 +56,9 @@ class Chat extends Component <any, any> {
         if (value.length === 0 || !value.trim()) {
             this.setState({sendEnabled: false})
         }
+        else if (value.length > 50) {
+            this.setState({sendEnabled: false})
+        }
         else {
             this.setState({sendEnabled: true})
         }
@@ -76,7 +79,7 @@ class Chat extends Component <any, any> {
         for(let i=0;i<inputMessages.length;i++) {
             let msg:Setup_ChatMsg = inputMessages[i]
             let card = 
-                <div key={i}>
+                <div key={i} className={st.Message}>
                     {msg.name}: {msg.message}
                 </div>
             cards.push(card)
@@ -84,7 +87,9 @@ class Chat extends Component <any, any> {
 
         return ( 
             <div className={st.Con}>
-                {cards}
+                <div className={st.MessageCon}>
+                    {cards}
+                </div>
                 <div className={st.Bottom_Con}>
                     <input  className={st.Input} 
                             type="search" 

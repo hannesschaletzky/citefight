@@ -18,6 +18,7 @@ export interface Setup_ChatMsg {
 export interface Setup_State {
     players: Setup_Player[];
     chat: Setup_ChatMsg[];
+    selectedTwitterUser: Twitter_User[];
 }
 
 

@@ -14,7 +14,7 @@ export default function Players(players:Setup_Player[]) {
         let cards = []
         for(let i=0;i<players.length;i++) {
             let card = 
-            <div key={i}>
+            <div className={st.PlayerCard} key={i}>
                 {players[i].name}
             </div>
             cards.push(card)

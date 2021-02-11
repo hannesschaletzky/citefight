@@ -19,6 +19,7 @@ $sdbg: false; //show debugging background = sdbg
   margin-left: 25px;
   margin-right: 25px;
   flex: 1; //fill space
+  max-width: 33%;
 
   @if $sdbg {
     background-color: rgba(122, 222, 247, 0.514);
@@ -28,6 +29,7 @@ $sdbg: false; //show debugging background = sdbg
 .Center_Panel {
   margin-top: 25px;
   flex: 1; //fill space
+  max-width: 33%;
 
   @if $sdbg {
     background-color: rgba(39, 19, 216, 0.514);
@@ -39,6 +41,7 @@ $sdbg: false; //show debugging background = sdbg
   margin-left: 25px;
   margin-right: 25px;
   flex: 1; //fill space
+  max-width: 33%;
 
   @if $sdbg {
     background-color: rgba(216, 196, 19, 0.514);
