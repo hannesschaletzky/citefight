@@ -10,6 +10,8 @@ import Players from './players/Players'
 import Chat from './chat/Chat'
 
 import {Twitter_User} from 'components/Interfaces'
+
+//import {Setup_State} from 'components/Interfaces'
 import {Setup_Player} from 'components/Interfaces'
 import {Setup_ChatMsg} from 'components/Interfaces'
 
@@ -46,7 +48,6 @@ let pusherClient:any = null
 export default function Setup() {
     //state hook
 
-
     //CENTER PANEL
     const [addedUsers, setAddedUsers] = useState(stateInitArray);
 
@@ -82,7 +83,7 @@ export default function Setup() {
     const fireNewChatMessage = (newMsg:Setup_ChatMsg) => {
         console.log('new chat msg received: ' + newMsg.message)
 
-        
+
     }
 
     /*
@@ -193,6 +194,10 @@ export default function Setup() {
         pusherClient.disconnect()
     }
 
+    
+
+    
+
     /*
     ##################################
     ##################################
@@ -200,7 +205,6 @@ export default function Setup() {
     ##################################
     ##################################
     */
-
     const handleEvent_NewPlayerJoined = (data:any) => {
         let str = JSON.stringify(data, null, 4);
         console.log(str)

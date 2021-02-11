@@ -14,6 +14,12 @@ export interface Setup_ChatMsg {
 }
 
 
+export interface Setup_State {
+    players: Setup_Player[];
+    chat: Setup_ChatMsg[];
+}
+
+
 
 
 
