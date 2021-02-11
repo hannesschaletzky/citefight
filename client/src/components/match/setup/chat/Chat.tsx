@@ -35,6 +35,7 @@ class Chat extends Component <any, any> {
 
         this.props.onNewMsg(newMsg) //fire event in parent
         this.setState({userMsg: ''})
+        this.setState({sendEnabled: false})
         
     }
 
