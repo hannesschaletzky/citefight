@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback, useReducer } from 'react';
+import { useState, useEffect, useRef, useReducer } from 'react';
 import st from './Setup.module.scss'
 //import { useParams } from 'react-router-dom';
 
@@ -20,15 +20,10 @@ enum PusherConState {
     disconnected = 'disconnected',
 }
 
-//let testPlayers = ["Leo","John","Adam"]
-
 const stateInitArray:Twitter_User[] = []
+const playersInitArr:Setup_Player[] = []
 
 const Pusher = require('pusher-js');
-const testPusherObj:Setup_Player = {
-    name: 'testUser',
-    connected: true
-}
 let pusherClient:any = null
 
 export default function Setup() {
@@ -44,26 +39,35 @@ export default function Setup() {
     const [joined, setJoined] = useState(false);
     const [loading, setLoading] = useState(false)
     const [pusherConState, setPusherConState] = useState(PusherConState.initialized)
-        const [currentPlayers, setCurrentPlayers] = useState([testPusherObj])
-        const stateRef = useRef(currentPlayers);
-        const [ignored, forceUpdate] = useReducer(x => x + 1, 0);
 
-        const setNewCurrentPlayers = useCallback((newPlayers: Setup_Player[]) => {
-            setCurrentPlayers(newPlayers)
-        }, []);
-
-        const getCurrentPlayers = useCallback(() => {
-            return currentPlayers;
-        }, [currentPlayers]);
+    const ref_currentPlayers = useRef(playersInitArr);
+    const [,forceUpdate] = useReducer(x => x + 1, 0);
     
+
+    const channelName = 'Game1'
+    const event_NewPlayerJoined = 'Setup_players'
+
     //params hook
     //const { id } = useParams<Record<string, string | undefined>>()
 
     useEffect(() => {
-        
+
     });
 
+    const createPlayerObject = (name: string) => {
+        let newPlayer:Setup_Player = {
+            name: name
+        }
+        return newPlayer
+    }
 
+    /*
+    ##################################
+    ##################################
+        JOIN GAME && LEAVE GAME
+    ##################################
+    ##################################
+    */
     const joinGame = () => {
 
         //check if enabled
@@ -112,77 +116,18 @@ export default function Setup() {
             setLoading(false)
 
             //sub to game channel
-            const channelName = 'Game1'
-            const event_NewPlayerJoined = 'Setup_players'
-
             const channel = pusherClient.subscribe(channelName)
             //bind sub success
             channel.bind('pusher:subscription_succeeded', () => {
                 console.log('subscribed to channel: ' + channelName)
                 //bind event 'new player joined'
-                channel.bind(event_NewPlayerJoined, (data:any) => {
-                    let str = JSON.stringify(data, null, 4);
-                    console.log(str)
+                channel.bind(event_NewPlayerJoined, (data:any) => 
+                    handleEvent_NewPlayerJoined(data)
+                )
 
-                    let newPlayers:Setup_Player[] = data.state
-                    let newPlayer:Setup_Player = newPlayers[0]
-                    /*
-                        one entry 
-                        && same as your username 
-                        ->  you are the only person in the room
-                    */
-                    if (newPlayers.length===1 && newPlayer.name === userName) {
-                        let newUser:Setup_Player = {
-                            name: newPlayer.name,
-                            connected: true
-                        }
-                        let currentState:Setup_Player[] = [newUser]
-                        stateRef.current = currentState
-                        //setNewCurrentPlayers(currentState)
-                        //setCurrentPlayers(currentState)
-                        forceUpdate()
-                    }
-                    /*
-                        one entry 
-                        && NOT same as your username 
-                        ->  reply current state with attached new user
-                    */
-                    else if (newPlayers.length===1 && newPlayer.name !== userName) {
-
-                        //attach new player
-                        let currentState:Setup_Player[] = stateRef.current
-                        let newUser:Setup_Player = {
-                            name: newPlayer.name,
-                            connected: true
-                        }
-                        currentState.push(newUser)
-                        //only first in current list gives reply -> reduce number of events triggered
-                        if (userName === currentState[0].name) {
-                            fireEvent_NewPlayerJoined(channelName, event_NewPlayerJoined, currentState)
-                        }
-                    }
-
-                    /*
-                        >= two entries 
-                        ->  current state of users, set in UI
-                    */
-                    else if (newPlayers.length >= 2) {
-                        //setCurrentPlayers(newPlayers)
-                        //setNewCurrentPlayers(newPlayers)
-                        stateRef.current = newPlayers
-                        forceUpdate()
-                    }
-                })
-
-                //tell others that you're here and receive current list of users as answer
-                let newUser:Setup_Player = {
-                    name: userName,
-                    connected: true
-                }
-                //setCurrentPlayers([newUser])
-                //stateRef.current = [newUser]
+                //tell others you're here
+                let newUser = createPlayerObject(userName)
                 fireEvent_NewPlayerJoined(channelName, event_NewPlayerJoined, [newUser])
-        
             });
 
             //bind sub error
@@ -194,17 +139,84 @@ export default function Setup() {
         })
     }
 
+
     const leaveGame = () => {
+
         //bind disconnect event
         pusherClient.connection.bind('disconnected', () => {
+
+            //remove user from players, share new state, empty players list
+            for (let i = 0; ref_currentPlayers.current.length;i++) {
+                let user = ref_currentPlayers.current[i]
+                if (user.name === userName) {
+                    console.log('removing player: ' + user.name)
+                    ref_currentPlayers.current.splice(i,1);
+                    break
+                }
+            }
+            fireEvent_NewPlayerJoined(channelName, event_NewPlayerJoined, ref_currentPlayers.current)
+            ref_currentPlayers.current = []
+
+            //reset vars
             setJoinEnabled(false)
             setJoined(false)
             setLoading(false)
-            pusherClient = null
+            pusherClient = null //must be last 
+
             console.log('successfully disconnected')
         })
 
         pusherClient.disconnect()
+    }
+
+    /*
+    ##################################
+    ##################################
+        EVENT: NewPlayerJoined
+    ##################################
+    ##################################
+    */
+
+    const handleEvent_NewPlayerJoined = (data:any) => {
+        let str = JSON.stringify(data, null, 4);
+        console.log(str)
+
+        //read new data
+        let newPlayers:Setup_Player[] = data.state
+        let newPlayer:Setup_Player = newPlayers[0]
+        /*
+            one entry 
+            && same as your username 
+            ->  you are the only person in the room
+        */
+        if (newPlayers.length===1 && newPlayer.name === userName) {
+            let newUser = createPlayerObject(newPlayer.name)
+            ref_currentPlayers.current = [newUser]
+            forceUpdate()
+        }
+        /*
+            one entry 
+            && NOT same as your username 
+            ->  reply current state with attached new user
+        */
+        else if (newPlayers.length===1 && newPlayer.name !== userName) {
+            //attach new player
+            let newUser = createPlayerObject(newPlayer.name)
+            ref_currentPlayers.current.push(newUser)
+            //only first in current list gives reply -> reduce number of events triggered
+            if (userName === ref_currentPlayers.current[0].name) {
+                fireEvent_NewPlayerJoined(channelName, event_NewPlayerJoined, ref_currentPlayers.current)
+            }
+        }
+
+        /*
+            >= two entries 
+            ->  current state of users, set in UI
+        */
+        else if (newPlayers.length >= 2) {
+            ref_currentPlayers.current = newPlayers
+            forceUpdate()
+        }
     }
 
     const fireEvent_NewPlayerJoined = async (channelName:string, eventName: string, state:Setup_Player[]) => {
@@ -226,6 +238,14 @@ export default function Setup() {
         console.log(body)
     }
 
+    /*
+    ##################################
+    ##################################
+        Functions to child components
+    ##################################
+    ##################################
+    */
+
     //function passed to search component
     const addUserFromSearch = (newUser: Twitter_User):void => {
         //you have to put a new object entirely
@@ -239,7 +259,11 @@ export default function Setup() {
     }
 
     /*
-        HANDLERS
+    ##################################
+    ##################################
+            Handlers
+    ##################################
+    ##################################
     */
     const userNameChanged = (name: string) => {
         setUserName(name)
@@ -268,12 +292,6 @@ export default function Setup() {
             {addedUsers.length}
         </div>
         <div className={st.Right_Panel}>
-            <div>
-                {JSON.stringify(currentPlayers, null, 4)}
-            </div>
-            <div>
-                {JSON.stringify(stateRef.current, null, 4)}
-            </div>
             <div className={st.Interaction_Con}>
                 {!joined &&
                     <input className={st.Input} type="search" autoComplete="off" placeholder="Enter a name" onChange={e => userNameChanged(e.target.value)} onKeyUp={e => keyPressed(e)}/>
@@ -293,7 +311,7 @@ export default function Setup() {
                 }
                 {pusherConState}
             </div>
-            {Players(stateRef.current)}
+            {Players(ref_currentPlayers.current)}
             {joined && 
                 Chat()
             }
@@ -308,15 +326,16 @@ export default function Setup() {
 
 
 
+
 /*
-            //check if already subscribed
-            let _channel = pusherClient.channel(channelName)
-            if (_channel !== undefined) {
-                if (_channel.subscribed) {
-                    return
-                }
-            }
-            */
+    //check if already subscribed
+    let _channel = pusherClient.channel(channelName)
+    if (_channel !== undefined) {
+        if (_channel.subscribed) {
+            return
+        }
+    }
+*/
 
 
 

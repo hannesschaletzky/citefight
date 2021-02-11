@@ -3,7 +3,9 @@
 */
 export interface Setup_Player {
     name: string;
-    connected: boolean;
+    
+    /** @default true */
+    connected ? : boolean;
 }
 
 
