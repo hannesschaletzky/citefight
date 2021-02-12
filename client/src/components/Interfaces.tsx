@@ -4,10 +4,16 @@ export enum SysMsg {
     userLeft = '3'
 }
 
-export enum EventType {
-    init = 'init',
-    chat = 'chat',
-    player = 'player'
+export enum SetupEventType {
+    Admin = 'Setup_Admin',
+    Chat = 'Setup_Chat',
+    Player = 'Setup_Player'
+}
+
+export enum AdminType {
+    none = '',
+    join = 'join',
+    leave = 'leave'
 }
 
 /*
@@ -15,7 +21,8 @@ export enum EventType {
 */
 
 export interface Setup_Event {
-    type: EventType;
+    type: SetupEventType;
+    adminType: AdminType;
     data: any;
 }
 

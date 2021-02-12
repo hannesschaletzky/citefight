@@ -9,13 +9,13 @@ import Search from './search/Search'
 import Players from './players/Players'
 import Chat from './chat/Chat'
 
-
 import {Setup_Event} from 'components/Interfaces'
 import {Setup_Player} from 'components/Interfaces'
 import {Setup_ChatMsg} from 'components/Interfaces'
 import {Twitter_User} from 'components/Interfaces'
 import {SysMsg} from 'components/Interfaces'
-import {EventType} from 'components/Interfaces'
+import {SetupEventType} from 'components/Interfaces'
+import {AdminType} from 'components/Interfaces'
 
 
 enum PusherConState {
@@ -36,9 +36,9 @@ let pusherClient:any = null
 let userName = ""
 
 export default function Setup() {
-    //setup state for entire setup page
-    const ref_twitterUser = useRef(twitterUserInit);
-    const ref_player = useRef(playersInit);
+    //states
+    const ref_twitterUsers = useRef(twitterUserInit);
+    const ref_players = useRef(playersInit);
     const ref_chat = useRef(chatInit);
     const [,forceUpdate] = useReducer(x => x + 1, 0);
 
@@ -50,9 +50,6 @@ export default function Setup() {
     const [pusherConState, setPusherConState] = useState(PusherConState.initialized)
     
     const channelName = 'Game1'
-    const event_Setup_Init = 'Setup_Init'
-    const event_Setup_Player = 'Setup_Player'
-    const event_Setup_Chat = 'Setup_Chat'
 
     //params hook
     //const { id } = useParams<Record<string, string | undefined>>()
@@ -76,9 +73,7 @@ export default function Setup() {
 
     const handleTabClosing = () => {
         if (pusherClient !== null) {
-            removePlayerFromGame()
-            //setTimeout('', 1000);
-            pusherClient.disconnect()
+            leaveGame()
         }
     }
 
@@ -188,18 +183,18 @@ export default function Setup() {
                 setLoading(false)
 
                 //bind to all events
-                channel.bind(event_Setup_Init, (data:any) => 
-                    handleEvent_Init(data)
+                channel.bind(SetupEventType.Admin, (data:any) => 
+                    handleEvent_Admin(data)
                 )
-                channel.bind(event_Setup_Player, (data:any) => 
+                channel.bind(SetupEventType.Player, (data:any) => 
                     handleEvent_Player(data)
                 )
-                channel.bind(event_Setup_Chat, (data:any) => 
+                channel.bind(SetupEventType.Chat, (data:any) => 
                     handleEvent_Chat(data)
                 )
 
                 //request current state from lobby
-                fireEvent_Init()
+                fireEvent_Admin(AdminType.join)
             });
 
             // -> error
@@ -214,82 +209,122 @@ export default function Setup() {
 
     const leaveGame = () => {
 
-        //bind disconnect event
-        pusherClient.connection.bind('disconnected', () => {
-
-            //remove players
-            removePlayerFromGame()
-
-            //reset vars
-            setJoinEnabled(false)
-            setJoined(false)
-            setLoading(false)
-            pusherClient = null //must be last 
-
-            console.log('successfully disconnected')
-        })
-
+        //disconnect from all events first
         pusherClient.disconnect()
+        pusherClient = null 
+
+        //fire event to admin 
+        fireEvent_Admin(AdminType.leave)
+
+        //reset vars
+        setJoinEnabled(false)
+        setJoined(false)
+        setLoading(false)
+
+        //reset refs
+        ref_players.current = playersInit
+        
+        console.log('successfully disconnected')
     }
 
-    const removePlayerFromGame = () => {
-        //remove user from players, share new state
-        for (let i = 0; ref_player.current.length;i++) {
-            let user = ref_player.current[i]
-            if (user.name === userName) {
-                ref_player.current.splice(i,1);
-                console.log('removed player: ' + user.name)
-                break
-            }
-        }
-        addSysMsg(SysMsg.userLeft, userName)
-        fireEvent_Player()
-    }
-
-        /*
+    /*
     ##################################
     ##################################
-        EVENT: INIT
+        EVENT: Admin
     ##################################
     ##################################
     */
-    const handleEvent_Init = (event:any) => {
+    const handleEvent_Admin = (event:any) => {
 
-        if (event.type === EventType.init) {
-            let newJoined = event.data
+        //security
+        if (event.type !== SetupEventType.Admin) {
+            console.log('EventType mismatch in handleEvent_Admin:\n\n' + event)
+            return
+        }
+        let triggerUser = event.data
+
+        /*  
+            specify admin to manage request
+                -> only determine admin if at least two people are in room
+                -> check if this user is first user AND not the one that has triggered
+                    -> YES: first user is admin
+                    -> NO: do same check with second user
+                -> rest of users are no admins
+        */
+
+        if (ref_players.current.length >= 2) {
+            //is first user eligible?
+            if ((userName === ref_players.current[0].name) && (userName !== triggerUser)) {
+                console.log('you are admin')
+            }
+            //is second user eligible?
+            else if ((userName === ref_players.current[1].name) && (userName !== triggerUser)) {
+                console.log('you are admin')
+            }
+            else {
+                console.log('you are NOT admin')
+                return
+            }
+        }
+        else {
+            //only one player -> continue
+            console.log('you are admin')
+        }
+        
+        
+
+        //JOIN
+        if (event.adminType === AdminType.join) {
+            
             
             //you are the only person in the room
-            if (ref_player.current.length === 0) {
-                let newUser = createPlayerObject(newJoined)
-                ref_player.current.push(newUser)
-                addSysMsg(SysMsg.userJoined, newJoined)
+            if (ref_players.current.length === 0) {
+                let newUser = createPlayerObject(triggerUser)
+                ref_players.current.push(newUser)
+                addSysMsg(SysMsg.userJoined, triggerUser)
                 forceUpdate()
             }
 
             //reply current state to user
             else {
-                //only first user replies -> reduce number of events triggered
-                if (userName === ref_player.current[0].name) {
-                    //attach new player
-                    let newUser = createPlayerObject(newJoined)
-                    ref_player.current.push(newUser)
-                    //insert new message
-                    addSysMsg(SysMsg.userJoined, newJoined)
-                    //broadcast new changes
-                    fireEvent_Player()
-                    fireEvent_Chat()
+                //attach new player
+                let newUser = createPlayerObject(triggerUser)
+                ref_players.current.push(newUser)
+                //insert new message
+                addSysMsg(SysMsg.userJoined, triggerUser)
+                //broadcast new state
+                fireEvent_Player()
+                fireEvent_Chat()
+            }
+        }
+
+        //LEAVE
+        else if (event.adminType === AdminType.leave) {
+            //remove user from players
+            for (let i=0; ref_players.current.length;i++) {
+                let user = ref_players.current[i]
+                if (user.name === triggerUser) {
+                    ref_players.current.splice(i,1);
+                    console.log('removed player: ' + triggerUser)
+                    break
                 }
             }
+            //insert new message
+            addSysMsg(SysMsg.userLeft, triggerUser)
+            //broadcast new state
+            fireEvent_Chat()
+            fireEvent_Player()
         }
         
     }
 
-    const fireEvent_Init = async () => {
+    const fireEvent_Admin = async (adminType: AdminType) => {
 
-        console.log('asking for inital state')
+        console.log('fire admin event')
         //prepare
         let event:Setup_Event = {
-            type: EventType.init,
+            type: SetupEventType.Admin,
+            adminType: adminType,
             data: userName
         }
 
@@ -299,7 +334,7 @@ export default function Setup() {
             headers: {
                 'Content-Type': 'application/json',
                 'pusherchannel': channelName,
-                'pusherevent': event_Setup_Init
+                'pusherevent': SetupEventType.Admin
             },
             body: JSON.stringify(event), 
         });
@@ -318,12 +353,16 @@ export default function Setup() {
     */
     const handleEvent_Chat = (event:any) => {
 
-        if (event.type === EventType.chat) {
-            let newChat:Setup_ChatMsg[] = event.data
-            console.log(newChat.length + ' msgs retr.')
-            ref_chat.current = newChat
-            forceUpdate()
+        //security
+        if (event.type !== SetupEventType.Chat) {
+            console.log('EventType mismatch in handleEvent_Chat:\n\n' + event)
+            return
         }
+
+        let newChat:Setup_ChatMsg[] = event.data
+        console.log(newChat.length + ' msgs retr.')
+        ref_chat.current = newChat
+        forceUpdate()
         
     }
 
@@ -332,7 +371,8 @@ export default function Setup() {
         console.log('broadcast new chat')
         //prepare
         let event:Setup_Event = {
-            type: EventType.chat,
+            type: SetupEventType.Chat,
+            adminType: AdminType.none,
             data: ref_chat.current
         }
 
@@ -345,7 +385,7 @@ export default function Setup() {
             headers: {
                 'Content-Type': 'application/json',
                 'pusherchannel': channelName,
-                'pusherevent': event_Setup_Chat
+                'pusherevent': SetupEventType.Chat
             },
             body: JSON.stringify(event),
         });
@@ -371,12 +411,16 @@ export default function Setup() {
         console.log(str)
         */
 
-        if (event.type === EventType.player) {
-            let newPlayers:Setup_Player[] = event.data
-            console.log(newPlayers.length + ' total players')
-            ref_player.current = newPlayers
-            forceUpdate()
+        //security
+        if (event.type !== SetupEventType.Player) {
+            console.log('EventType mismatch in handleEvent_Player:\n\n' + event)
+            return
         }
+
+        let newPlayers:Setup_Player[] = event.data
+        console.log(newPlayers.length + ' total players')
+        ref_players.current = newPlayers
+        forceUpdate()
         
     }
 
@@ -385,8 +429,9 @@ export default function Setup() {
         console.log('broadcast new players')
         //prepare
         let event:Setup_Event = {
-            type: EventType.player,
-            data: ref_player.current
+            type: SetupEventType.Player,
+            adminType: AdminType.none,
+            data: ref_players.current
         }
 
         //execute
@@ -395,7 +440,7 @@ export default function Setup() {
             headers: {
                 'Content-Type': 'application/json',
                 'pusherchannel': channelName,
-                'pusherevent': event_Setup_Player
+                'pusherevent': SetupEventType.Player
             },
             body: JSON.stringify(event),
         });
@@ -417,7 +462,7 @@ export default function Setup() {
     //passed to search component
     const onNewTwitterUserAdded = (newUser: Twitter_User):void => {
         console.log('new twitter user added: ' + newUser.screen_name)
-        ref_twitterUser.current.push(newUser)
+        ref_twitterUsers.current.push(newUser)
         //@@TODO FIRE EVENT
     }
 
@@ -458,11 +503,11 @@ export default function Setup() {
   return (
     <div className={st.Content_Con}>
         <div className={st.Left_Panel}>
-            {Search(onNewTwitterUserAdded, ref_twitterUser.current)}
+            {Search(onNewTwitterUserAdded, ref_twitterUsers.current)}
         </div>
         {joined && 
             <div className={st.Center_Panel}>
-                {ref_twitterUser.current.length}
+                {ref_twitterUsers.current.length}
             </div>
         }
         <div className={st.Right_Panel}>
@@ -490,7 +535,7 @@ export default function Setup() {
                 }
             </div>
             <div className={st.Players_Con}>
-                {Players(ref_player.current)}
+                {Players(ref_players.current)}
             </div>
             {joined && 
                 <div className={st.Chat_Con}>
