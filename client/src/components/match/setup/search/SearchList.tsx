@@ -48,7 +48,22 @@ class Search_List extends Component <any, any> {
             }
         }
 
-        this.props.onAddUser(user)
+        //retrieve only information that we need, not entire object
+        let parsedUser:Twitter_User = {
+            id: user.id,
+            screen_name: user.screen_name,
+            name: user.name,
+            description: user.description,
+            location: user.location,
+            verified: user.verified,
+            protected: user.protected,
+            following: user.following,
+            followers_count: user.followers_count,
+            statuses_count: user.statuses_count,
+            profile_image_url_https: user.profile_image_url_https,
+        } 
+
+        this.props.onAddUser(parsedUser)
         console.log('added user: ' + user.screen_name)
     }
 

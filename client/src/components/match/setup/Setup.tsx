@@ -9,11 +9,14 @@ import Search from './search/Search'
 import Players from './players/Players'
 import Chat from './chat/Chat'
 
-import {Setup_State} from 'components/Interfaces'
+
+import {Setup_Event} from 'components/Interfaces'
 import {Setup_Player} from 'components/Interfaces'
 import {Setup_ChatMsg} from 'components/Interfaces'
 import {Twitter_User} from 'components/Interfaces'
 import {SysMsg} from 'components/Interfaces'
+import {EventType} from 'components/Interfaces'
+
 
 enum PusherConState {
     initialized = 'initialized',
@@ -24,15 +27,9 @@ enum PusherConState {
     disconnected = 'disconnected',
 }
 
-const selectedUserInit:Twitter_User[] = []
+const twitterUserInit:Twitter_User[] = []
 const playersInit:Setup_Player[] = []
 const chatInit:Setup_ChatMsg[] = []
-
-const setupStateInit:Setup_State = {
-    players: playersInit,
-    chat: chatInit,
-    selectedTwitterUser: selectedUserInit
-}
 
 const Pusher = require('pusher-js');
 let pusherClient:any = null
@@ -40,7 +37,9 @@ let userName = ""
 
 export default function Setup() {
     //setup state for entire setup page
-    const ref_setupState = useRef(setupStateInit);
+    const ref_twitterUser = useRef(twitterUserInit);
+    const ref_player = useRef(playersInit);
+    const ref_chat = useRef(chatInit);
     const [,forceUpdate] = useReducer(x => x + 1, 0);
 
     //RIGHT PANEL
@@ -51,10 +50,20 @@ export default function Setup() {
     const [pusherConState, setPusherConState] = useState(PusherConState.initialized)
     
     const channelName = 'Game1'
-    const event_Setup = 'Setup'
+    const event_Setup_Init = 'Setup_Init'
+    const event_Setup_Player = 'Setup_Player'
+    const event_Setup_Chat = 'Setup_Chat'
 
     //params hook
     //const { id } = useParams<Record<string, string | undefined>>()
+
+    /*
+    ##################################
+    ##################################
+        DETECT TAB CLOSING
+    ##################################
+    ##################################
+    */
 
     useEffect(() => {
         window.addEventListener('beforeunload', alertUser)
@@ -110,7 +119,8 @@ export default function Setup() {
         }
 
         //add
-        ref_setupState.current.chat.push(msg)
+        ref_chat.current.push(msg)
+        //fireEvent_NewChat()
     }
 
 
@@ -165,28 +175,34 @@ export default function Setup() {
         //bind connected
         _pusherClient.connection.bind('connected', () => {
             console.log('pusher is connected')
-            pusherClient = _pusherClient //set to global var
-            setJoined(true)
-            setLoading(false)
-
-            //sub to game channel
-            const channel = pusherClient.subscribe(channelName)
-            //bind sub success
+            
+            //sub channel
+            const channel = _pusherClient.subscribe(channelName)
+            // -> success
             channel.bind('pusher:subscription_succeeded', () => {
                 console.log('subscribed to channel: ' + channelName)
-                //bind event 'Setup State'
-                channel.bind(event_Setup, (data:any) => 
-                    handleEvent_SetupState(data)
+
+                //set vars
+                pusherClient = _pusherClient 
+                setJoined(true)
+                setLoading(false)
+
+                //bind to all events
+                channel.bind(event_Setup_Init, (data:any) => 
+                    handleEvent_Init(data)
+                )
+                channel.bind(event_Setup_Player, (data:any) => 
+                    handleEvent_Player(data)
+                )
+                channel.bind(event_Setup_Chat, (data:any) => 
+                    handleEvent_Chat(data)
                 )
 
-                //add yourself to state and tell others you're here
-                let newUser = createPlayerObject(userName)
-                ref_setupState.current.players.push(newUser)
-                addSysMsg(SysMsg.userJoined, userName)
-                fireEvent_NewSetupState()
+                //request current state from lobby
+                fireEvent_Init()
             });
 
-            //bind sub error
+            // -> error
             channel.bind('pusher:subscription_error', (err:any) => {
                 let str = JSON.stringify(err, null, 4);
                 console.log('error during subscribing to channel: ' + channelName)
@@ -218,81 +234,176 @@ export default function Setup() {
 
     const removePlayerFromGame = () => {
         //remove user from players, share new state
-        for (let i = 0; ref_setupState.current.players.length;i++) {
-            let user = ref_setupState.current.players[i]
+        for (let i = 0; ref_player.current.length;i++) {
+            let user = ref_player.current[i]
             if (user.name === userName) {
-                addSysMsg(SysMsg.userLeft, user.name)
-                ref_setupState.current.players.splice(i,1);
+                ref_player.current.splice(i,1);
                 console.log('removed player: ' + user.name)
                 break
             }
         }
-        fireEvent_NewSetupState()
+        addSysMsg(SysMsg.userLeft, userName)
+        fireEvent_Player()
     }
 
-    
-
-    
-
-    /*
+        /*
     ##################################
     ##################################
-        EVENT: SetupState
+        EVENT: INIT
     ##################################
     ##################################
     */
-    const handleEvent_SetupState = (data:any) => {
-        let str = JSON.stringify(data, null, 4);
-        console.log(str)
+    const handleEvent_Init = (event:any) => {
 
-        //read new state
-        let newState:Setup_State = data.state
-        let newPlayer:Setup_Player = newState.players[0]
-        
-        /*
-            one entry in players
-            && NOT your username 
-            -> request from new user to join
-            -> reply current state with attached new user
-        */
-        if (newState.players.length === 1 && newPlayer.name !== userName) {
-            //attach new player
-            let newUser = createPlayerObject(newPlayer.name)
-            addSysMsg(SysMsg.userJoined, newPlayer.name)
-            ref_setupState.current.players.push(newUser)
-            //only first user replies -> reduce number of events triggered
-            if (userName === ref_setupState.current.players[0].name) {
-                fireEvent_NewSetupState()
+        if (event.type === EventType.init) {
+            let newJoined = event.data
+            
+            //you are the only person in the room
+            if (ref_player.current.length === 0) {
+                let newUser = createPlayerObject(newJoined)
+                ref_player.current.push(newUser)
+                addSysMsg(SysMsg.userJoined, newJoined)
+                forceUpdate()
+            }
+
+            //reply current state to user
+            else {
+                //only first user replies -> reduce number of events triggered
+                if (userName === ref_player.current[0].name) {
+                    //attach new player
+                    let newUser = createPlayerObject(newJoined)
+                    ref_player.current.push(newUser)
+                    //insert new message
+                    addSysMsg(SysMsg.userJoined, newJoined)
+                    //broadcast new changes
+                    fireEvent_Player()
+                    fireEvent_Chat()
+                }
             }
         }
-        /*
-            -> new state received
-        */
-       else {
-            ref_setupState.current = newState
-            forceUpdate()
-       }
+        
     }
 
-    const fireEvent_NewSetupState = async () => {
+    const fireEvent_Init = async () => {
 
-        console.log('Broadcast new state')
-        let socketID = pusherClient.connection.socket_id;
-        let state:Setup_State = ref_setupState.current
+        console.log('asking for inital state')
+        //prepare
+        let event:Setup_Event = {
+            type: EventType.init,
+            data: userName
+        }
 
-        //fire call with compressed body
-        const response = await fetch('/api/pusher/setup/players', {
+        //exectue
+        const response = await fetch('/api/pusher/setup/trigger', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'pusherchannel': channelName,
-                'pusherevent': event_Setup,
-                'pushersocketid': socketID
+                'pusherevent': event_Setup_Init
             },
-            body: JSON.stringify({state}), //msg
+            body: JSON.stringify(event), 
         });
+
+        //read response
         const body = await response.text();
         console.log(body)
+    }
+
+    /*
+    ##################################
+    ##################################
+        EVENT: Chat
+    ##################################
+    ##################################
+    */
+    const handleEvent_Chat = (event:any) => {
+
+        if (event.type === EventType.chat) {
+            let newChat:Setup_ChatMsg[] = event.data
+            console.log(newChat.length + ' msgs retr.')
+            ref_chat.current = newChat
+            forceUpdate()
+        }
+        
+    }
+
+    const fireEvent_Chat = async () => {
+
+        console.log('broadcast new chat')
+        //prepare
+        let event:Setup_Event = {
+            type: EventType.chat,
+            data: ref_chat.current
+        }
+
+        //CHECK SIZE
+        //@@@TODO
+
+        //execute
+        const response = await fetch('/api/pusher/setup/trigger', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'pusherchannel': channelName,
+                'pusherevent': event_Setup_Chat
+            },
+            body: JSON.stringify(event),
+        });
+
+        //read response
+        const body = await response.text();
+        console.log(body)
+    }
+
+
+
+    /*
+    ##################################
+    ##################################
+        EVENT: Player
+    ##################################
+    ##################################
+    */
+    const handleEvent_Player = (event:any) => {
+
+        /*
+        let str = JSON.stringify(event.data, null, 4);
+        console.log(str)
+        */
+
+        if (event.type === EventType.player) {
+            let newPlayers:Setup_Player[] = event.data
+            console.log(newPlayers.length + ' total players')
+            ref_player.current = newPlayers
+            forceUpdate()
+        }
+        
+    }
+
+    const fireEvent_Player = async () => {
+
+        console.log('broadcast new players')
+        //prepare
+        let event:Setup_Event = {
+            type: EventType.player,
+            data: ref_player.current
+        }
+
+        //execute
+        const response = await fetch('/api/pusher/setup/trigger', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'pusherchannel': channelName,
+                'pusherevent': event_Setup_Player
+            },
+            body: JSON.stringify(event),
+        });
+        
+        //read response
+        const body = await response.text();
+        console.log(body)
+
     }
 
     /*
@@ -305,18 +416,17 @@ export default function Setup() {
 
     //passed to search component
     const onNewTwitterUserAdded = (newUser: Twitter_User):void => {
-        //you have to put a new object entirely
-        //-> see https://stackoverflow.com/questions/59690934/react-hook-usestate-not-updating-ui
-        ref_setupState.current.selectedTwitterUser.push(newUser)
-        fireEvent_NewSetupState()
+        console.log('new twitter user added: ' + newUser.screen_name)
+        ref_twitterUser.current.push(newUser)
+        //@@TODO FIRE EVENT
     }
 
     //passed to chat 
     const onNewChatMessage = (newMsg:Setup_ChatMsg) => {
         console.log('new chat msg received: ' + newMsg.msg)
         newMsg.name = userName //chat component does not know/set user name
-        ref_setupState.current.chat.push(newMsg)
-        fireEvent_NewSetupState()
+        ref_chat.current.push(newMsg)
+        fireEvent_Chat()
     }
 
     /*
@@ -348,11 +458,11 @@ export default function Setup() {
   return (
     <div className={st.Content_Con}>
         <div className={st.Left_Panel}>
-            {Search(onNewTwitterUserAdded, ref_setupState.current.selectedTwitterUser)}
+            {Search(onNewTwitterUserAdded, ref_twitterUser.current)}
         </div>
         {joined && 
             <div className={st.Center_Panel}>
-                {ref_setupState.current.selectedTwitterUser.length}
+                {ref_twitterUser.current.length}
             </div>
         }
         <div className={st.Right_Panel}>
@@ -380,11 +490,11 @@ export default function Setup() {
                 }
             </div>
             <div className={st.Players_Con}>
-                {Players(ref_setupState.current.players)}
+                {Players(ref_player.current)}
             </div>
             {joined && 
                 <div className={st.Chat_Con}>
-                    <Chat   data={ref_setupState.current.chat}
+                    <Chat   data={ref_chat.current}
                             onNewMsg={onNewChatMessage}
                     />
                 </div>
@@ -394,12 +504,18 @@ export default function Setup() {
   );
 }
 
+
+
+
+
+
+
+
+
+
+
+
 //{pusherConState}
-
-
-
-
-
 
 
 /*

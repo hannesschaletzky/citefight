@@ -56,7 +56,7 @@ app.post('/api/pusher', (req, res) => {
 */
 
 
-app.post('/api/pusher/setup/players', (req, res) => {
+app.post('/api/pusher/setup/trigger', (req, res) => {
 
   //small letters for headers
   let channel = req.headers.pusherchannel
@@ -65,10 +65,10 @@ app.post('/api/pusher/setup/players', (req, res) => {
   const payload = req.body;
   //console.log(socketID)
 
-  //print byte size of request, max 10KB for pusher
+  //print byte size of request, max 10.000 Bytes for pusher
   let str = JSON.stringify(payload);
   //console.log(str)
-  console.log('bytes for request: ' + Buffer.byteLength(str, 'utf8'))
+  console.log('bytes: ' + str.length) //Buffer.byteLength(str, 'utf8')
 
   //trigger event
   pusher.trigger(channel, event, payload)

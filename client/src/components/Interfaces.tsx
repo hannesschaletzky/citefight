@@ -4,9 +4,20 @@ export enum SysMsg {
     userLeft = '3'
 }
 
+export enum EventType {
+    init = 'init',
+    chat = 'chat',
+    player = 'player'
+}
+
 /*
     SETUP OBJECTS
 */
+
+export interface Setup_Event {
+    type: EventType;
+    data: any;
+}
 
 export interface Setup_Player {
     name: string;
@@ -19,13 +30,6 @@ export interface Setup_ChatMsg {
     name: string;
     msg: string;
     type: SysMsg;
-}
-
-//state container object of Setup
-export interface Setup_State {
-    players: Setup_Player[];
-    chat: Setup_ChatMsg[];
-    selectedTwitterUser: Twitter_User[];
 }
 
 
