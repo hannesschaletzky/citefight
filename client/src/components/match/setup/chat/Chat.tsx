@@ -44,8 +44,8 @@ class Chat extends Component <any, any> {
 
         let newMsg:Setup_ChatMsg = {
             name: '',
-            message: this.state.userMsg,
-            sysMsgType: SysMsg.none
+            msg: this.state.userMsg,
+            type: SysMsg.none
         }
 
         this.props.onNewMsg(newMsg) //fire event in parent
@@ -92,26 +92,26 @@ class Chat extends Component <any, any> {
 
         let cards = []
         for(let i=0;i<inputMessages.length;i++) {
-            let msg:Setup_ChatMsg = inputMessages[i]
+            let item:Setup_ChatMsg = inputMessages[i]
             let card = 
                 <div className={st.Message_Con} key={i}>
-                    {msg.sysMsgType === SysMsg.userJoined &&
+                    {item.type === SysMsg.userJoined &&
                         <div className={st.SysMessage_Joined}>
-                            {msg.message}
+                            {item.msg}
                         </div>
                     }
-                    {msg.sysMsgType === SysMsg.userLeft &&
+                    {item.type === SysMsg.userLeft &&
                         <div className={st.SysMessage_Left}>
-                            {msg.message}
+                            {item.msg}
                         </div>
                     }
-                    {msg.sysMsgType === SysMsg.none &&
+                    {item.type === SysMsg.none &&
                         <div className={st.SysMessage_None}>
                             <div className={st.Sender}>
-                                {msg.name}:
+                                {item.name}:
                             </div>
                             <div className={st.Content}>
-                                {msg.message}
+                                {item.msg}
                             </div>
                         </div>  
                     }

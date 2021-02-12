@@ -1,7 +1,7 @@
 export enum SysMsg {
-    none = 'none',
-    userJoined = 'userJoined',
-    userLeft = 'userLeft'
+    none = '1',
+    userJoined = '2',
+    userLeft = '3'
 }
 
 /*
@@ -17,8 +17,8 @@ export interface Setup_Player {
 
 export interface Setup_ChatMsg {
     name: string;
-    message: string;
-    sysMsgType: SysMsg;
+    msg: string;
+    type: SysMsg;
 }
 
 //state container object of Setup

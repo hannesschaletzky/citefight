@@ -1,7 +1,5 @@
 const express = require('express');
 const bodyParser = require('body-parser');
-const cors = require('cors');
-//const unirest = require('unirest');
 const path = require('path');
 const app = express();
 const port = process.env.PORT || 5000;
@@ -9,9 +7,6 @@ const port = process.env.PORT || 5000;
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 //app.use(cors());
-
-
-
 
 
 
@@ -72,11 +67,12 @@ app.post('/api/pusher/setup/players', (req, res) => {
 
   //print byte size of request, max 10KB for pusher
   let str = JSON.stringify(payload);
+  //console.log(str)
   console.log('bytes for request: ' + Buffer.byteLength(str, 'utf8'))
 
   //trigger event
   pusher.trigger(channel, event, payload)
-    .then(response => {
+    .then(() => {
       res.send({'status':'200'})
     })
     .catch(err => {

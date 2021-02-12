@@ -36,6 +36,7 @@ const setupStateInit:Setup_State = {
 
 const Pusher = require('pusher-js');
 let pusherClient:any = null
+let userName = ""
 
 export default function Setup() {
     //setup state for entire setup page
@@ -43,7 +44,7 @@ export default function Setup() {
     const [,forceUpdate] = useReducer(x => x + 1, 0);
 
     //RIGHT PANEL
-    const [userName, setUserName] = useState("");
+    //const [userName, setUserName] = useState("");
     const [joinEnabled, setJoinEnabled] = useState(false);
     const [joined, setJoined] = useState(false);
     const [loading, setLoading] = useState(false)
@@ -56,8 +57,26 @@ export default function Setup() {
     //const { id } = useParams<Record<string, string | undefined>>()
 
     useEffect(() => {
+        window.addEventListener('beforeunload', alertUser)
+        window.addEventListener('unload', handleTabClosing)
+        return () => {
+            window.removeEventListener('beforeunload', alertUser)
+            window.removeEventListener('unload', handleTabClosing)
+        }
+    })
 
-    });
+    const handleTabClosing = () => {
+        if (pusherClient !== null) {
+            removePlayerFromGame()
+            //setTimeout('', 1000);
+            pusherClient.disconnect()
+        }
+    }
+
+    const alertUser = (event:any) => {
+        event.preventDefault()
+        event.returnValue = ''
+    }
 
     /*
     ##################################
@@ -78,16 +97,16 @@ export default function Setup() {
         //create msg
         let msg:Setup_ChatMsg = {
             name: 'sys',
-            message: '',
-            sysMsgType: type
+            msg: '',
+            type: type
         }
 
         //determine type 
         if (type === SysMsg.userJoined) {
-            msg.message = userName + ' joined'
+            msg.msg = userName + ' joined'
         }
         else if (type === SysMsg.userLeft) {
-            msg.message = userName + ' left'
+            msg.msg = userName + ' left'
         }
 
         //add
@@ -164,7 +183,7 @@ export default function Setup() {
                 let newUser = createPlayerObject(userName)
                 ref_setupState.current.players.push(newUser)
                 addSysMsg(SysMsg.userJoined, userName)
-                fireEvent_NewState()
+                fireEvent_NewSetupState()
             });
 
             //bind sub error
@@ -182,18 +201,8 @@ export default function Setup() {
         //bind disconnect event
         pusherClient.connection.bind('disconnected', () => {
 
-            //remove user from players, share new state, empty players list
-            for (let i = 0; ref_setupState.current.players.length;i++) {
-                let user = ref_setupState.current.players[i]
-                if (user.name === userName) {
-                    console.log('removing player: ' + user.name)
-                    addSysMsg(SysMsg.userLeft, user.name)
-                    ref_setupState.current.players.splice(i,1);
-                    break
-                }
-            }
-            fireEvent_NewState()
-            ref_setupState.current.players = []
+            //remove players
+            removePlayerFromGame()
 
             //reset vars
             setJoinEnabled(false)
@@ -205,6 +214,20 @@ export default function Setup() {
         })
 
         pusherClient.disconnect()
+    }
+
+    const removePlayerFromGame = () => {
+        //remove user from players, share new state
+        for (let i = 0; ref_setupState.current.players.length;i++) {
+            let user = ref_setupState.current.players[i]
+            if (user.name === userName) {
+                addSysMsg(SysMsg.userLeft, user.name)
+                ref_setupState.current.players.splice(i,1);
+                console.log('removed player: ' + user.name)
+                break
+            }
+        }
+        fireEvent_NewSetupState()
     }
 
     
@@ -239,7 +262,7 @@ export default function Setup() {
             ref_setupState.current.players.push(newUser)
             //only first user replies -> reduce number of events triggered
             if (userName === ref_setupState.current.players[0].name) {
-                fireEvent_NewState()
+                fireEvent_NewSetupState()
             }
         }
         /*
@@ -251,21 +274,22 @@ export default function Setup() {
        }
     }
 
-    const fireEvent_NewState = async () => {
+    const fireEvent_NewSetupState = async () => {
 
         console.log('Broadcast new state')
         let socketID = pusherClient.connection.socket_id;
         let state:Setup_State = ref_setupState.current
 
+        //fire call with compressed body
         const response = await fetch('/api/pusher/setup/players', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'pusherchannel': channelName,
-            'pusherevent': event_Setup,
-            'pushersocketid': socketID
-        },
-        body: JSON.stringify({ state }), //msg
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'pusherchannel': channelName,
+                'pusherevent': event_Setup,
+                'pushersocketid': socketID
+            },
+            body: JSON.stringify({state}), //msg
         });
         const body = await response.text();
         console.log(body)
@@ -284,15 +308,15 @@ export default function Setup() {
         //you have to put a new object entirely
         //-> see https://stackoverflow.com/questions/59690934/react-hook-usestate-not-updating-ui
         ref_setupState.current.selectedTwitterUser.push(newUser)
-        fireEvent_NewState()
+        fireEvent_NewSetupState()
     }
 
     //passed to chat 
     const onNewChatMessage = (newMsg:Setup_ChatMsg) => {
-        console.log('new chat msg received: ' + newMsg.message)
+        console.log('new chat msg received: ' + newMsg.msg)
         newMsg.name = userName //chat component does not know/set user name
         ref_setupState.current.chat.push(newMsg)
-        fireEvent_NewState()
+        fireEvent_NewSetupState()
     }
 
     /*
@@ -303,7 +327,8 @@ export default function Setup() {
     ##################################
     */
     const userNameChanged = (name: string) => {
-        setUserName(name)
+        //setUserName(name)
+        userName = name
 
         //check empty or only spaces
         if (name.length === 0 || !name.trim()) {
@@ -385,6 +410,71 @@ export default function Setup() {
             return
         }
     }
+*/
+
+
+/*
+
+
+
+
+    //synchronous compressing
+        let state:any = null
+        await compressBody(ref_setupState.current)
+            .then((res) => {
+                state = res
+                console.log('success compressing')
+            })
+            .catch((err) => {
+                console.log('Error compressing\n-> return')
+                return
+            })
+
+
+
+    import {compress} from 'Extensions'
+import {decompress} from 'Extensions'
+
+    const compressBody = (body:any) => {
+
+        var a = 'a very very long string to be squashed';
+	    var b = compress(a, false); // 'a veryāăąlong striċ to bečquashed'
+        console.log(b)
+
+        let c = decompress(b)
+        console.log(c)
+
+        console.log(Buffer.from(a).byteLength)
+        console.log(Buffer.from(b).byteLength)
+
+        var zlib = require('zlib');
+
+        //convert data to string and create init buffer
+        let str = JSON.stringify(body) 
+        var initBuffer:Buffer = Buffer.from(str)
+        console.log("Init Buffer: " + initBuffer.byteLength);
+
+        return new Promise( function( resolve, reject ) {
+            zlib.deflate(initBuffer, function(err:any, buf:Buffer) {
+                if(err){
+                    console.log("Error Zipping\n" + err);
+                    reject(err);
+                }
+                console.log("Zipped to: " + buf.byteLength);
+                resolve(buf);
+
+                
+                zlib.inflate(buf, function(err:any, buf:any) {
+                        console.log("in the inflate callback:", buf);
+                        console.log("to string:", buf.toString("utf8") );
+                });
+                
+            });
+        });
+    }
+
+
+
 */
 
 
