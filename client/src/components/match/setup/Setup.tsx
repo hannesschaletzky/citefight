@@ -13,6 +13,7 @@ import {Setup_State} from 'components/Interfaces'
 import {Setup_Player} from 'components/Interfaces'
 import {Setup_ChatMsg} from 'components/Interfaces'
 import {Twitter_User} from 'components/Interfaces'
+import {SysMsg} from 'components/Interfaces'
 
 enum PusherConState {
     initialized = 'initialized',
@@ -22,28 +23,6 @@ enum PusherConState {
     failed = 'failed',
     disconnected = 'disconnected',
 }
-
-enum SystemMessage {
-    userJoined,
-    userLeft
-}
-
-//TEST CHAT
-/*
-let msg1:Setup_ChatMsg = {
-    name: 'Leo',
-    message: 'Hi Chat, gl all'
-}
-let msg2:Setup_ChatMsg = {
-    name: 'Adam',
-    message: 'Hi Leo, ty u2'
-}
-let msg3:Setup_ChatMsg = {
-    name: 'Phil',
-    message: 'Hi together, have a good game guys. I really wish you luck'
-}
-let testChat:Setup_ChatMsg[] = [msg1, msg2, msg3]
-*/
 
 const selectedUserInit:Twitter_User[] = []
 const playersInit:Setup_Player[] = []
@@ -94,19 +73,20 @@ export default function Setup() {
         return newPlayer
     }
 
-    const addSystemChatMsg = (type:SystemMessage, userName:string) => {
+    const addSysMsg = (type:SysMsg, userName:string) => {
 
         //create msg
         let msg:Setup_ChatMsg = {
             name: 'sys',
-            message: ''
+            message: '',
+            sysMsgType: type
         }
 
         //determine type 
-        if (type === SystemMessage.userJoined) {
+        if (type === SysMsg.userJoined) {
             msg.message = userName + ' joined'
         }
-        else if (type === SystemMessage.userLeft) {
+        else if (type === SysMsg.userLeft) {
             msg.message = userName + ' left'
         }
 
@@ -180,10 +160,10 @@ export default function Setup() {
                     handleEvent_SetupState(data)
                 )
 
-                //tell others you're here
+                //add yourself to state and tell others you're here
                 let newUser = createPlayerObject(userName)
                 ref_setupState.current.players.push(newUser)
-                addSystemChatMsg(SystemMessage.userJoined, userName)
+                addSysMsg(SysMsg.userJoined, userName)
                 fireEvent_NewState()
             });
 
@@ -207,7 +187,7 @@ export default function Setup() {
                 let user = ref_setupState.current.players[i]
                 if (user.name === userName) {
                     console.log('removing player: ' + user.name)
-                    addSystemChatMsg(SystemMessage.userLeft, user.name)
+                    addSysMsg(SysMsg.userLeft, user.name)
                     ref_setupState.current.players.splice(i,1);
                     break
                 }
@@ -255,7 +235,7 @@ export default function Setup() {
         if (newState.players.length === 1 && newPlayer.name !== userName) {
             //attach new player
             let newUser = createPlayerObject(newPlayer.name)
-            addSystemChatMsg(SystemMessage.userJoined, newPlayer.name)
+            addSysMsg(SysMsg.userJoined, newPlayer.name)
             ref_setupState.current.players.push(newUser)
             //only first user replies -> reduce number of events triggered
             if (userName === ref_setupState.current.players[0].name) {
@@ -374,12 +354,15 @@ export default function Setup() {
                     <CircularProgress/>
                 }
             </div>
-            {Players(ref_setupState.current.players)}
+            <div className={st.Players_Con}>
+                {Players(ref_setupState.current.players)}
+            </div>
             {joined && 
-                <Chat 
-                    data={ref_setupState.current.chat}
-                    onNewMsg={onNewChatMessage}
-                />
+                <div className={st.Chat_Con}>
+                    <Chat   data={ref_setupState.current.chat}
+                            onNewMsg={onNewChatMessage}
+                    />
+                </div>
             }
         </div>
     </div>

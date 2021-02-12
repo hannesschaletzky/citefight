@@ -75,10 +75,22 @@ app.post('/api/pusher/setup/players', (req, res) => {
   console.log('bytes for request: ' + Buffer.byteLength(str, 'utf8'))
 
   //trigger event
-  pusher.trigger(channel, event, payload);
+  pusher.trigger(channel, event, payload)
+    .then(response => {
+      res.send({'status':'200'})
+    })
+    .catch(err => {
+        console.log('----------------')
+        console.log('------ERROR-----')
+        console.log('----------------')
+        if (err.status === 413) {
+          console.log('Maximum byte exceeded')
+        }
+        console.log(err.body)
+        res.send({'status':'413'})
+    })
+
   //pusher.trigger(channel, event, payload, socketID); -> indlucde socketID to exclude sender as recipient
-  
-  res.send({'status':'200'})
 });
 
 

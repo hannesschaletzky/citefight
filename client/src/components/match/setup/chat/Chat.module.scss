@@ -3,37 +3,63 @@ $sdbg: false; //show debugging background = sdbg
 @import "styles/app.global.scss";
 
 .Con {
-  width: 100%;
-  height: 150px;
-  margin-top: 25px;
-
+  height: 100%;
   display: flex;
   flex-direction: column;
-
-  @extend .borderWithRoundedCorners;
-
-  @if ($sdbg) {
-    background-color: rgba(229, 233, 20, 0.219);
-  }
 }
 
-.MessageCon {
+.Messages_Con {
   padding: 5px;
-  flex: 4;
+  flex: 1; //fill
   overflow-y: scroll;
 }
 
-.Message {
+.Message_Con {
+  margin: 2px;
+}
+
+.SysMessage {
+  margin-left: 5;
+  padding: 3px;
+  width: fit-content;
+
+  font-size: 8pt;
+  @extend .borderWithRoundedCorners;
+}
+
+.SysMessage_Joined {
+  @extend .SysMessage;
+  background-color: rgba(240, 153, 72, 0.3);
+}
+
+.SysMessage_Left {
+  @extend .SysMessage;
+  background-color: rgba(83, 72, 240, 0.3);
+}
+
+.SysMessage_None {
+  display: flex;
+}
+
+.Sender {
   font-size: 10pt;
+  font-weight: bolder;
+  color: rgb(63, 65, 65);
+}
+
+.Content {
+  font-size: 10pt;
+  margin-left: 3px;
+  word-break: break-word;
+  color: rgba(63, 65, 65, 1);
 }
 
 .Bottom_Con {
-  flex: 1;
+  height: 30px;
   display: flex;
 }
 
 .Input {
-  height: 30px;
   width: -webkit-fill-available;
 
   padding-left: 5px;
@@ -58,9 +84,7 @@ $sdbg: false; //show debugging background = sdbg
 }
 
 .SendBtn {
-  height: 30px;
-  margin-left: 5px;
-  margin-right: 5px;
+  margin: 3px;
   cursor: pointer;
 
   //border
@@ -69,14 +93,15 @@ $sdbg: false; //show debugging background = sdbg
 
   //text
   @extend .HelveticaNeueBoldFont;
+  font-size: 11pt !important;
   color: rgba(255, 255, 255, 1);
 
   //colour, shadow, outline
-  box-shadow: 2px 2px rgba(5, 19, 19, 0.527);
+  box-shadow: 2px 2px rgba(5, 19, 19, 0.5);
   outline: none;
-  background-color: rgba(28, 179, 28, 0.4);
+  background-color: rgba(28, 179, 28, 0.8);
 
   &:hover {
-    background-color: rgba(28, 179, 28, 0.2);
+    background-color: rgba(28, 179, 28, 0.6);
   }
 }

@@ -10,7 +10,7 @@ $sdbg: false; //show debugging background = sdbg
   justify-content: center;
 
   @if $sdbg {
-    background-color: rgba(201, 200, 196, 0.514);
+    background-color: rgba(201, 200, 196, 0.5);
   }
 }
 
@@ -22,7 +22,7 @@ $sdbg: false; //show debugging background = sdbg
   max-width: 33%;
 
   @if $sdbg {
-    background-color: rgba(122, 222, 247, 0.514);
+    background-color: rgba(122, 222, 247, 0.5);
   }
 }
 
@@ -32,7 +32,7 @@ $sdbg: false; //show debugging background = sdbg
   max-width: 33%;
 
   @if $sdbg {
-    background-color: rgba(39, 19, 216, 0.514);
+    background-color: rgba(39, 19, 216, 0.5);
   }
 }
 
@@ -43,19 +43,23 @@ $sdbg: false; //show debugging background = sdbg
   flex: 1; //fill space
   max-width: 33%;
 
+  display: flex;
+  flex-direction: column;
+
   @if $sdbg {
-    background-color: rgba(216, 196, 19, 0.514);
+    background-color: rgba(216, 196, 19, 0.5);
   }
 }
 
 .Interaction_Con {
+  height: 50px;
+  margin-bottom: 10px;
+
   display: flex;
   justify-content: center;
 
-  margin-bottom: 10px;
-
   @if $sdbg {
-    background-color: rgba(216, 19, 19, 0.514);
+    background-color: rgba(216, 19, 19, 0.5);
   }
 }
 
@@ -98,7 +102,7 @@ $sdbg: false; //show debugging background = sdbg
   color: rgba(255, 255, 255, 1);
 
   //colour, shadow, outline
-  box-shadow: 2px 2px rgba(5, 19, 19, 0.527);
+  box-shadow: 2px 2px rgba(5, 19, 19, 0.5);
   outline: none;
   background-color: rgba(28, 179, 28, 0.8);
 
@@ -121,11 +125,36 @@ $sdbg: false; //show debugging background = sdbg
   color: rgb(255, 255, 255);
 
   //colour, shadow, outline
-  box-shadow: 2px 2px rgba(5, 19, 19, 0.527);
+  box-shadow: 2px 2px rgba(5, 19, 19, 0.5);
   outline: none;
   background-color: rgba(179, 28, 53, 0.9);
 
   &:hover {
     background-color: rgba(179, 28, 53, 0.7);
+  }
+}
+
+.Players_Con {
+  height: 150px;
+  width: 100%;
+  overflow: scroll;
+
+  @extend .borderWithRoundedCorners;
+
+  @if ($sdbg) {
+    background-color: rgba(0, 100, 0, 0.2);
+  }
+}
+
+.Chat_Con {
+  height: 250px;
+  width: 100%;
+  margin-top: 25px;
+  margin-bottom: 25px;
+
+  @extend .borderWithRoundedCorners;
+
+  @if ($sdbg) {
+    background-color: rgba(229, 233, 20, 0.2);
   }
 }

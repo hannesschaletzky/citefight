@@ -23,7 +23,7 @@ export default function Players(players:Setup_Player[]) {
     }
 
     return (
-        <div className={st.Con}>
+        <div>
             {getPlayerCards()}
         </div>
     );

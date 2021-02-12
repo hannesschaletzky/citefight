@@ -2,19 +2,6 @@
 $sdbg: false; //show debugging background = sdbg
 @import "styles/app.global.scss";
 
-.Con {
-  width: 100%;
-  height: 150px;
-  overflow-y: scroll;
-  overflow-x: scroll;
-
-  @extend .borderWithRoundedCorners;
-
-  @if ($sdbg) {
-    background-color: rgba(0, 100, 0, 0.219);
-  }
-}
-
 .PlayerCard {
   margin: 5px;
   padding: 5px;

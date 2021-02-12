@@ -18,7 +18,7 @@ class Root_Footer extends Component {
 
     render() { 
         return (  
-            <div>
+            <div className={st.Con}>
                 <div className={st.Icon_Container}>
                     <a className={st.Icon} href="https://www.twitter.com/" target="_blank" rel="noreferrer">
                         <img src={twitterIcon} alt="Twitter" width="22" height="22"/>

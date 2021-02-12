@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import st from './Chat.module.scss'
 
 import {Setup_ChatMsg} from 'components/Interfaces'
+import {SysMsg} from 'components/Interfaces'
 
 class Chat extends Component <any, any> {
 
@@ -13,6 +14,15 @@ class Chat extends Component <any, any> {
         };
     }
 
+    private scrollTarget = React.createRef<HTMLDivElement>();
+    scrollToBottom = () => {
+        const node: HTMLDivElement | null = this.scrollTarget.current; //get the element via ref
+
+        if (node) { //current ref can be null, so we have to check
+            node.scrollIntoView({behavior: 'smooth'}); //scroll to the targeted element
+        }
+    };
+
     componentWillUnmount() {
         /*
         // fix Warning: Can't perform a React state update on an unmounted component
@@ -20,6 +30,10 @@ class Chat extends Component <any, any> {
             return;
         }
         */
+    }
+
+    componentDidUpdate() {
+        this.scrollToBottom();//scroll to bottom when new message was added
     }
 
     sendMessage() {
@@ -30,7 +44,8 @@ class Chat extends Component <any, any> {
 
         let newMsg:Setup_ChatMsg = {
             name: '',
-            message: this.state.userMsg
+            message: this.state.userMsg,
+            sysMsgType: SysMsg.none
         }
 
         this.props.onNewMsg(newMsg) //fire event in parent
@@ -56,7 +71,7 @@ class Chat extends Component <any, any> {
         if (value.length === 0 || !value.trim()) {
             this.setState({sendEnabled: false})
         }
-        else if (value.length > 50) {
+        else if (value.length > 500000) {
             this.setState({sendEnabled: false})
         }
         else {
@@ -79,16 +94,36 @@ class Chat extends Component <any, any> {
         for(let i=0;i<inputMessages.length;i++) {
             let msg:Setup_ChatMsg = inputMessages[i]
             let card = 
-                <div key={i} className={st.Message}>
-                    {msg.name}: {msg.message}
+                <div className={st.Message_Con} key={i}>
+                    {msg.sysMsgType === SysMsg.userJoined &&
+                        <div className={st.SysMessage_Joined}>
+                            {msg.message}
+                        </div>
+                    }
+                    {msg.sysMsgType === SysMsg.userLeft &&
+                        <div className={st.SysMessage_Left}>
+                            {msg.message}
+                        </div>
+                    }
+                    {msg.sysMsgType === SysMsg.none &&
+                        <div className={st.SysMessage_None}>
+                            <div className={st.Sender}>
+                                {msg.name}:
+                            </div>
+                            <div className={st.Content}>
+                                {msg.message}
+                            </div>
+                        </div>  
+                    }
                 </div>
             cards.push(card)
         }
 
         return ( 
             <div className={st.Con}>
-                <div className={st.MessageCon}>
+                <div className={st.Messages_Con}>
                     {cards}
+                    <div ref={this.scrollTarget} data-explanation="This is where we scroll to"></div>
                 </div>
                 <div className={st.Bottom_Con}>
                     <input  className={st.Input} 

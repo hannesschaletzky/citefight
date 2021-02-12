@@ -1,9 +1,5 @@
-//for debugging
-/*
-* {
-  border: 1px solid red;
-}
-*/
+//debugging
+$sdbg: false; //show debugging background = sdbg
 
 $root_backgroundcolor: #ffffff;
 $root_border: rgb(241, 238, 238);
@@ -28,8 +24,10 @@ $header_height: 55px;
   border-bottom: 1px solid;
   border-color: $root_border;
 
-  //background-color: $root_backgroundcolor;
   background-color: $root_backgroundcolor;
+  @if $sdbg {
+    background-color: rgba(204, 191, 137, 0.678);
+  }
 }
 
 //flexbox used as wrapper to let the content grow & fix footer to bottom of page
@@ -44,9 +42,9 @@ $header_height: 55px;
 .Root_Content {
   flex: 1; //enables growing
   background-color: $root_backgroundcolor;
-  //background-color: #1053b8;
-
-  //background-image: url("./assets/TestBackground.jpg");
+  @if $sdbg {
+    background-color: rgba(137, 204, 193, 0.678);
+  }
 }
 
 .Root_Footer {
@@ -57,5 +55,7 @@ $header_height: 55px;
   border-color: $root_border;
 
   background-color: $root_backgroundcolor;
-  //background-color: #eae7dc;
+  @if $sdbg {
+    background-color: rgba(202, 137, 204, 0.678);
+  }
 }

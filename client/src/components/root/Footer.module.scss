@@ -1,24 +1,36 @@
+//debugging
+$sdbg: false; //show debugging background = sdbg
+
+.Con {
+  margin-top: 7px;
+}
+
 .Icon_Container {
-  padding-top: 10px;
   //center content
   display: flex;
   justify-content: center;
   align-items: center;
-  //background-color: rgb(39, 228, 228);
+
+  @if $sdbg {
+    background-color: rgba(204, 191, 137, 0.678);
+  }
 }
 
 .Link_Container {
-  padding-top: 5px;
+  margin-top: 5px;
   //center content
   display: flex;
   justify-content: center;
   align-items: center;
-  //background-color: dodgerblue;
+
+  @if $sdbg {
+    background-color: rgba(199, 161, 8, 0.678);
+  }
 }
 
 .Icon {
-  padding-left: 10px;
-  padding-right: 10px;
+  margin-left: 10px;
+  margin-right: 10px;
 }
 
 .Link {

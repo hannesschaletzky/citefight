@@ -26,7 +26,9 @@ class App extends Component {
   };
   
 render() {
+
   return (
+
     <div className={st.Root_Background}>
 
       <div className={st.Root_Header}>
@@ -58,6 +60,7 @@ render() {
       </div>
       
     </div>
+
     );
   }
 }
