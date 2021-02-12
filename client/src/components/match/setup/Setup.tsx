@@ -243,39 +243,37 @@ export default function Setup() {
         }
         let triggerUser = event.data
 
-        /*  
-            specify admin to manage request
-                -> only determine admin if at least two people are in room
-                -> check if this user is first user AND not the one that has triggered
-                    -> YES: first user is admin
-                    -> NO: do same check with second user
-                -> rest of users are no admins
-        */
 
         if (ref_players.current.length >= 2) {
-            //is first user eligible?
-            if ((userName === ref_players.current[0].name) && (userName !== triggerUser)) {
-                console.log('you are admin')
+            //determine admin
+            let firstUserIsAdmin = true
+            if (triggerUser === ref_players.current[0].name) {
+                //if trigger user is first user of list -> choose second user
+                firstUserIsAdmin = false
             }
-            //is second user eligible?
-            else if ((userName === ref_players.current[1].name) && (userName !== triggerUser)) {
-                console.log('you are admin')
-            }
-            else {
-                console.log('you are NOT admin')
+
+            //return all user except admin
+            if (firstUserIsAdmin && (userName !== ref_players.current[0].name)) {
+                //kick out all users except first user
                 return
             }
-        }
-        else {
-            //only one player -> continue
+            else if (!firstUserIsAdmin && (userName !== ref_players.current[1].name)) {
+                //kick out all users except second user
+                return
+            }
             console.log('you are admin')
         }
+
+
+
+
+
+
         
         
 
         //JOIN
         if (event.adminType === AdminType.join) {
-            
             
             //you are the only person in the room
             if (ref_players.current.length === 0) {
