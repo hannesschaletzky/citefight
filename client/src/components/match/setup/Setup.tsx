@@ -3,12 +3,6 @@ import { useState, useEffect, useRef, useReducer } from 'react';
 import st from './Setup.module.scss'
 //import { useParams } from 'react-router-dom';
 
-import CircularProgress from '@material-ui/core/CircularProgress';
-
-import Search from './search/Search'
-import Players from './players/Players'
-import Chat from './chat/Chat'
-
 import {Setup_Event} from 'components/Interfaces'
 import {Setup_Player} from 'components/Interfaces'
 import {Setup_ChatMsg} from 'components/Interfaces'
@@ -17,6 +11,14 @@ import {SysMsg} from 'components/Interfaces'
 import {SetupEventType} from 'components/Interfaces'
 import {AdminType} from 'components/Interfaces'
 
+import Search from './search/Search'
+import Players from './players/Players'
+import Chat from './chat/Chat'
+
+import CircularProgress from '@material-ui/core/CircularProgress';
+
+
+const Pusher = require('pusher-js');
 
 enum PusherConState {
     initialized = 'initialized',
@@ -31,8 +33,8 @@ const twitterUserInit:Twitter_User[] = []
 const playersInit:Setup_Player[] = []
 const chatInit:Setup_ChatMsg[] = []
 
-const Pusher = require('pusher-js');
 let pusherClient:any = null
+let pusherChannel:any = null
 let userName = ""
 
 export default function Setup() {
@@ -72,9 +74,7 @@ export default function Setup() {
     })
 
     const handleTabClosing = () => {
-        if (pusherClient !== null) {
-            leaveGame()
-        }
+        leaveGame()
     }
 
     const alertUser = (event:any) => {
@@ -85,7 +85,7 @@ export default function Setup() {
     /*
     ##################################
     ##################################
-        JOIN GAME && LEAVE GAME
+        GENERAL FUNCTIONS
     ##################################
     ##################################
     */
@@ -100,7 +100,7 @@ export default function Setup() {
 
         //create msg
         let msg:Setup_ChatMsg = {
-            name: 'sys',
+            name: '',
             msg: '',
             type: type
         }
@@ -115,7 +115,6 @@ export default function Setup() {
 
         //add
         ref_chat.current.push(msg)
-        //fireEvent_NewChat()
     }
 
 
@@ -123,7 +122,7 @@ export default function Setup() {
     /*
     ##################################
     ##################################
-        JOIN GAME && LEAVE GAME
+            JOIN && LEAVE 
     ##################################
     ##################################
     */
@@ -139,6 +138,11 @@ export default function Setup() {
             console.log('already joined')
             return
         }
+
+        if (loading) {
+            console.log('already trying to join')
+            return
+        } 
 
         setLoading(true)
 
@@ -176,9 +180,10 @@ export default function Setup() {
             // -> success
             channel.bind('pusher:subscription_succeeded', () => {
                 console.log('subscribed to channel: ' + channelName)
-
+                
                 //set vars
                 pusherClient = _pusherClient 
+                pusherChannel = channel
                 setJoined(true)
                 setLoading(false)
 
@@ -209,20 +214,34 @@ export default function Setup() {
 
     const leaveGame = () => {
 
-        //disconnect from all events first
+        if (pusherClient === null) {
+            console.log('no client to disconnect')
+            return
+        }
+
+        if (pusherChannel === null) {
+            console.log('no channel to disconnect')
+            return
+        }
+
+        //unbind all channels and disconnect
+        pusherChannel.unbind()
         pusherClient.disconnect()
+        pusherChannel = null
         pusherClient = null 
 
-        //fire event to admin 
-        fireEvent_Admin(AdminType.leave)
+        //reset refs
+        ref_twitterUsers.current = []
+        ref_chat.current = []
+        ref_players.current = []
 
         //reset vars
         setJoinEnabled(false)
         setJoined(false)
         setLoading(false)
 
-        //reset refs
-        ref_players.current = playersInit
+        //fire event to admin 
+        fireEvent_Admin(AdminType.leave)
         
         console.log('successfully disconnected')
     }
@@ -244,6 +263,8 @@ export default function Setup() {
         let triggerUser = event.data
 
 
+        //handle requests by one admin if at least 2 people in lobby
+        //if only one person -> this person is admin automatically
         if (ref_players.current.length >= 2) {
             //determine admin
             let firstUserIsAdmin = true
@@ -261,44 +282,28 @@ export default function Setup() {
                 //kick out all users except second user
                 return
             }
+            //-> either first or second remains
             console.log('you are admin')
         }
-
-
-
-
-
-
-        
-        
 
         //JOIN
         if (event.adminType === AdminType.join) {
             
-            //you are the only person in the room
-            if (ref_players.current.length === 0) {
-                let newUser = createPlayerObject(triggerUser)
-                ref_players.current.push(newUser)
-                addSysMsg(SysMsg.userJoined, triggerUser)
-                forceUpdate()
-            }
+            //attach player
+            let newUser = createPlayerObject(triggerUser)
+            ref_players.current.push(newUser)
+            //insert message
+            addSysMsg(SysMsg.userJoined, triggerUser)
+            //broadcast state
+            fireEvent_Player()
+            fireEvent_Chat()
+            return
 
-            //reply current state to user
-            else {
-                //attach new player
-                let newUser = createPlayerObject(triggerUser)
-                ref_players.current.push(newUser)
-                //insert new message
-                addSysMsg(SysMsg.userJoined, triggerUser)
-                //broadcast new state
-                fireEvent_Player()
-                fireEvent_Chat()
-            }
         }
 
         //LEAVE
         else if (event.adminType === AdminType.leave) {
-            //remove user from players
+            //remove user
             for (let i=0; ref_players.current.length;i++) {
                 let user = ref_players.current[i]
                 if (user.name === triggerUser) {
@@ -307,9 +312,9 @@ export default function Setup() {
                     break
                 }
             }
-            //insert new message
+            //insert message
             addSysMsg(SysMsg.userLeft, triggerUser)
-            //broadcast new state
+            //broadcast state
             fireEvent_Chat()
             fireEvent_Player()
         }
