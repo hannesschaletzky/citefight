@@ -74,12 +74,17 @@ export default function Setup() {
     })
 
     const handleTabClosing = () => {
-        leaveGame()
+        if (pusherClient !== null) {
+            setTimeout(function(){}, 1000);
+            pusherClient.disconnect()
+        }
     }
 
     const alertUser = (event:any) => {
-        event.preventDefault()
-        event.returnValue = ''
+        setTimeout(function(){}, 1000);
+            pusherClient.disconnect()
+        //event.preventDefault()
+        //event.returnValue = ''
     }
 
     /*
@@ -151,7 +156,8 @@ export default function Setup() {
         let cluster = process.env.REACT_APP_PUSHER_CLUSTER
         let _pusherClient = new Pusher(appKey, {
           cluster: cluster,
-          encrypted: true
+          encrypted: true,
+          //authEndpoint: '/api/pusher/auth'
         })
 
         //bind to all events
@@ -172,9 +178,9 @@ export default function Setup() {
         })
 
         //bind connected
-        _pusherClient.connection.bind('connected', () => {
+        _pusherClient.connection.bind('connected', async () => {
             console.log('pusher is connected')
-            
+
             //sub channel
             const channel = _pusherClient.subscribe(channelName)
             // -> success
@@ -188,14 +194,14 @@ export default function Setup() {
                 setLoading(false)
 
                 //bind to all events
-                channel.bind(SetupEventType.Admin, (data:any) => 
-                    handleEvent_Admin(data)
+                channel.bind(SetupEventType.Admin, 
+                    (data:any) => handleEvent_Admin(data)
                 )
-                channel.bind(SetupEventType.Player, (data:any) => 
-                    handleEvent_Player(data)
+                channel.bind(SetupEventType.Player, 
+                    (data:any) => handleEvent_Player(data)
                 )
-                channel.bind(SetupEventType.Chat, (data:any) => 
-                    handleEvent_Chat(data)
+                channel.bind(SetupEventType.Chat, 
+                    (data:any) => handleEvent_Chat(data)
                 )
 
                 //request current state from lobby
@@ -214,17 +220,17 @@ export default function Setup() {
 
     const leaveGame = () => {
 
+        //check if connected
         if (pusherClient === null) {
             console.log('no client to disconnect')
             return
         }
-
         if (pusherChannel === null) {
             console.log('no channel to disconnect')
             return
         }
 
-        //unbind all channels and disconnect
+        //unbind channels & disconnect
         pusherChannel.unbind()
         pusherClient.disconnect()
         pusherChannel = null
@@ -255,6 +261,15 @@ export default function Setup() {
     */
     const handleEvent_Admin = (event:any) => {
 
+        /*
+            ONLY FIRST AND SECOND PERSON IN PLAYERS LIST ARE ADMIN AND HANDLE EVENTS
+        */
+
+        /*
+        let str = JSON.stringify(event.data, null, 4);
+        console.log(str)
+        */
+
         //security
         if (event.type !== SetupEventType.Admin) {
             console.log('EventType mismatch in handleEvent_Admin:\n\n' + event)
@@ -262,59 +277,75 @@ export default function Setup() {
         }
         let triggerUser = event.data
 
-
-        //handle requests by one admin if at least 2 people in lobby
-        //if only one person -> this person is admin automatically
-        if (ref_players.current.length >= 2) {
-            //determine admin
-            let firstUserIsAdmin = true
-            if (triggerUser === ref_players.current[0].name) {
-                //if trigger user is first user of list -> choose second user
-                firstUserIsAdmin = false
-            }
-
-            //return all user except admin
-            if (firstUserIsAdmin && (userName !== ref_players.current[0].name)) {
-                //kick out all users except first user
-                return
-            }
-            else if (!firstUserIsAdmin && (userName !== ref_players.current[1].name)) {
-                //kick out all users except second user
-                return
-            }
-            //-> either first or second remains
-            console.log('you are admin')
-        }
-
         //JOIN
         if (event.adminType === AdminType.join) {
             
-            //attach player
-            let newUser = createPlayerObject(triggerUser)
-            ref_players.current.push(newUser)
-            //insert message
-            addSysMsg(SysMsg.userJoined, triggerUser)
-            //broadcast state
-            fireEvent_Player()
-            fireEvent_Chat()
-            return
+            //encapsulated join
+            const joinPlayer = (name:string) => {
+                let newUser = createPlayerObject(name)
+                ref_players.current.push(newUser)
+                addSysMsg(SysMsg.userJoined, name)
+            }
 
+            if (ref_players.current.length === 0 && triggerUser === userName) {
+                /*
+                    you are the only one in the game
+                    -> dont send out event, add youself manually
+                */
+                console.log('you are the only person in the room')
+                joinPlayer(triggerUser)
+                forceUpdate()
+                return
+            }
+
+            if (ref_players.current[0].name === userName) {
+                /*
+                    you are first admin, so you handle
+                    -> attach new user 
+                    -> broadcast current state
+                */
+                console.log('BROADCAST join for: ' + triggerUser)
+                joinPlayer(triggerUser)
+                fireEvent_Chat()
+                fireEvent_Player()
+            }
         }
 
         //LEAVE
         else if (event.adminType === AdminType.leave) {
+
+            //first admin
+            if (ref_players.current[0].name === userName) {
+                if (triggerUser === userName) {
+                    /*
+                        not let first admin handle if he leaves the game
+                        -> let second admin handle
+                    */
+                    return
+                }
+            }
+            //second admin
+            if (ref_players.current[1].name === userName)  {
+                if (triggerUser !== ref_players.current[0].name) {
+                    /*
+                        only handle the request if the first player (first admin) wants to leave
+                    */
+                   return
+                }
+            }
+
             //remove user
             for (let i=0; ref_players.current.length;i++) {
                 let user = ref_players.current[i]
                 if (user.name === triggerUser) {
                     ref_players.current.splice(i,1);
-                    console.log('removed player: ' + triggerUser)
                     break
                 }
             }
             //insert message
             addSysMsg(SysMsg.userLeft, triggerUser)
             //broadcast state
+            console.log('BROADCAST leave for: ' + triggerUser)
             fireEvent_Chat()
             fireEvent_Player()
         }
@@ -323,7 +354,10 @@ export default function Setup() {
 
     const fireEvent_Admin = async (adminType: AdminType) => {
 
-        console.log('fire admin event')
+        if (adminType===AdminType.join) {
+            console.log('Joining... \nasking for current state')
+        }
+
         //prepare
         let event:Setup_Event = {
             type: SetupEventType.Admin,
@@ -362,6 +396,7 @@ export default function Setup() {
             return
         }
 
+        //set new state
         let newChat:Setup_ChatMsg[] = event.data
         console.log(newChat.length + ' msgs retr.')
         ref_chat.current = newChat
@@ -409,22 +444,32 @@ export default function Setup() {
     */
     const handleEvent_Player = (event:any) => {
 
-        /*
-        let str = JSON.stringify(event.data, null, 4);
-        console.log(str)
-        */
-
         //security
         if (event.type !== SetupEventType.Player) {
             console.log('EventType mismatch in handleEvent_Player:\n\n' + event)
             return
         }
 
+        //set new state
         let newPlayers:Setup_Player[] = event.data
         console.log(newPlayers.length + ' total players')
         ref_players.current = newPlayers
         forceUpdate()
-        
+
+        /*
+            Only first and second player handle admin events
+            unbind all 
+            and then only bind first and second player
+        */
+        pusherChannel.unbind(SetupEventType.Admin);
+        if (ref_players.current[0].name === userName ||
+            ref_players.current[1].name === userName) {
+            //bind
+            pusherChannel.bind(SetupEventType.Admin, 
+                (data:any) => handleEvent_Admin(data)
+            )
+            console.log('Bound admin events')
+        }
     }
 
     const fireEvent_Player = async () => {
@@ -640,6 +685,27 @@ import {decompress} from 'Extensions'
 
 
 */
+
+
+
+/*
+            //GET AUTH TOKEN FOR USER
+            let socketId = _pusherClient.connection.socket_id;
+            const response = await fetch('/api/pusher/auth', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'pusherchannel': channelName,
+                    'socketid': socketId
+                },
+                body: '', 
+            });
+            const body = await response.text();
+            //parse to object
+            let obj = JSON.parse(body);
+            let auth = obj.auth
+            console.log('auth: ' + auth)
+            */
 
 
 

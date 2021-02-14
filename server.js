@@ -6,7 +6,6 @@ const port = process.env.PORT || 5000;
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-//app.use(cors());
 
 
 
@@ -88,6 +87,9 @@ app.post('/api/pusher/setup/trigger', (req, res) => {
 
   //pusher.trigger(channel, event, payload, socketID); -> indlucde socketID to exclude sender as recipient
 });
+
+
+
 
 
 
@@ -297,3 +299,30 @@ if (process.env.NODE_ENV === 'production') {
 }
 
 app.listen(port, () => console.log(`Listening on port ${port}`));
+
+
+
+
+
+
+
+
+/*
+app.post("/api/pusher/auth", function(req, res) {
+
+  //app.use cors
+  //useTLS in pusherclient
+
+  let socketId = req.headers.socketid
+  let channel = req.headers.pusherchannel
+  const presenceData = {
+    user_id: "unique_user_id",
+    user_info: {
+      name: "Mr Channels",
+      twitter_id: "@pusher"
+    }
+  };
+  const auth = pusher.authenticate(socketId, channel, presenceData);
+  res.send(auth);
+});
+*/
