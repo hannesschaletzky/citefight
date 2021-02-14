@@ -54,6 +54,22 @@ app.post('/api/pusher', (req, res) => {
 });
 */
 
+app.post("/api/pusher/auth", function(req, res) {
+  const socketId = req.body.socket_id;
+  const channel = req.body.channel_name;
+  const userID = req.query.id
+  //let timestamp = new Date().toISOString();
+
+  const presenceData = {
+    user_id: userID,
+    user_info: {
+      name: "Mr Channels"
+    }
+  };
+  const auth = pusher.authenticate(socketId, channel, presenceData);
+  res.send(auth);
+});
+
 
 app.post('/api/pusher/setup/trigger', (req, res) => {
 

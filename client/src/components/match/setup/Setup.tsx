@@ -51,7 +51,7 @@ export default function Setup() {
     const [loading, setLoading] = useState(false)
     const [pusherConState, setPusherConState] = useState(PusherConState.initialized)
     
-    const channelName = 'Game1'
+    const channelName = 'presence-Game1'
 
     //params hook
     //const { id } = useParams<Record<string, string | undefined>>()
@@ -65,17 +65,18 @@ export default function Setup() {
     */
 
     useEffect(() => {
+        /*
         window.addEventListener('beforeunload', alertUser)
         window.addEventListener('unload', handleTabClosing)
         return () => {
             window.removeEventListener('beforeunload', alertUser)
             window.removeEventListener('unload', handleTabClosing)
         }
+        */
     })
 
     const handleTabClosing = () => {
         if (pusherClient !== null) {
-            setTimeout(function(){}, 1000);
             pusherClient.disconnect()
         }
     }
@@ -133,21 +134,22 @@ export default function Setup() {
     */
     const joinGame = () => {
 
-        //check if enabled
+        //check enabled
         if (!joinEnabled) {
             return
         }
 
-        //check if user already joined
-        if (pusherClient !== null) {
-            console.log('already joined')
-            return
-        }
-
+        //is trying
         if (loading) {
             console.log('already trying to join')
             return
         } 
+
+        //has already joined
+        if (pusherClient !== null) {
+            console.log('already joined')
+            return
+        }
 
         setLoading(true)
 
@@ -157,7 +159,7 @@ export default function Setup() {
         let _pusherClient = new Pusher(appKey, {
           cluster: cluster,
           encrypted: true,
-          //authEndpoint: '/api/pusher/auth'
+          authEndpoint: '/api/pusher/auth?id=' + userName
         })
 
         //bind to all events
@@ -335,7 +337,7 @@ export default function Setup() {
             }
 
             //remove user
-            for (let i=0; ref_players.current.length;i++) {
+            for (let i=0; i<ref_players.current.length;i++) {
                 let user = ref_players.current[i]
                 if (user.name === triggerUser) {
                     ref_players.current.splice(i,1);
@@ -456,20 +458,34 @@ export default function Setup() {
         ref_players.current = newPlayers
         forceUpdate()
 
+        console.log(pusherChannel.members.count)
+
         /*
             Only first and second player handle admin events
-            unbind all 
+            unbind all -> avoid double calling!
             and then only bind first and second player
         */
         pusherChannel.unbind(SetupEventType.Admin);
+        pusherChannel.unbind('pusher:member_removed')
         if (ref_players.current[0].name === userName ||
             ref_players.current[1].name === userName) {
             //bind
             pusherChannel.bind(SetupEventType.Admin, 
                 (data:any) => handleEvent_Admin(data)
             )
+            pusherChannel.bind('pusher:member_removed', (member:any) => {
+                //pass user on to admin event
+                let event:Setup_Event = {
+                    type: SetupEventType.Admin,
+                    adminType: AdminType.leave,
+                    data: member.id
+                }
+                handleEvent_Admin(event)
+            });
             console.log('Bound admin events')
         }
+
+        
     }
 
     const fireEvent_Player = async () => {
