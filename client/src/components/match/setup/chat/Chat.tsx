@@ -3,21 +3,27 @@ import st from './Chat.module.scss'
 
 import {Setup_ChatMsg} from 'components/Interfaces'
 import {SysMsg} from 'components/Interfaces'
+import {SetupChatStatus} from 'components/Interfaces'
+
+import WarningIcon from 'assets/setup/Warning_Icon.png'
+import SendIcon from 'assets/setup/Send_Icon.png'
 
 class Chat extends Component <any, any> {
+
+    //array to store timestamps of sent messages
+    messageTimestamps:string[] = []
 
     constructor(props: any) {
         super(props);
         this.state = {
             userMsg: '',
-            sendEnabled: false 
+            status: SetupChatStatus.disabled
         };
     }
 
     private scrollTarget = React.createRef<HTMLDivElement>();
     scrollToBottom = () => {
         const node: HTMLDivElement | null = this.scrollTarget.current; //get the element via ref
-
         if (node) { //current ref can be null, so we have to check
             node.scrollIntoView({behavior: 'smooth'}); //scroll to the targeted element
         }
@@ -33,12 +39,13 @@ class Chat extends Component <any, any> {
     }
 
     componentDidUpdate() {
-        this.scrollToBottom();//scroll to bottom when new message was added
+        //scroll to bottom when new message was added
+        this.scrollToBottom() 
     }
 
     sendMessage() {
         
-        if (!this.state.sendEnabled) {
+        if (this.state.status !== SetupChatStatus.enabled) {
             return
         }
 
@@ -49,9 +56,30 @@ class Chat extends Component <any, any> {
         }
 
         this.props.onNewMsg(newMsg) //fire event in parent
+        this.messageTimestamps.push(new Date().toISOString())
         this.setState({userMsg: ''})
-        this.setState({sendEnabled: false})
-        
+        this.setChatStatus(SetupChatStatus.disabled)
+    }
+
+    setChatStatus(_status:SetupChatStatus) {
+        this.setState({status: _status})
+    }
+
+    didUserExceedLimit():boolean {
+        //if user wants to send more than 5 messages within 15 seconds -> return true
+        //check only as soon as five messages were sent
+        let count = this.messageTimestamps.length - 1;
+        if (count < 4) {
+            return false
+        }
+        //calc time difference in milliseconds
+        let ref = new Date(this.messageTimestamps[count - 4])
+        let now = new Date()
+        let diff = now.getTime() - ref.getTime(); 
+        if (diff < 15000) {
+            return true
+        }
+        return false
     }
 
     /*
@@ -69,13 +97,16 @@ class Chat extends Component <any, any> {
 
         //check empty or only spaces
         if (value.length === 0 || !value.trim()) {
-            this.setState({sendEnabled: false})
+            this.setChatStatus(SetupChatStatus.disabled)
         }
-        else if (value.length > 500000) {
-            this.setState({sendEnabled: false})
+        else if (value.length > 50) {
+            this.setChatStatus(SetupChatStatus.inputTooLong)
+        }
+        else if (this.didUserExceedLimit()) {
+            this.setChatStatus(SetupChatStatus.sentTooMuch)
         }
         else {
-            this.setState({sendEnabled: true})
+            this.setChatStatus(SetupChatStatus.enabled)
         }
     }
 
@@ -125,7 +156,37 @@ class Chat extends Component <any, any> {
                     {cards}
                     <div ref={this.scrollTarget} data-explanation="This is where we scroll to"></div>
                 </div>
-                <div className={st.Bottom_Con}>
+                {this.state.status === SetupChatStatus.enabled &&
+                    <div className={st.Info_Con_Send}>
+                        <div className={st.Info_Con_Inner}>
+                            <img className={st.Info_Icon} src={SendIcon} alt="Info"/>
+                            <div>
+                                Send with return
+                            </div>
+                        </div>
+                    </div>
+                }
+                {this.state.status === SetupChatStatus.inputTooLong &&
+                    <div className={st.Info_Con_TooLong}>
+                        <div className={st.Info_Con_Inner}>
+                            <img className={st.Info_Icon} src={WarningIcon} alt="Warning"/>
+                            <div>
+                                Exceeded 50 letters
+                            </div>
+                        </div>
+                    </div>
+                }
+                {this.state.status === SetupChatStatus.sentTooMuch &&
+                    <div className={st.Info_Con_TooMuch}>
+                        <div className={st.Info_Con_Inner}>
+                            <img className={st.Info_Icon} src={WarningIcon} alt="Warning"/>
+                            <div>
+                                Easy Boy...
+                            </div>
+                        </div>
+                    </div>
+                }
+                <div>
                     <input  className={st.Input} 
                             type="search" 
                             autoComplete="off" 
@@ -133,12 +194,6 @@ class Chat extends Component <any, any> {
                             value={this.state.userMsg}
                             onChange={(e) => this.onChange(e)}
                             onKeyUp={(e) => this.keyPressed(e)}/>
-                    {this.state.sendEnabled &&
-                        <button className={st.SendBtn} 
-                                onClick={() => this.sendMessage()}>
-                            Send
-                        </button>
-                    }
                 </div>
             </div>
         );

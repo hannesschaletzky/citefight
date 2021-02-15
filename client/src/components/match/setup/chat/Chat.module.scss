@@ -54,13 +54,47 @@ $sdbg: false; //show debugging background = sdbg
   color: rgba(63, 65, 65, 1);
 }
 
-.Bottom_Con {
-  height: 30px;
+.Info_Con_Base {
+  height: 25px;
+  margin: 3px;
   display: flex;
+  flex-direction: column;
+  justify-content: center;
+  @extend .borderWithRoundedCorners;
+}
+
+.Info_Con_Send {
+  @extend .Info_Con_Base;
+  background-color: rgba(241, 241, 241, 0.5);
+}
+
+.Info_Con_TooLong {
+  @extend .Info_Con_Base;
+  background-color: rgba(211, 78, 16, 0.5);
+}
+
+.Info_Con_TooMuch {
+  @extend .Info_Con_Base;
+  background-color: rgba(191, 211, 16, 0.5);
+}
+
+.Info_Con_Inner {
+  display: flex;
+  font-size: 14px;
+  opacity: 0.7;
+}
+
+.Info_Icon {
+  margin-right: 3px;
+  margin-left: 3px;
+  height: 18px;
+  width: 18px;
 }
 
 .Input {
+  height: 30px;
   width: -webkit-fill-available;
+  cursor: pointer;
 
   padding-left: 5px;
 
@@ -85,6 +119,7 @@ $sdbg: false; //show debugging background = sdbg
 
 .SendBtn {
   margin: 3px;
+  flex: 1;
   cursor: pointer;
 
   //border

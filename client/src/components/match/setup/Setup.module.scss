@@ -1,4 +1,3 @@
-//debugging
 $sdbg: false; //show debugging background = sdbg
 @import "styles/app.global.scss";
 
@@ -55,82 +54,8 @@ $sdbg: false; //show debugging background = sdbg
   height: 50px;
   margin-bottom: 10px;
 
-  display: flex;
-  justify-content: center;
-
   @if $sdbg {
     background-color: rgba(216, 19, 19, 0.5);
-  }
-}
-
-.Input {
-  height: 40px;
-
-  @extend .HelveticaNeueBoldFont;
-
-  //border
-  border: 3px solid;
-  border-color: rgba(78, 201, 22, 0.8);
-  border-radius: 8px;
-
-  outline: none;
-  //color: white !important;
-  //background-color: rgba(28, 179, 28, 0.8);
-
-  &:focus {
-    border-color: rgba(8, 8, 8, 0.6);
-  }
-
-  &::placeholder {
-    /* Chrome, Firefox, Opera, Safari 10.1+ */
-    color: rgba(0, 0, 0, 0.2);
-    opacity: 1; /* Firefox */
-  }
-}
-
-.Button_Join {
-  height: 40px;
-  margin-left: 10px;
-  cursor: pointer;
-
-  //border
-  border-color: transparent;
-  border-radius: 8px;
-
-  //text
-  @extend .HelveticaNeueBoldFont;
-  color: rgba(255, 255, 255, 1);
-
-  //colour, shadow, outline
-  box-shadow: 2px 2px rgba(5, 19, 19, 0.5);
-  outline: none;
-  background-color: rgba(28, 179, 28, 0.8);
-
-  &:hover {
-    background-color: rgba(28, 179, 28, 0.6);
-  }
-}
-
-.Button_Leave {
-  height: 40px;
-  margin-left: 10px;
-  cursor: pointer;
-
-  //border
-  border-color: transparent;
-  border-radius: 8px;
-
-  //text
-  @extend .HelveticaNeueBoldFont;
-  color: rgb(255, 255, 255);
-
-  //colour, shadow, outline
-  box-shadow: 2px 2px rgba(5, 19, 19, 0.5);
-  outline: none;
-  background-color: rgba(179, 28, 53, 0.9);
-
-  &:hover {
-    background-color: rgba(179, 28, 53, 0.7);
   }
 }
 

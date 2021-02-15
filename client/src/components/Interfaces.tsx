@@ -10,6 +10,29 @@ export enum SetupEventType {
     Player = 'Setup_Player'
 }
 
+export enum SetupJoinStatus {
+    NotJoined = 'NotJoined',
+    Connecting = 'Connecting',
+    Failed = 'Failed',
+    Joined = 'Joined'
+}
+
+export enum PusherConState {
+    initialized = 'initialized',
+    connecting = 'connecting',
+    connected = 'connected',
+    unavailable = 'unavailable',
+    failed = 'failed',
+    disconnected = 'disconnected',
+}
+
+export enum SetupChatStatus {
+    enabled = 'enabled',
+    disabled = 'disabled',
+    inputTooLong = 'inputTooLong',
+    sentTooMuch = 'sentTooMuch',
+}
+
 /*
     SETUP OBJECTS
 */

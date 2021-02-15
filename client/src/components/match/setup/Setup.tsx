@@ -1,5 +1,5 @@
 /* eslint-disable react/jsx-pascal-case */
-import { useState, useEffect, useRef, useReducer } from 'react';
+import { useEffect, useRef, useReducer } from 'react';
 import st from './Setup.module.scss'
 //import { useParams } from 'react-router-dom';
 
@@ -9,28 +9,19 @@ import {Setup_ChatMsg} from 'components/Interfaces'
 import {Twitter_User} from 'components/Interfaces'
 import {SysMsg} from 'components/Interfaces'
 import {SetupEventType} from 'components/Interfaces'
+import {SetupJoinStatus} from 'components/Interfaces'
+//import {PusherConState} from 'components/Interfaces'
 
 import Search from './search/Search'
+import Interaction from './interaction/Interaction'
 import Players from './players/Players'
 import Chat from './chat/Chat'
 
-import CircularProgress from '@material-ui/core/CircularProgress';
-
-
 const Pusher = require('pusher-js');
 
-enum PusherConState {
-    initialized = 'initialized',
-    connecting = 'connecting',
-    connected = 'connected',
-    unavailable = 'unavailable',
-    failed = 'failed',
-    disconnected = 'disconnected',
-}
-
-const twitterUserInit:Twitter_User[] = []
-const playersInit:Setup_Player[] = []
-const chatInit:Setup_ChatMsg[] = []
+const init_twitterUser:Twitter_User[] = []
+const init_players:Setup_Player[] = []
+const init_chat:Setup_ChatMsg[] = []
 
 let pusherClient:any = null
 let pusherChannel:any = null
@@ -38,54 +29,23 @@ let userName = ""
 
 export default function Setup() {
     //states
-    const ref_twitterUsers = useRef(twitterUserInit);
-    const ref_players = useRef(playersInit);
-    const ref_chat = useRef(chatInit);
+    const ref_twitterUsers = useRef(init_twitterUser);
+    const ref_players = useRef(init_players);
+    const ref_chat = useRef(init_chat);
+    const ref_joinStatus = useRef(SetupJoinStatus.NotJoined)
     const [,forceUpdate] = useReducer(x => x + 1, 0);
 
-    //RIGHT PANEL
-    //const [userName, setUserName] = useState("");
-    const [joinEnabled, setJoinEnabled] = useState(false);
-    const [joined, setJoined] = useState(false);
-    const [loading, setLoading] = useState(false)
-    const [pusherConState, setPusherConState] = useState(PusherConState.initialized)
+    //const [pusherConState, setPusherConState] = useState(PusherConState.initialized)
     
     const channelName = 'presence-Game1'
 
     //params hook
     //const { id } = useParams<Record<string, string | undefined>>()
 
-    /*
-    ##################################
-    ##################################
-        DETECT TAB CLOSING
-    ##################################
-    ##################################
-    */
-
     useEffect(() => {
-        /*
-        window.addEventListener('beforeunload', alertUser)
-        window.addEventListener('unload', handleTabClosing)
-        return () => {
-            window.removeEventListener('beforeunload', alertUser)
-            window.removeEventListener('unload', handleTabClosing)
-        }
-        */
+
     })
 
-    const handleTabClosing = () => {
-        if (pusherClient !== null) {
-            pusherClient.disconnect()
-        }
-    }
-
-    const alertUser = (event:any) => {
-        setTimeout(function(){}, 1000);
-            pusherClient.disconnect()
-        //event.preventDefault()
-        //event.returnValue = ''
-    }
 
     /*
     ##################################
@@ -99,6 +59,12 @@ export default function Setup() {
             name: name
         }
         return newPlayer
+    }
+
+    const setJoinStatus = (status:SetupJoinStatus) => {
+        console.log('set status to: ' + status)
+        ref_joinStatus.current = status
+        forceUpdate()
     }
 
     const addSysMsg = (type:SysMsg, userName:string) => {
@@ -133,24 +99,13 @@ export default function Setup() {
     */
     const joinGame = () => {
 
-        //check enabled
-        if (!joinEnabled) {
-            return
-        }
-
-        //is trying
-        if (loading) {
-            console.log('already trying to join')
-            return
-        } 
-
         //has already joined
-        if (pusherClient !== null) {
+        if (ref_joinStatus.current === SetupJoinStatus.Joined) {
             console.log('already joined')
             return
         }
-
-        setLoading(true)
+        
+        setJoinStatus(SetupJoinStatus.Connecting)
 
         //init pusher client
         let appKey = process.env.REACT_APP_PUSHER_KEY
@@ -166,13 +121,12 @@ export default function Setup() {
         _pusherClient.connection.bind('state_change', (states:any) => {
             //states = {previous: 'oldState', current: 'newState'}
             console.log('new con state: ' + states.current)
-            setPusherConState(states.current) //-> also see enum PusherConState
+            //setPusherConState(states.current) //-> also see enum PusherConState
         });
 
         //bind error event
         _pusherClient.connection.bind('error', (err:any) => {
-            setJoined(false)
-            setLoading(false)
+            setJoinStatus(SetupJoinStatus.Failed)
             let str = JSON.stringify(err, null, 4);
             console.log('error during pusher connection')
             console.log(str)
@@ -191,17 +145,15 @@ export default function Setup() {
                 //set vars
                 pusherClient = _pusherClient 
                 pusherChannel = channel
-                setJoined(true)
-                setLoading(false)
 
                 //bind to events
-                channel.bind(SetupEventType.Join, 
+                pusherChannel.bind(SetupEventType.Join, 
                     (data:any) => handleEvent_Join(data)
                 )
-                channel.bind(SetupEventType.Player, 
+                pusherChannel.bind(SetupEventType.Player, 
                     (data:any) => handleEvent_Player(data)
                 )
-                channel.bind(SetupEventType.Chat, 
+                pusherChannel.bind(SetupEventType.Chat, 
                     (data:any) => handleEvent_Chat(data)
                 )
                 pusherChannel.bind('pusher:member_removed', (member:any) => {
@@ -216,7 +168,7 @@ export default function Setup() {
                             break
                         }
                     }
-                    assignJoinEvent()
+                    assignJoinEventAdmin()
                 });
 
                 //request current state from lobby
@@ -257,9 +209,7 @@ export default function Setup() {
         ref_players.current = []
 
         //reset vars
-        setJoinEnabled(false)
-        setJoined(false)
-        setLoading(false)
+        setJoinStatus(SetupJoinStatus.NotJoined)
         
         console.log('successfully disconnected')
     }
@@ -303,6 +253,7 @@ export default function Setup() {
             */
             console.log('you are the only person in the room')
             joinPlayer(triggerUser)
+            setJoinStatus(SetupJoinStatus.Joined)
             forceUpdate()
             return
         }
@@ -344,7 +295,7 @@ export default function Setup() {
         console.log(body)
     }
 
-    const assignJoinEvent = () => {
+    const assignJoinEventAdmin = () => {
         /*
             This has to be called when a new user joins or one leaves
             -> assign new answer player for join event
@@ -388,17 +339,22 @@ export default function Setup() {
 
     const fireEvent_Chat = async () => {
 
-        console.log('broadcast new chat')
+        //remove first message of chat until chat is smaller than 10KB
+        let chatString = JSON.stringify(ref_chat.current)
+        while (chatString.length > 10000) {
+            console.log('Chat too long\n -> removing first message')
+            ref_chat.current.shift()
+            chatString = JSON.stringify(ref_chat.current)
+        }
+
         //prepare
         let event:Setup_Event = {
             type: SetupEventType.Chat,
             data: ref_chat.current
         }
 
-        //CHECK SIZE
-        //@@@TODO
-
         //execute
+        console.log('broadcast new chat ' + chatString.length)
         const response = await fetch('/api/pusher/setup/trigger', {
             method: 'POST',
             headers: {
@@ -425,6 +381,7 @@ export default function Setup() {
     */
     const handleEvent_Player = (event:any) => {
 
+        //console.log(pusherChannel.members.count)
         //security
         if (event.type !== SetupEventType.Player) {
             console.log('EventType mismatch in handleEvent_Player:\n\n' + event)
@@ -435,16 +392,14 @@ export default function Setup() {
         let newPlayers:Setup_Player[] = event.data
         console.log(newPlayers.length + ' total players')
         ref_players.current = newPlayers
+        setJoinStatus(SetupJoinStatus.Joined)
         forceUpdate()
 
-        console.log(pusherChannel.members.count)
-
-        assignJoinEvent()
+        assignJoinEventAdmin()
     }
 
     const fireEvent_Player = async () => {
 
-        console.log('broadcast new players')
         //prepare
         let event:Setup_Event = {
             type: SetupEventType.Player,
@@ -452,6 +407,7 @@ export default function Setup() {
         }
 
         //execute
+        console.log('broadcast new players')
         const response = await fetch('/api/pusher/setup/trigger', {
             method: 'POST',
             headers: {
@@ -491,6 +447,15 @@ export default function Setup() {
         fireEvent_Chat()
     }
 
+    const onJoinTriggered = (name:string) => {
+        userName = name
+        joinGame()
+    }
+
+    const onLeaveTriggered = () => {
+        leaveGame()
+    }
+
     /*
     ##################################
     ##################################
@@ -498,66 +463,39 @@ export default function Setup() {
     ##################################
     ##################################
     */
-    const userNameChanged = (name: string) => {
-        //setUserName(name)
-        userName = name
-
-        //check empty or only spaces
-        if (name.length === 0 || !name.trim()) {
-            setJoinEnabled(false)
-        }
-        else {
-            setJoinEnabled(true)
-        }
-    }
-
-    const keyPressed = (event: any) => {
-        if (event.key === 'Enter' && userName !== "") {
-            joinGame()
-        }
-    }
+    
 
   return (
     <div className={st.Content_Con}>
         <div className={st.Left_Panel}>
-            {Search(onNewTwitterUserAdded, ref_twitterUsers.current)}
+            {Search(
+                onNewTwitterUserAdded, 
+                ref_twitterUsers.current)
+            }
         </div>
-        {joined && 
+        {(ref_joinStatus.current === SetupJoinStatus.Joined) && 
             <div className={st.Center_Panel}>
                 {ref_twitterUsers.current.length}
             </div>
         }
         <div className={st.Right_Panel}>
             <div className={st.Interaction_Con}>
-                {!joined &&
-                    <input  className={st.Input}
-                            type="search" 
-                            autoComplete="off" 
-                            placeholder="Enter a name"
-                            onChange={e => userNameChanged(e.target.value)} 
-                            onKeyUp={e => keyPressed(e)}/>
-                }
-                {joinEnabled && !joined &&
-                    <button className={st.Button_Join} onClick={() => joinGame()}>
-                        Join
-                    </button>
-                }
-                {joined && 
-                    <button className={st.Button_Leave} onClick={() => leaveGame()}>
-                        Leave
-                    </button>
-                }
-                {loading && 
-                    <CircularProgress/>
-                }
+                <Interaction
+                    status={ref_joinStatus.current}
+                    onJoinClick={onJoinTriggered}
+                    onLeaveClick={onLeaveTriggered}
+                />
             </div>
             <div className={st.Players_Con}>
-                {Players(ref_players.current)}
+                {Players(
+                    ref_players.current)
+                }
             </div>
-            {joined && 
+            {(ref_joinStatus.current === SetupJoinStatus.Joined) && 
                 <div className={st.Chat_Con}>
-                    <Chat   data={ref_chat.current}
-                            onNewMsg={onNewChatMessage}
+                    <Chat   
+                        data={ref_chat.current}
+                        onNewMsg={onNewChatMessage}
                     />
                 </div>
             }
