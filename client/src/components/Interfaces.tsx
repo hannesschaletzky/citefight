@@ -5,15 +5,9 @@ export enum SysMsg {
 }
 
 export enum SetupEventType {
-    Admin = 'Setup_Admin',
+    Join = 'Setup_Join',
     Chat = 'Setup_Chat',
     Player = 'Setup_Player'
-}
-
-export enum AdminType {
-    none = '',
-    join = 'join',
-    leave = 'leave'
 }
 
 /*
@@ -22,7 +16,6 @@ export enum AdminType {
 
 export interface Setup_Event {
     type: SetupEventType;
-    adminType: AdminType;
     data: any;
 }
 
