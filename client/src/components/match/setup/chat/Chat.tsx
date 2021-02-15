@@ -21,14 +21,6 @@ class Chat extends Component <any, any> {
         };
     }
 
-    private scrollTarget = React.createRef<HTMLDivElement>();
-    scrollToBottom = () => {
-        const node: HTMLDivElement | null = this.scrollTarget.current; //get the element via ref
-        if (node) { //current ref can be null, so we have to check
-            node.scrollIntoView({behavior: 'smooth'}); //scroll to the targeted element
-        }
-    };
-
     componentWillUnmount() {
         /*
         // fix Warning: Can't perform a React state update on an unmounted component
@@ -42,6 +34,13 @@ class Chat extends Component <any, any> {
         //scroll to bottom when new message was added
         this.scrollToBottom() 
     }
+    private scrollTarget = React.createRef<HTMLDivElement>();
+    scrollToBottom = () => {
+        const node: HTMLDivElement | null = this.scrollTarget.current; //get the element via ref
+        if (node) { //current ref can be null, so we have to check
+            node.scrollIntoView({behavior: 'smooth'}); //scroll to the targeted element
+        }
+    };
 
     sendMessage() {
         

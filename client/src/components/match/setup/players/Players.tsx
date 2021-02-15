@@ -1,30 +1,59 @@
-import React, { useEffect } from 'react';
+import React, { Component } from 'react';
 import st from './Players.module.scss'
 
 import {Setup_Player} from 'components/Interfaces'
 
-export default function Players(players:Setup_Player[]) {
-    //state hook
+import ArrowIcon from 'assets/setup/Arrow_Icon.png'
+import PersonIcon from 'assets/setup/Person_Icon.png'
 
-    useEffect(() => {
+class Players extends Component <any, any> {
 
-    });
+    constructor(props: any) {
+        super(props);
+        this.state = {
+        };
+    }
 
-    const getPlayerCards = () => {
+    render() { 
+
+        let players:Setup_Player[] = this.props.data
+        let currentUser = this.props.currentUser
+
         let cards = []
         for(let i=0;i<players.length;i++) {
+            let item:Setup_Player = players[i]
             let card = 
             <div className={st.PlayerCard} key={i}>
-                {players[i].name}
+                <div className={st.Name_Con}>
+                    {item.name}
+                </div>
+                <div className={st.IsYou_Con}>
+                    {(currentUser === item.name) &&
+                        <img className={st.Icon} src={PersonIcon} alt="IsYou"/>
+                    }
+                </div>
+                <div className={st.Ready_Con}>
+                    {item.ready &&
+                        <img className={st.Icon} src={ArrowIcon} alt="Ready"/>
+                    }
+                </div>
+                
             </div>
             cards.push(card)
         }
-        return cards
-    }
 
-    return (
-        <div>
-            {getPlayerCards()}
-        </div>
-    );
+        return ( 
+            <div>
+                {cards}
+            </div>
+        );
+    }
 }
+export default Players;
+
+
+
+
+
+
+

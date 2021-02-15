@@ -60,12 +60,13 @@ $sdbg: false; //show debugging background = sdbg
   display: flex;
   flex-direction: column;
   justify-content: center;
+  opacity: 0.7;
   @extend .borderWithRoundedCorners;
 }
 
 .Info_Con_Send {
   @extend .Info_Con_Base;
-  background-color: rgba(241, 241, 241, 0.5);
+  background-color: rgba(243, 243, 243, 0.5);
 }
 
 .Info_Con_TooLong {
@@ -81,7 +82,6 @@ $sdbg: false; //show debugging background = sdbg
 .Info_Con_Inner {
   display: flex;
   font-size: 14px;
-  opacity: 0.7;
 }
 
 .Info_Icon {
@@ -114,29 +114,5 @@ $sdbg: false; //show debugging background = sdbg
     /* Chrome, Firefox, Opera, Safari 10.1+ */
     color: rgba(0, 0, 0, 0.2);
     opacity: 1; /* Firefox */
-  }
-}
-
-.SendBtn {
-  margin: 3px;
-  flex: 1;
-  cursor: pointer;
-
-  //border
-  border-color: transparent;
-  border-radius: 8px;
-
-  //text
-  @extend .HelveticaNeueBoldFont;
-  font-size: 11pt !important;
-  color: rgba(255, 255, 255, 1);
-
-  //colour, shadow, outline
-  box-shadow: 2px 2px rgba(5, 19, 19, 0.5);
-  outline: none;
-  background-color: rgba(28, 179, 28, 0.8);
-
-  &:hover {
-    background-color: rgba(28, 179, 28, 0.6);
   }
 }

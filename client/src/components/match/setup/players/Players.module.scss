@@ -3,13 +3,46 @@ $sdbg: false; //show debugging background = sdbg
 @import "styles/app.global.scss";
 
 .PlayerCard {
+  height: 20px;
   margin: 5px;
   padding: 5px;
-  height: 20px;
 
-  overflow-x: scroll;
+  display: flex;
 
   @extend .borderWithRoundedCorners;
-
   background-color: rgba(224, 228, 228, 0.288);
+}
+
+.Name_Con {
+  flex: 4;
+  overflow-x: scroll;
+
+  @if $sdbg {
+    background-color: khaki;
+  }
+}
+
+.IsYou_Con {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+
+  @if $sdbg {
+    background-color: lawngreen;
+  }
+}
+
+.Ready_Con {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+
+  @if $sdbg {
+    background-color: lightpink;
+  }
+}
+
+.Icon {
+  width: 20px;
+  height: 20px;
 }

@@ -60,7 +60,6 @@ $sdbg: false; //show debugging background = sdbg
 
 .Button_Leave {
   height: 40px;
-  margin-left: 10px;
   cursor: pointer;
 
   //border
@@ -78,5 +77,51 @@ $sdbg: false; //show debugging background = sdbg
 
   &:hover {
     background-color: rgba(179, 28, 53, 0.7);
+  }
+}
+
+.Button_Ready {
+  height: 40px;
+  margin-left: 25px;
+  cursor: pointer;
+
+  //border
+  border-color: transparent;
+  border-radius: 8px;
+
+  //text
+  @extend .HelveticaNeueBoldFont;
+  color: rgb(255, 255, 255);
+
+  //colour, shadow, outline
+  box-shadow: 2px 2px rgba(5, 19, 19, 0.5);
+  outline: none;
+  background-color: rgba(28, 179, 53, 0.9);
+
+  &:hover {
+    background-color: rgba(28, 179, 53, 0.7);
+  }
+}
+
+.Button_Unready {
+  height: 40px;
+  margin-left: 25px;
+  cursor: pointer;
+
+  //border
+  border-color: transparent;
+  border-radius: 8px;
+
+  //text
+  @extend .HelveticaNeueBoldFont;
+  color: rgb(255, 255, 255);
+
+  //colour, shadow, outline
+  box-shadow: 2px 2px rgba(5, 19, 19, 0.5);
+  outline: none;
+  background-color: rgba(219, 165, 14, 0.9);
+
+  &:hover {
+    background-color: rgba(219, 165, 14, 0.7);
   }
 }

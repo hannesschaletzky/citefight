@@ -44,10 +44,9 @@ export interface Setup_Event {
 
 export interface Setup_Player {
     name: string;
-    
-    /** @default true */
-    connected ? : boolean;
+    ready: boolean;
 }
+
 
 export interface Setup_ChatMsg {
     name: string;

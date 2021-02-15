@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import st from './Interaction.module.scss'
 
 import {SetupJoinStatus} from 'components/Interfaces'
+import {Setup_Player} from 'components/Interfaces'
 
 import CircularProgress from '@material-ui/core/CircularProgress';
 
@@ -36,6 +37,10 @@ class Interaction extends Component <any, any> {
         this.props.onLeaveClick() 
     }
 
+    onToogleReady(ready:boolean) {
+        this.props.onToogleReadyClick(ready)
+    }
+
 
     /*
     ##################################
@@ -65,6 +70,8 @@ class Interaction extends Component <any, any> {
 
     render() { 
 
+        let user:Setup_Player = this.props.user
+
         return ( 
             <div className={st.Con}>
                 {(this.props.status === SetupJoinStatus.NotJoined || 
@@ -84,9 +91,21 @@ class Interaction extends Component <any, any> {
                     </button>
                 }
                 {(this.props.status === SetupJoinStatus.Joined) && 
-                    <button className={st.Button_Leave} onClick={() => this.onLeaveClick()}>
-                        Leave
-                    </button>
+                    <div>
+                        <button className={st.Button_Leave} onClick={() => this.onLeaveClick()}>
+                            Leave
+                        </button>
+                        {!user.ready && 
+                            <button className={st.Button_Ready} onClick={() => this.onToogleReady(true)}>
+                                Ready
+                            </button>
+                        }
+                        {user.ready && 
+                            <button className={st.Button_Unready} onClick={() => this.onToogleReady(false)}>
+                                Unready
+                            </button>
+                        }
+                    </div>
                 }
                 {(this.props.status === SetupJoinStatus.Connecting) && 
                     <CircularProgress/>

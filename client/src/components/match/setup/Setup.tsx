@@ -54,11 +54,15 @@ export default function Setup() {
     ##################################
     ##################################
     */
-    const createPlayerObject = (name: string) => {
-        let newPlayer:Setup_Player = {
-            name: name
+
+    const getIndexOfUser = (name:string):number => {
+        for (let i=0; i<ref_players.current.length;i++) {
+            let user = ref_players.current[i]
+            if (user.name === name) {
+                return i
+            }
         }
-        return newPlayer
+        return -1
     }
 
     const setJoinStatus = (status:SetupJoinStatus) => {
@@ -158,16 +162,10 @@ export default function Setup() {
                 )
                 pusherChannel.bind('pusher:member_removed', (member:any) => {
                     //remove user
-                    let triggerUser = member.id
-                    for (let i=0; i<ref_players.current.length;i++) {
-                        let user = ref_players.current[i]
-                        if (user.name === triggerUser) {
-                            ref_players.current.splice(i,1);
-                            addSysMsg(SysMsg.userLeft, triggerUser)
-                            forceUpdate()
-                            break
-                        }
-                    }
+                    let i = getIndexOfUser(member.id)
+                    ref_players.current.splice(i,1);
+                    addSysMsg(SysMsg.userLeft, member.id)
+                    forceUpdate()
                     assignJoinEventAdmin()
                 });
 
@@ -241,7 +239,10 @@ export default function Setup() {
             
         //encapsulated join
         const joinPlayer = (name:string) => {
-            let newUser = createPlayerObject(name)
+            let newUser:Setup_Player = {
+                name: name,
+                ready: false
+            }
             ref_players.current.push(newUser)
             addSysMsg(SysMsg.userJoined, name)
         }
@@ -424,6 +425,13 @@ export default function Setup() {
 
     }
 
+    const toogleReady = (ready:boolean) => {
+        //set yourself ready
+        let i = getIndexOfUser(userName)
+        ref_players.current[i].ready = ready
+        fireEvent_Player()
+    }
+
     /*
     ##################################
     ##################################
@@ -456,6 +464,10 @@ export default function Setup() {
         leaveGame()
     }
 
+    const onToogleReady = (ready:boolean) => {
+        toogleReady(ready)
+    } 
+
     /*
     ##################################
     ##################################
@@ -482,14 +494,17 @@ export default function Setup() {
             <div className={st.Interaction_Con}>
                 <Interaction
                     status={ref_joinStatus.current}
+                    user={ref_players.current[getIndexOfUser(userName)]}
                     onJoinClick={onJoinTriggered}
                     onLeaveClick={onLeaveTriggered}
+                    onToogleReadyClick={onToogleReady}
                 />
             </div>
             <div className={st.Players_Con}>
-                {Players(
-                    ref_players.current)
-                }
+                <Players   
+                    data={ref_players.current}
+                    currentUser={userName}
+                />
             </div>
             {(ref_joinStatus.current === SetupJoinStatus.Joined) && 
                 <div className={st.Chat_Con}>
