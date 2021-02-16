@@ -23,18 +23,18 @@ class Players extends Component <any, any> {
         for(let i=0;i<players.length;i++) {
             let item:Setup_Player = players[i]
             let card = 
-            <div className={st.PlayerCard} key={i}>
+            <div className={(item.ready ? st.PlayerCard_Ready : st.PlayerCard)} key={i}>
                 <div className={st.Name_Con}>
                     {item.name}
                 </div>
-                <div className={st.IsYou_Con}>
+                <div className={st.IsYou_Con} title="You are this player">
                     {(currentUser === item.name) &&
                         <img className={st.Icon} src={PersonIcon} alt="IsYou"/>
                     }
                 </div>
                 <div className={st.Ready_Con}>
                     {item.ready &&
-                        <img className={st.Icon} src={ArrowIcon} alt="Ready"/>
+                        <img className={st.Icon} src={ArrowIcon} alt="Ready" title="You are ready"/>
                     }
                 </div>
                 

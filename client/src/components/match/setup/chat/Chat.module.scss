@@ -15,7 +15,7 @@ $sdbg: false; //show debugging background = sdbg
 }
 
 .Message_Con {
-  margin: 2px;
+  margin: 3px;
 }
 
 .SysMessage {
@@ -23,27 +23,36 @@ $sdbg: false; //show debugging background = sdbg
   padding: 3px;
   width: fit-content;
 
-  font-size: 8pt;
+  font-size: 9pt;
   @extend .borderWithRoundedCorners;
 }
 
 .SysMessage_Welcome {
   @extend .SysMessage;
-  background-color: rgba(175, 175, 175, 0.3);
+  background-color: rgba(230, 230, 230, 0.3);
 }
 
 .SysMessage_Joined {
   @extend .SysMessage;
-  background-color: rgba(240, 153, 72, 0.3);
+  padding: 1px !important;
+  padding-right: 3px !important;
+  padding-left: 3px !important;
+  background-color: rgba($ready_colour, 0.3);
 }
 
 .SysMessage_Left {
   @extend .SysMessage;
-  background-color: rgba(83, 72, 240, 0.3);
+  padding: 1px !important;
+  padding-right: 3px !important;
+  padding-left: 3px !important;
+  background-color: rgba($leave_colour, 0.3);
 }
 
 .SysMessage_Info {
   @extend .SysMessage;
+  padding: 1px !important;
+  padding-right: 3px !important;
+  padding-left: 3px !important;
   background-color: rgba(247, 244, 244, 0.3);
 }
 

@@ -1,16 +1,20 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import st from './Search.module.scss'
 
 import SearchList from './SearchList'
 import CircularProgress from '@material-ui/core/CircularProgress';
 
 import {Twitter_User} from 'components/Interfaces'
+import {SetupJoinStatus} from 'components/Interfaces'
 
 import TwitterIcon from 'assets/footer/Twitter_Icon.png'
 
 const stateInitArray:Twitter_User[] = []
 
-export default function Search(addUserFunc:(par1: Twitter_User) => void, addedUsers:Twitter_User[]) {
+export default function Search( joinType: SetupJoinStatus, 
+                                addedUsers:Twitter_User[],
+                                panelContainer:string,
+                                addUserFunc:(par1: Twitter_User) => void) {
     const [page, setPage] = useState(1);
     const [userObjects, setUserObjects] = useState(stateInitArray);
     const [searchInput, setSearchInput] = useState("");
@@ -24,9 +28,11 @@ export default function Search(addUserFunc:(par1: Twitter_User) => void, addedUs
     }
 
     // Similar to componentDidMount and componentDidUpdate:
+    /*
     useEffect(() => {
         
     });
+    */
 
 
     const onSearchButtonClick = (type: RequestType) => {
@@ -148,27 +154,50 @@ export default function Search(addUserFunc:(par1: Twitter_User) => void, addedUs
         }
     }
 
+    /*
+        -> conditions have to be passed to the function in order to avoid
+            -> React has detected a change in the order of Hooks
+            -> Uncaught Invariant Violation: Rendered more hooks than during the previous render
+            https://reactjs.org/docs/hooks-rules.html
+    */
+    const getContent = () => {
+        let rtn = <div></div>
+        if (joinType === SetupJoinStatus.Joined) {
+            rtn = 
+            <div className={panelContainer} /* coming from parent container*/>
+                <div className={st.Left_Panel}> 
+                    <div className={st.Con}>
+                        <div className={st.Top_Con}>
+                            <input className={st.Input} type="search" autoComplete="off" placeholder="Type name or usertag" onChange={(e) => userNameChanged(e.target.value)} onKeyPress={(e) => keyPressed(e)}/>
+                            {searchEnabled && <div className={st.buttonCon}>
+                                <img className={st.Icon} src={TwitterIcon} alt="Twitter" onClick={(e) => onSearchButtonClick(RequestType.inital)}/>
+                                <button className={st.searchButton} onClick={(e) => onSearchButtonClick(RequestType.inital)}>Search</button>
+                            </div>}
+                        </div>
+                        <SearchList 
+                            data={userObjects}
+                            addedUsers={addedUsers}
+                            onAddUser={addUserFunc}
+                            />
+                        <div className={st.buttonMore_Con}>
+                            {(userObjects.length % 20 === 0) && (userObjects.length !== 0) && 
+                                <button className={st.buttonMore} onClick={(e) => onSearchButtonClick(RequestType.more)}>
+                                    Show more...
+                                </button>
+                            }
+                        </div>
+                        <div className={st.loading_Con}>
+                            {loading && <CircularProgress/>}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+        return rtn
+    }
+
   return (
-    <div className={st.Con}>
-        <div className={st.Top_Con}>
-            <input className={st.Input} type="search" autoComplete="off" placeholder="Type name or usertag" onChange={e => userNameChanged(e.target.value)} onKeyPress={e => keyPressed(e)}/>
-            {searchEnabled && <div className={st.buttonCon}>
-                <img className={st.Icon} src={TwitterIcon} alt="Twitter" onClick={e => onSearchButtonClick(RequestType.inital)}/>
-                <button className={st.searchButton} onClick={e => onSearchButtonClick(RequestType.inital)}>Search</button>
-            </div>}
-        </div>
-        <SearchList 
-            data={userObjects}
-            addedUsers={addedUsers}
-            onAddUser={addUserFunc}
-            />
-        <div className={st.buttonMore_Con}>
-            {(userObjects.length % 20 === 0) && (userObjects.length !== 0) && <button className={st.buttonMore} onClick={e => onSearchButtonClick(RequestType.more)}>Show more...</button>}
-        </div>
-        <div className={st.loading_Con}>
-            {loading && <CircularProgress/>}
-        </div>
-    </div>
+    getContent()
   );
 }
 

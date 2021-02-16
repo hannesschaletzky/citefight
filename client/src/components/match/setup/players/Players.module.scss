@@ -1,4 +1,3 @@
-//debugging
 $sdbg: false; //show debugging background = sdbg
 @import "styles/app.global.scss";
 
@@ -10,7 +9,12 @@ $sdbg: false; //show debugging background = sdbg
   display: flex;
 
   @extend .borderWithRoundedCorners;
-  background-color: rgba(224, 228, 228, 0.288);
+  background-color: rgba(230, 230, 230, 0.3);
+}
+
+.PlayerCard_Ready {
+  @extend .PlayerCard;
+  background-color: rgba($ready_colour, 0.3) !important;
 }
 
 .Name_Con {

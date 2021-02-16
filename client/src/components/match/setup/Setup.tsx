@@ -13,6 +13,7 @@ import {SetupJoinStatus} from 'components/Interfaces'
 //import {PusherConState} from 'components/Interfaces'
 
 import Search from './search/Search'
+import SearchTestComp from './search/SearchTestComp'
 import Interaction from './interaction/Interaction'
 import Players from './players/Players'
 import Chat from './chat/Chat'
@@ -42,9 +43,11 @@ export default function Setup() {
     //params hook
     //const { id } = useParams<Record<string, string | undefined>>()
 
+    
     useEffect(() => {
 
     })
+    
 
 
     /*
@@ -85,13 +88,13 @@ export default function Setup() {
             msg.m = inputMsg
         }
         else if (type === SysMsgType.userJoined) {
-            msg.m = inputMsg + ' joined'
+            msg.m = inputMsg + ' joined 🎊'
         }
         else if (type === SysMsgType.userLeft) {
-            msg.m = inputMsg + ' left'
+            msg.m = inputMsg + ' left 😭'
         }
         else if (type === SysMsgType.info) {
-            msg.m = inputMsg
+            msg.m = '📢 ' + inputMsg
         }
 
         //add
@@ -261,9 +264,9 @@ export default function Setup() {
             console.log('you are the only person in the room')
             //insert welcome first
             let currentUrl = window.location.href
-            addSysMsg(SysMsgType.welcome,   'Welcome to your matchroom!') 
-            addSysMsg(SysMsgType.welcome,   'Invite the people you wanna play by sending them the game-link.' +
-                                            ' You can copy simply the URL with the button at the top or use the link below.') 
+            addSysMsg(SysMsgType.welcome,   '🎉 Welcome to your matchroom!') 
+            addSysMsg(SysMsgType.welcome,   '🎉 Invite the people you wanna play by sending them the match-link.' +
+                                            ' Copy the URL from the top-button or the link below.') 
             addSysMsg(SysMsgType.welcome,   currentUrl) 
             joinPlayer(triggerUser)
             setJoinStatus(SetupJoinStatus.Joined)
@@ -493,8 +496,8 @@ export default function Setup() {
         toogleReady(ready)
     } 
 
-    const onCopyToClipboard = () => {
-        addSysMsg(SysMsgType.info, 'copied gamelink!')
+    const addInfoMsg = (msg:string) => {
+        addSysMsg(SysMsgType.info, msg)
         forceUpdate()
     }
 
@@ -509,12 +512,13 @@ export default function Setup() {
 
   return (
     <div className={st.Content_Con}>
-        <div className={st.Left_Panel}>
-            {Search(
-                onNewTwitterUserAdded, 
-                ref_twitterUsers.current)
-            }
-        </div>
+        {Search(
+            ref_joinStatus.current, //pass status bc. you cant do && with functional comp.
+            ref_twitterUsers.current,
+            st.Left_Panel,
+            onNewTwitterUserAdded
+            )
+        }
         {(ref_joinStatus.current === SetupJoinStatus.Joined) && 
             <div className={st.Center_Panel}>
                 {ref_twitterUsers.current.length}
@@ -528,15 +532,17 @@ export default function Setup() {
                     onJoinClick={onJoinTriggered}
                     onLeaveClick={onLeaveTriggered}
                     onToogleReadyClick={onToogleReady}
-                    onCopyClick={onCopyToClipboard}
+                    addInfoMsg={addInfoMsg}
                 />
             </div>
-            <div className={st.Players_Con}>
-                <Players   
-                    data={ref_players.current}
-                    currentUser={userName}
-                />
-            </div>
+            {(ref_joinStatus.current === SetupJoinStatus.Joined) && 
+                <div className={st.Players_Con}>
+                    <Players   
+                        data={ref_players.current}
+                        currentUser={userName}
+                    />
+                </div>
+            }
             {(ref_joinStatus.current === SetupJoinStatus.Joined) && 
                 <div className={st.Chat_Con}>
                     <Chat   
@@ -549,6 +555,8 @@ export default function Setup() {
     </div>
   );
 }
+
+
 
 
 

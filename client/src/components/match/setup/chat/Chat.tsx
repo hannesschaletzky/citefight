@@ -5,6 +5,8 @@ import {Setup_ChatMsg} from 'components/Interfaces'
 import {SysMsgType} from 'components/Interfaces'
 import {SetupChatStatus} from 'components/Interfaces'
 
+import {didUserExceedLimit} from 'components/Logic'
+
 import WarningIcon from 'assets/setup/Warning_Icon.png'
 import SendIcon from 'assets/setup/Send_Icon.png'
 
@@ -12,6 +14,7 @@ class Chat extends Component <any, any> {
 
     //array to store timestamps of sent messages
     messageTimestamps:string[] = []
+    inputSizeMax = 100
 
     constructor(props: any) {
         super(props);
@@ -64,23 +67,6 @@ class Chat extends Component <any, any> {
         this.setState({status: _status})
     }
 
-    didUserExceedLimit():boolean {
-        //if user wants to send more than 5 messages within 15 seconds -> return true
-        //check only as soon as five messages were sent
-        let count = this.messageTimestamps.length - 1;
-        if (count < 4) {
-            return false
-        }
-        //calc time difference in milliseconds
-        let ref = new Date(this.messageTimestamps[count - 4])
-        let now = new Date()
-        let diff = now.getTime() - ref.getTime(); 
-        if (diff < 15000) {
-            return true
-        }
-        return false
-    }
-
     /*
     ##################################
     ##################################
@@ -98,10 +84,10 @@ class Chat extends Component <any, any> {
         if (value.length === 0 || !value.trim()) {
             this.setChatStatus(SetupChatStatus.disabled)
         }
-        else if (value.length > 50) {
+        else if (value.length > this.inputSizeMax) {
             this.setChatStatus(SetupChatStatus.inputTooLong)
         }
-        else if (this.didUserExceedLimit()) {
+        else if (didUserExceedLimit(this.messageTimestamps, 5)) {
             this.setChatStatus(SetupChatStatus.sentTooMuch)
         }
         else {
@@ -177,7 +163,7 @@ class Chat extends Component <any, any> {
                     <div className={st.Info_Con_TooLong}>
                         <img className={st.Info_Icon} src={WarningIcon} alt="Warning"/>
                         <div>
-                            Exceeded 50 letters
+                            Exceeded {this.inputSizeMax} letters
                         </div>
                     </div>
                 }
