@@ -1,7 +1,9 @@
-export enum SysMsg {
+export enum SysMsgType {
     none = '1',
     userJoined = '2',
-    userLeft = '3'
+    userLeft = '3',
+    welcome = '4',
+    info = '5'
 }
 
 export enum SetupEventType {
@@ -49,9 +51,9 @@ export interface Setup_Player {
 
 
 export interface Setup_ChatMsg {
-    name: string;
-    msg: string;
-    type: SysMsg;
+    n: string;      //name
+    m: string;      //message
+    t: SysMsgType;  //type
 }
 
 

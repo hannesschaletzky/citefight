@@ -4,7 +4,12 @@ $sdbg: false; //show debugging background = sdbg
 .Con {
   height: 100%;
   display: flex;
+  align-items: center;
   justify-content: center;
+
+  @if $sdbg {
+    background-color: mediumpurple;
+  }
 }
 
 .Input {
@@ -15,7 +20,7 @@ $sdbg: false; //show debugging background = sdbg
 
   //border
   border: 3px solid;
-  border-color: rgba(78, 201, 22, 0.8);
+  border-color: rgba(28, 179, 28, 0.8);
   border-radius: 8px;
 
   outline: none;
@@ -33,95 +38,109 @@ $sdbg: false; //show debugging background = sdbg
   }
 }
 
-.Button_Join {
-  height: 40px;
-  margin-left: 10px;
+.Joined_Con {
+  display: inherit;
+}
+
+.Button_Base {
   cursor: pointer;
-
-  flex: 1;
-
   //border
   border-color: transparent;
   border-radius: 8px;
-
   //text
   @extend .HelveticaNeueBoldFont;
   color: rgba(255, 255, 255, 1);
-
   //colour, shadow, outline
   box-shadow: 2px 2px rgba(5, 19, 19, 0.5);
   outline: none;
+}
+
+.Button_Join {
+  @extend .Button_Base;
+  height: 40px;
+  margin-left: 10px;
+  flex: 1;
   background-color: rgba(28, 179, 28, 0.8);
 
   &:hover {
     background-color: rgba(28, 179, 28, 0.6);
   }
+  &:active {
+    box-shadow: 0 0px transparent;
+  }
 }
 
 .Button_Leave {
   height: 40px;
-  cursor: pointer;
-
-  //border
-  border-color: transparent;
-  border-radius: 8px;
-
-  //text
-  @extend .HelveticaNeueBoldFont;
-  color: rgb(255, 255, 255);
-
-  //colour, shadow, outline
-  box-shadow: 2px 2px rgba(5, 19, 19, 0.5);
-  outline: none;
+  @extend .Button_Base;
   background-color: rgba(179, 28, 53, 0.9);
 
   &:hover {
     background-color: rgba(179, 28, 53, 0.7);
   }
+  &:active {
+    box-shadow: 0 0px transparent;
+  }
 }
 
 .Button_Ready {
+  @extend .Button_Base;
   height: 40px;
   margin-left: 25px;
-  cursor: pointer;
-
-  //border
-  border-color: transparent;
-  border-radius: 8px;
-
-  //text
-  @extend .HelveticaNeueBoldFont;
-  color: rgb(255, 255, 255);
-
-  //colour, shadow, outline
-  box-shadow: 2px 2px rgba(5, 19, 19, 0.5);
-  outline: none;
-  background-color: rgba(28, 179, 53, 0.9);
+  background-color: rgba(28, 179, 28, 0.8);
 
   &:hover {
-    background-color: rgba(28, 179, 53, 0.7);
+    background-color: rgba(28, 179, 28, 0.6);
+  }
+  &:active {
+    box-shadow: 0 0px transparent;
   }
 }
 
 .Button_Unready {
+  @extend .Button_Base;
   height: 40px;
   margin-left: 25px;
-  cursor: pointer;
-
-  //border
-  border-color: transparent;
-  border-radius: 8px;
-
-  //text
-  @extend .HelveticaNeueBoldFont;
-  color: rgb(255, 255, 255);
-
-  //colour, shadow, outline
-  box-shadow: 2px 2px rgba(5, 19, 19, 0.5);
-  outline: none;
   background-color: rgba(219, 165, 14, 0.9);
 
   &:hover {
     background-color: rgba(219, 165, 14, 0.7);
   }
+  &:active {
+    box-shadow: 0 0px transparent;
+  }
+}
+
+.Share_Con {
+  margin-left: 25px;
+  height: 36px;
+  width: 36px;
+
+  cursor: pointer;
+  box-shadow: 2px 2px rgba(5, 19, 19, 0.5);
+  outline: none;
+
+  @extend .borderWithRoundedCorners;
+  @if $sdbg {
+    background-color: maroon;
+  }
+
+  &:active {
+    box-shadow: 0 0px transparent;
+  }
+}
+
+.Copy_Icon {
+  width: 25px;
+  height: 25px;
+  opacity: 0.7;
+
+  //center content vertically
+  position: relative;
+  top: 50%;
+  transform: translateY(-50%);
+  //center content horizontally
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
 }

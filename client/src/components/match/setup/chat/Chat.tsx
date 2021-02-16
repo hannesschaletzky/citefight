@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import st from './Chat.module.scss'
 
 import {Setup_ChatMsg} from 'components/Interfaces'
-import {SysMsg} from 'components/Interfaces'
+import {SysMsgType} from 'components/Interfaces'
 import {SetupChatStatus} from 'components/Interfaces'
 
 import WarningIcon from 'assets/setup/Warning_Icon.png'
@@ -49,9 +49,9 @@ class Chat extends Component <any, any> {
         }
 
         let newMsg:Setup_ChatMsg = {
-            name: '',
-            msg: this.state.userMsg,
-            type: SysMsg.none
+            n: '',
+            m: this.state.userMsg,
+            t: SysMsgType.none
         }
 
         this.props.onNewMsg(newMsg) //fire event in parent
@@ -125,23 +125,33 @@ class Chat extends Component <any, any> {
             let item:Setup_ChatMsg = inputMessages[i]
             let card = 
                 <div className={st.Message_Con} key={i}>
-                    {item.type === SysMsg.userJoined &&
+                    {item.t === SysMsgType.welcome &&
+                        <div className={st.SysMessage_Welcome}>
+                            {item.m}
+                        </div>
+                    }
+                    {item.t === SysMsgType.userJoined &&
                         <div className={st.SysMessage_Joined}>
-                            {item.msg}
+                            {item.m}
                         </div>
                     }
-                    {item.type === SysMsg.userLeft &&
+                    {item.t === SysMsgType.userLeft &&
                         <div className={st.SysMessage_Left}>
-                            {item.msg}
+                            {item.m}
                         </div>
                     }
-                    {item.type === SysMsg.none &&
+                    {item.t === SysMsgType.info &&
+                        <div className={st.SysMessage_Info}>
+                            {item.m}
+                        </div>
+                    }
+                    {item.t === SysMsgType.none &&
                         <div className={st.SysMessage_None}>
                             <div className={st.Sender}>
-                                {item.name}:
+                                {item.n}:
                             </div>
                             <div className={st.Content}>
-                                {item.msg}
+                                {item.m}
                             </div>
                         </div>  
                     }
@@ -157,31 +167,25 @@ class Chat extends Component <any, any> {
                 </div>
                 {this.state.status === SetupChatStatus.enabled &&
                     <div className={st.Info_Con_Send}>
-                        <div className={st.Info_Con_Inner}>
-                            <img className={st.Info_Icon} src={SendIcon} alt="Info"/>
-                            <div>
-                                Send with return
-                            </div>
+                        <img className={st.Info_Icon} src={SendIcon} alt="Info"/>
+                        <div>
+                            Send with return
                         </div>
                     </div>
                 }
                 {this.state.status === SetupChatStatus.inputTooLong &&
                     <div className={st.Info_Con_TooLong}>
-                        <div className={st.Info_Con_Inner}>
-                            <img className={st.Info_Icon} src={WarningIcon} alt="Warning"/>
-                            <div>
-                                Exceeded 50 letters
-                            </div>
+                        <img className={st.Info_Icon} src={WarningIcon} alt="Warning"/>
+                        <div>
+                            Exceeded 50 letters
                         </div>
                     </div>
                 }
                 {this.state.status === SetupChatStatus.sentTooMuch &&
                     <div className={st.Info_Con_TooMuch}>
-                        <div className={st.Info_Con_Inner}>
-                            <img className={st.Info_Icon} src={WarningIcon} alt="Warning"/>
-                            <div>
-                                Easy Boy...
-                            </div>
+                        <img className={st.Info_Icon} src={WarningIcon} alt="Warning"/>
+                        <div>
+                            Easy Boy...
                         </div>
                     </div>
                 }

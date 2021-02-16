@@ -27,6 +27,11 @@ $sdbg: false; //show debugging background = sdbg
   @extend .borderWithRoundedCorners;
 }
 
+.SysMessage_Welcome {
+  @extend .SysMessage;
+  background-color: rgba(175, 175, 175, 0.3);
+}
+
 .SysMessage_Joined {
   @extend .SysMessage;
   background-color: rgba(240, 153, 72, 0.3);
@@ -35,6 +40,11 @@ $sdbg: false; //show debugging background = sdbg
 .SysMessage_Left {
   @extend .SysMessage;
   background-color: rgba(83, 72, 240, 0.3);
+}
+
+.SysMessage_Info {
+  @extend .SysMessage;
+  background-color: rgba(247, 244, 244, 0.3);
 }
 
 .SysMessage_None {
@@ -58,9 +68,10 @@ $sdbg: false; //show debugging background = sdbg
   height: 25px;
   margin: 3px;
   display: flex;
-  flex-direction: column;
-  justify-content: center;
+  justify-content: left;
+  align-items: center;
   opacity: 0.7;
+  font-size: 14px;
   @extend .borderWithRoundedCorners;
 }
 
@@ -77,11 +88,6 @@ $sdbg: false; //show debugging background = sdbg
 .Info_Con_TooMuch {
   @extend .Info_Con_Base;
   background-color: rgba(191, 211, 16, 0.5);
-}
-
-.Info_Con_Inner {
-  display: flex;
-  font-size: 14px;
 }
 
 .Info_Icon {

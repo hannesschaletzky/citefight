@@ -7,7 +7,7 @@ import {Setup_Event} from 'components/Interfaces'
 import {Setup_Player} from 'components/Interfaces'
 import {Setup_ChatMsg} from 'components/Interfaces'
 import {Twitter_User} from 'components/Interfaces'
-import {SysMsg} from 'components/Interfaces'
+import {SysMsgType} from 'components/Interfaces'
 import {SetupEventType} from 'components/Interfaces'
 import {SetupJoinStatus} from 'components/Interfaces'
 //import {PusherConState} from 'components/Interfaces'
@@ -71,21 +71,27 @@ export default function Setup() {
         forceUpdate()
     }
 
-    const addSysMsg = (type:SysMsg, userName:string) => {
+    const addSysMsg = (type:SysMsgType, inputMsg:string) => {
 
         //create msg
         let msg:Setup_ChatMsg = {
-            name: '',
-            msg: '',
-            type: type
+            n: '',
+            m: '',
+            t: type
         }
 
         //determine type 
-        if (type === SysMsg.userJoined) {
-            msg.msg = userName + ' joined'
+        if (type === SysMsgType.welcome) {
+            msg.m = inputMsg
         }
-        else if (type === SysMsg.userLeft) {
-            msg.msg = userName + ' left'
+        else if (type === SysMsgType.userJoined) {
+            msg.m = inputMsg + ' joined'
+        }
+        else if (type === SysMsgType.userLeft) {
+            msg.m = inputMsg + ' left'
+        }
+        else if (type === SysMsgType.info) {
+            msg.m = inputMsg
         }
 
         //add
@@ -164,7 +170,7 @@ export default function Setup() {
                     //remove user
                     let i = getIndexOfUser(member.id)
                     ref_players.current.splice(i,1);
-                    addSysMsg(SysMsg.userLeft, member.id)
+                    addSysMsg(SysMsgType.userLeft, member.id)
                     forceUpdate()
                     assignJoinEventAdmin()
                 });
@@ -244,7 +250,7 @@ export default function Setup() {
                 ready: false
             }
             ref_players.current.push(newUser)
-            addSysMsg(SysMsg.userJoined, name)
+            addSysMsg(SysMsgType.userJoined, name)
         }
 
         if (ref_players.current.length === 0 && triggerUser === userName) {
@@ -253,6 +259,12 @@ export default function Setup() {
                 -> dont send out event, add youself manually
             */
             console.log('you are the only person in the room')
+            //insert welcome first
+            let currentUrl = window.location.href
+            addSysMsg(SysMsgType.welcome,   'Welcome to your matchroom!') 
+            addSysMsg(SysMsgType.welcome,   'Invite the people you wanna play by sending them the game-link.' +
+                                            ' You can copy simply the URL with the button at the top or use the link below.') 
+            addSysMsg(SysMsgType.welcome,   currentUrl) 
             joinPlayer(triggerUser)
             setJoinStatus(SetupJoinStatus.Joined)
             forceUpdate()
@@ -340,11 +352,24 @@ export default function Setup() {
 
     const fireEvent_Chat = async () => {
 
+        //publish without info messages -> remove them
+        for(let i=ref_chat.current.length-1;i>=0;i--) {
+            if (ref_chat.current[i].t === SysMsgType.info) {
+                ref_chat.current.splice(i,1)
+            }
+        }
+
         //remove first message of chat until chat is smaller than 10KB
         let chatString = JSON.stringify(ref_chat.current)
         while (chatString.length > 10000) {
             console.log('Chat too long\n -> removing first message')
-            ref_chat.current.shift()
+            //find first non welcome message to remove
+            for(let i=0;i<ref_chat.current.length;i++) {
+                if (ref_chat.current[i].t !== SysMsgType.welcome) {
+                    ref_chat.current.splice(i,1)
+                    break
+                }
+            }
             chatString = JSON.stringify(ref_chat.current)
         }
 
@@ -449,8 +474,8 @@ export default function Setup() {
 
     //passed to chat 
     const onNewChatMessage = (newMsg:Setup_ChatMsg) => {
-        console.log('new chat msg received: ' + newMsg.msg)
-        newMsg.name = userName //chat component does not know/set user name
+        //console.log('new chat msg received: ' + newMsg.m)
+        newMsg.n = userName //chat component does not know/set user name
         ref_chat.current.push(newMsg)
         fireEvent_Chat()
     }
@@ -467,6 +492,11 @@ export default function Setup() {
     const onToogleReady = (ready:boolean) => {
         toogleReady(ready)
     } 
+
+    const onCopyToClipboard = () => {
+        addSysMsg(SysMsgType.info, 'copied gamelink!')
+        forceUpdate()
+    }
 
     /*
     ##################################
@@ -498,6 +528,7 @@ export default function Setup() {
                     onJoinClick={onJoinTriggered}
                     onLeaveClick={onLeaveTriggered}
                     onToogleReadyClick={onToogleReady}
+                    onCopyClick={onCopyToClipboard}
                 />
             </div>
             <div className={st.Players_Con}>

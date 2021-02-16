@@ -4,6 +4,8 @@ import st from './Interaction.module.scss'
 import {SetupJoinStatus} from 'components/Interfaces'
 import {Setup_Player} from 'components/Interfaces'
 
+import CopyIcon from 'assets/setup/Copy_Icon.png'
+
 import CircularProgress from '@material-ui/core/CircularProgress';
 
 class Interaction extends Component <any, any> {
@@ -68,6 +70,13 @@ class Interaction extends Component <any, any> {
         }
     }
 
+    
+    copyClicked() {
+        let currentUrl = window.location.href
+        navigator.clipboard.writeText(currentUrl)
+        this.props.onCopyClick()
+    }
+
     render() { 
 
         let user:Setup_Player = this.props.user
@@ -91,7 +100,7 @@ class Interaction extends Component <any, any> {
                     </button>
                 }
                 {(this.props.status === SetupJoinStatus.Joined) && 
-                    <div>
+                    <div className={st.Joined_Con}>
                         <button className={st.Button_Leave} onClick={() => this.onLeaveClick()}>
                             Leave
                         </button>
@@ -105,6 +114,9 @@ class Interaction extends Component <any, any> {
                                 Unready
                             </button>
                         }
+                        <div className={st.Share_Con} title="Click to copy matchlink" onClick={() => this.copyClicked()}>
+                            <img className={st.Copy_Icon} src={CopyIcon} alt="Copy"/>
+                        </div>
                     </div>
                 }
                 {(this.props.status === SetupJoinStatus.Connecting) && 
