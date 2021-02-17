@@ -2,7 +2,6 @@ import React, { Component } from 'react';
 import styled from 'styled-components';
 import st from './Nav.module.scss'
 
-
 //https://freeicons.io/ 
 import Answer from 'assets/nav/Answer.png'
 import Ranking from 'assets/nav/Ranking.png'
@@ -19,12 +18,16 @@ class Nav extends Component <any, any> {
     active = 'active'
     inactive = 'inactive'
 
-    Icon_Con_New = styled.div`
+    Icon_Con = styled.div`
         height: 50px;
         width: 50px;
 
         border: 1.7px transparent;
         border-radius: 20px;
+
+        display: flex;
+        align-items: center;
+        justify-content: center;
 
         &.${this.active} {
             background-color: rgb(238, 235, 235) !important; //overrides hover color
@@ -85,18 +88,18 @@ class Nav extends Component <any, any> {
         return (  
             <div>
                 <div className={st.Nav_Bar}>
-                    <this.Icon_Con_New className={this.checkActive(0)} onClick={() => this.setIndex(0)} >
+                    <this.Icon_Con className={this.checkActive(0)} onClick={() => this.setIndex(0)} >
                         <img className={st.Nav_Icon} src={Answer} alt="Answer" title="Answers"/>
-                    </this.Icon_Con_New>
-                    <this.Icon_Con_New className={this.checkActive(1)} onClick={() => this.setIndex(1)} >
+                    </this.Icon_Con>
+                    <this.Icon_Con className={this.checkActive(1)} onClick={() => this.setIndex(1)} >
                         <img className={st.Nav_Icon} src={Ranking} alt="Ranking" title="Ranking"/>
-                    </this.Icon_Con_New>
-                    <this.Icon_Con_New className={this.checkActive(2)} onClick={() => this.setIndex(2)} >
+                    </this.Icon_Con>
+                    <this.Icon_Con className={this.checkActive(2)} onClick={() => this.setIndex(2)} >
                         <img className={st.Nav_Icon} src={Chat} alt="Chat" title="Chat"/>
-                    </this.Icon_Con_New>
-                    <this.Icon_Con_New className={this.checkActive(3)} onClick={() => this.setIndex(3)} >
+                    </this.Icon_Con>
+                    <this.Icon_Con className={this.checkActive(3)} onClick={() => this.setIndex(3)} >
                         <img className={st.Nav_Icon} src={Settings} alt="Settings" title="Settings"/>
-                    </this.Icon_Con_New>
+                    </this.Icon_Con>
                 </div>
                 <div>
                     {content}

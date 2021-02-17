@@ -1,4 +1,5 @@
-$test_colour: rgb(214, 235, 28);
+$sdbg: false; //show debugging background = sdbg
+@import "styles/app.global.scss";
 
 .Nav_Bar {
   padding-top: 5px;
@@ -8,30 +9,7 @@ $test_colour: rgb(214, 235, 28);
   justify-content: space-evenly;
 }
 
-.Icon_Con {
-  height: 50px;
-  width: 50px;
-
-  border: 1.7px transparent;
-  border-radius: 20px;
-
-  //background-color: rgb(238, 235, 235);
-}
-
-.Icon_Con:hover {
-  background-color: rgb(243, 243, 243);
-}
-
 .Nav_Icon {
   padding: 0;
   width: 25px;
-
-  //center content vertically
-  position: relative;
-  top: 50%;
-  transform: translateY(-50%);
-  //center content horizontally
-  display: block;
-  margin-left: auto;
-  margin-right: auto;
 }

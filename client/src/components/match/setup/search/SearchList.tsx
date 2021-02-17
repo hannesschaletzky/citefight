@@ -4,6 +4,12 @@ import st from './SearchList.module.scss'
 import {Twitter_User} from 'components/Interfaces'
 import VerifiedIcon from 'assets/tweet/VerifiedIcon.png'
 
+enum ActionConType {
+    init,
+    add,
+    follow
+}
+
 class Search_List extends Component <any, any> {
 
     constructor(props: any) {
@@ -33,20 +39,6 @@ class Search_List extends Component <any, any> {
     }
 
     addUser(user: Twitter_User) {
-
-        if (user.protected) {
-            console.log('cant add protected user')
-            return
-        }
-
-        let addedUsers:Twitter_User[] = this.props.addedUsers
-        for(let i=0;i<addedUsers.length;i++) {
-            let item = addedUsers[i]
-            if (item.screen_name === user.screen_name) {
-                console.log(user.screen_name + ' already added')
-                return
-            }
-        }
 
         //retrieve only information that we need, not entire object
         let parsedUser:Twitter_User = {
@@ -91,6 +83,32 @@ class Search_List extends Component <any, any> {
                 topTitle = 'This profile is not public, if youre logged in with your user, you can follow it'
             }
 
+            //determine action con to display
+            let actionCon:ActionConType = ActionConType.init
+            if (!user.protected) {
+                actionCon = ActionConType.add
+            }
+            else if (user.protected && !user.following) {
+                actionCon = ActionConType.follow
+            }
+
+            //check if user already added
+            let addedUsers:Twitter_User[] = this.props.addedUsers
+            for(let i=0;i<addedUsers.length;i++) {
+                let item = addedUsers[i]
+                if (item.screen_name === user.screen_name) {
+                    //user already added, no actions available
+                    actionCon = ActionConType.init
+                    break
+                }
+            }
+
+            //determine if name contains emoji
+            let userNameClass = st.UserName
+            if (/\p{Extended_Pictographic}/u.test(user.name) ) {
+                userNameClass = st.UserName_Emoji
+            }
+
             cards.push(
                 <div className={topClassName} key={user.screen_name} title={topTitle} onClick={() => this.toogleActiveCard(user.screen_name, user.protected)}>
                     <a href={profileUrl} target="_blank" rel="noreferrer" title="View twitter profile">
@@ -99,7 +117,7 @@ class Search_List extends Component <any, any> {
                     <div className={st.UserCard_DataCon}>
                         <div className={st.Names_Con}>
                             <div className={st.UserName_Con}>
-                                <div className={st.UserName} title={user.name}>
+                                <div className={userNameClass} title={user.name}>
                                     {user.name}
                                 </div>
                                 {user.verified && <img className={st.Verified_Icon} src={VerifiedIcon} title="Verified User" alt="Verified"/>}
@@ -117,12 +135,20 @@ class Search_List extends Component <any, any> {
                             </div>
                         </div>
                         <div className={this.checkActive(user.screen_name)} onClick={() => this.toogleActiveCard(user.screen_name, user.protected)}>
-                            <button onClick={() => this.followUser(user)}>
-                                Follow
-                            </button>
-                            <button onClick={() => this.addUser(user)}>
-                                Add
-                            </button>
+                            {(actionCon === ActionConType.add) &&
+                                <div className={st.Actions_Con}>
+                                    <button className={st.Button_Add} onClick={() => this.addUser(user)}>
+                                        Add
+                                    </button>
+                                </div>
+                            }
+                            {(actionCon === ActionConType.follow) &&
+                                <div className={st.Actions_Con}>
+                                    <button className={st.Button_Follow} onClick={() => this.followUser(user)}>
+                                        Follow
+                                    </button>
+                                </div>
+                            }
                         </div>
                     </div>
                 </div>

@@ -36,11 +36,12 @@ $header_height: 55px;
 
   display: flex;
   flex-direction: column;
-  min-height: 91%;
+  height: 92% !important;
 }
 
 .Root_Content {
   flex: 1; //enables growing
+  height: 100%;
   background-color: $root_backgroundcolor;
   @if $sdbg {
     background-color: rgba(137, 204, 193, 0.678);

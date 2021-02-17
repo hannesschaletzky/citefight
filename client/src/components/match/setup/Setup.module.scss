@@ -14,6 +14,7 @@ $sdbg: false; //show debugging background = sdbg
 }
 
 .Left_Panel {
+  height: 90%;
   margin-top: 25px;
   margin-left: 25px;
   margin-right: 25px;
@@ -26,6 +27,7 @@ $sdbg: false; //show debugging background = sdbg
 }
 
 .Center_Panel {
+  height: 90%;
   margin-top: 25px;
   flex: 1; //fill space
   max-width: 33%;
@@ -36,6 +38,7 @@ $sdbg: false; //show debugging background = sdbg
 }
 
 .Right_Panel {
+  height: 90%;
   margin-top: 25px;
   margin-left: 25px;
   margin-right: 25px;

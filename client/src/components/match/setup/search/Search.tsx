@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import st from './Search.module.scss'
+import styled from 'styled-components';
 
 import SearchList from './SearchList'
 import CircularProgress from '@material-ui/core/CircularProgress';
@@ -11,7 +12,8 @@ import TwitterIcon from 'assets/footer/Twitter_Icon.png'
 
 const stateInitArray:Twitter_User[] = []
 
-export default function Search( joinType: SetupJoinStatus, 
+export default function Search( 
+                                joinType: SetupJoinStatus, 
                                 addedUsers:Twitter_User[],
                                 panelContainer:string,
                                 addUserFunc:(par1: Twitter_User) => void) {
@@ -167,26 +169,42 @@ export default function Search( joinType: SetupJoinStatus,
             <div className={panelContainer} /* coming from parent container*/>
                 <div className={st.Con}>
                     <div className={st.Top_Con}>
-                        <input className={st.Input} type="search" autoComplete="off" placeholder="Type name or usertag" onChange={(e) => userNameChanged(e.target.value)} onKeyPress={(e) => keyPressed(e)}/>
-                        {searchEnabled && <div className={st.buttonCon}>
-                            <img className={st.Icon} src={TwitterIcon} alt="Twitter" onClick={(e) => onSearchButtonClick(RequestType.inital)}/>
-                            <button className={st.searchButton} onClick={(e) => onSearchButtonClick(RequestType.inital)}>Search</button>
-                        </div>}
-                    </div>
-                    <SearchList 
-                        data={userObjects}
-                        addedUsers={addedUsers}
-                        onAddUser={addUserFunc}
-                        />
-                    <div className={st.buttonMore_Con}>
-                        {(userObjects.length % 20 === 0) && (userObjects.length !== 0) && 
-                            <button className={st.buttonMore} onClick={(e) => onSearchButtonClick(RequestType.more)}>
-                                Show more...
-                            </button>
+                        <input  className={st.Input} 
+                                type="search" 
+                                autoComplete="off" 
+                                placeholder="Enter username or tag..." 
+                                onChange={(e) => userNameChanged(e.target.value)} 
+                                onKeyPress={(e) => keyPressed(e)}/>
+                        {searchEnabled && 
+                            <div className={st.Button_Con}>
+                                <img className={st.Icon} 
+                                     src={TwitterIcon} 
+                                     alt="Twitter" 
+                                     onClick={(e) => onSearchButtonClick(RequestType.inital)}/>
+                                <button className={st.Search} 
+                                        onClick={(e) => onSearchButtonClick(RequestType.inital)}>
+                                            Search
+                                </button>
+                            </div>
                         }
                     </div>
-                    <div className={st.loading_Con}>
-                        {loading && <CircularProgress/>}
+                    <div className={st.List_Con}>
+                        <SearchList
+                            data={userObjects}
+                            addedUsers={addedUsers}
+                            onAddUser={addUserFunc}
+                        />
+                        <div className={st.Bottom_Con}>
+                            {(userObjects.length % 20 === 0) && (userObjects.length !== 0) && 
+                                <button className={st.More} 
+                                        onClick={(e) => onSearchButtonClick(RequestType.more)}>
+                                    Show more...
+                                </button>
+                            }
+                            {loading && 
+                                <CircularProgress/>
+                            }
+                        </div>
                     </div>
                 </div>
             </div>
@@ -199,6 +217,10 @@ export default function Search( joinType: SetupJoinStatus,
   );
 }
 
+/*
+<div className={st.Con}>
+<div className={st.Con}>
+*/
 
 
 

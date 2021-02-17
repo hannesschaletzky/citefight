@@ -1,6 +1,4 @@
-//debugging
 $sdbg: false; //show debugging background = sdbg
-
 @import "styles/app.global.scss";
 
 .userCard_Con {
@@ -72,13 +70,21 @@ $sdbg: false; //show debugging background = sdbg
 }
 
 .UserName {
-  display: block;
-  height: 20px;
+  height: 22px;
+  //stick to top
+  display: flex;
+  align-items: baseline;
+
   word-break: break-all;
   overflow: hidden;
   @extend .HelveticaNeueBoldFont;
+}
 
-  //background-color: violet;
+.UserName_Emoji {
+  @extend .UserName;
+  //super work around -> RIP
+  margin-top: -4px !important;
+  height: 26px !important;
 }
 
 .Verified_Icon {
@@ -89,8 +95,9 @@ $sdbg: false; //show debugging background = sdbg
 }
 
 .UserTag {
-  width: fit-content;
   height: 19px;
+  width: fit-content;
+  margin-top: -3px;
   overflow-x: hidden;
   @extend .HelveticaNeueRegularFont;
 }
@@ -116,4 +123,47 @@ $sdbg: false; //show debugging background = sdbg
 .Follower_Count {
   padding-right: 5px;
   @extend .HelveticaNeueRegularFont;
+}
+
+//ACTIONS THAT ARE DISPLAYED ON CLICK
+.Actions_Con {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.Button_Base {
+  height: 30px;
+  margin: 5px;
+  cursor: pointer;
+  //border
+  border-color: transparent;
+  border-radius: 8px;
+  //text
+  @extend .HelveticaNeueBoldFont;
+  color: white;
+  //shadow, outline
+  box-shadow: 2px 2px rgba(5, 19, 19, 0.5);
+  outline: none;
+  &:active {
+    box-shadow: 0 0px transparent;
+  }
+}
+
+.Button_Follow {
+  @extend .Button_Base;
+  background-color: rgba(210, 105, 30, 0.8);
+  &:hover {
+    background-color: rgba(210, 105, 30, 0.6);
+  }
+}
+
+.Button_Add {
+  @extend .Button_Base;
+  background-color: rgba($ready_colour, 0.8);
+  &:hover {
+    background-color: rgba($ready_colour, 0.6);
+  }
 }

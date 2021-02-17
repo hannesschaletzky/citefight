@@ -1,3 +1,8 @@
+
+
+
+
+
 export function didUserExceedLimit(timestamps:string[],actionCount:number, timeSpan: number = 15000):boolean {
     //if user wants to send more than 5 messages within 15 seconds -> return true
     //check only as soon as five messages were sent
