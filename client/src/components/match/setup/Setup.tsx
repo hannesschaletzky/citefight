@@ -266,7 +266,8 @@ export default function Setup() {
             let currentUrl = window.location.href
             addSysMsg(SysMsgType.welcome,   '🎉 Welcome to your matchroom!') 
             addSysMsg(SysMsgType.welcome,   '🎉 Invite the people you wanna play by sending them the match-link.' +
-                                            ' Copy the URL from the top-button or the link below.') 
+                                            ' Copy the URL from the top-button or the link below.' +
+                                            ' The game will start when everyone is ready.') 
             addSysMsg(SysMsgType.welcome,   currentUrl) 
             joinPlayer(triggerUser)
             setJoinStatus(SetupJoinStatus.Joined)
@@ -515,7 +516,7 @@ export default function Setup() {
         {Search(
             ref_joinStatus.current, //pass status bc. you cant do && with functional comp.
             ref_twitterUsers.current,
-            st.Left_Panel,
+            st.Left_Panel, //pass outside panel css-class, so it can be embedded and returned
             onNewTwitterUserAdded
             )
         }

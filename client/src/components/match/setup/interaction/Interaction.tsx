@@ -128,6 +128,12 @@ class Interaction extends Component <any, any> {
 
         return ( 
             <div>
+                {(this.props.status === SetupJoinStatus.NotJoined || 
+                this.props.status === SetupJoinStatus.Failed) &&
+                    <div className={st.Header_Con}>
+                        Type your name and join the room! 
+                    </div>
+                }
                 <div className={st.Con}>
                     {(this.props.status === SetupJoinStatus.NotJoined || 
                     this.props.status === SetupJoinStatus.Failed) &&

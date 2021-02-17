@@ -1,6 +1,15 @@
 $sdbg: false; //show debugging background = sdbg
 @import "styles/app.global.scss";
 
+.Header_Con {
+  margin-bottom: 10px;
+  display: flex;
+  justify-content: center;
+
+  @extend .HelveticaNeueBoldFont;
+  font-size: calc(8px + 2vmin);
+}
+
 .Con {
   height: 100%;
   display: flex;
@@ -15,12 +24,13 @@ $sdbg: false; //show debugging background = sdbg
 .Input {
   height: 40px;
   flex: 4;
+  text-align: center;
 
   @extend .HelveticaNeueBoldFont;
 
   //border
-  border: 3px solid;
-  border-color: rgba(28, 179, 28, 0.8);
+  border: 2px solid;
+  border-color: rgba(143, 143, 143, 0.8);
   border-radius: 8px;
   outline: none;
 

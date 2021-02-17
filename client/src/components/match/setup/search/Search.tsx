@@ -154,41 +154,39 @@ export default function Search( joinType: SetupJoinStatus,
         }
     }
 
-    /*
-        -> conditions have to be passed to the function in order to avoid
-            -> React has detected a change in the order of Hooks
-            -> Uncaught Invariant Violation: Rendered more hooks than during the previous render
-            https://reactjs.org/docs/hooks-rules.html
-    */
     const getContent = () => {
+        /*
+            -> conditions have to be passed to the function in order to avoid
+                -> React has detected a change in the order of Hooks
+                -> Uncaught Invariant Violation: Rendered more hooks than during the previous render
+                https://reactjs.org/docs/hooks-rules.html
+        */
         let rtn = <div></div>
         if (joinType === SetupJoinStatus.Joined) {
             rtn = 
             <div className={panelContainer} /* coming from parent container*/>
-                <div className={st.Left_Panel}> 
-                    <div className={st.Con}>
-                        <div className={st.Top_Con}>
-                            <input className={st.Input} type="search" autoComplete="off" placeholder="Type name or usertag" onChange={(e) => userNameChanged(e.target.value)} onKeyPress={(e) => keyPressed(e)}/>
-                            {searchEnabled && <div className={st.buttonCon}>
-                                <img className={st.Icon} src={TwitterIcon} alt="Twitter" onClick={(e) => onSearchButtonClick(RequestType.inital)}/>
-                                <button className={st.searchButton} onClick={(e) => onSearchButtonClick(RequestType.inital)}>Search</button>
-                            </div>}
-                        </div>
-                        <SearchList 
-                            data={userObjects}
-                            addedUsers={addedUsers}
-                            onAddUser={addUserFunc}
-                            />
-                        <div className={st.buttonMore_Con}>
-                            {(userObjects.length % 20 === 0) && (userObjects.length !== 0) && 
-                                <button className={st.buttonMore} onClick={(e) => onSearchButtonClick(RequestType.more)}>
-                                    Show more...
-                                </button>
-                            }
-                        </div>
-                        <div className={st.loading_Con}>
-                            {loading && <CircularProgress/>}
-                        </div>
+                <div className={st.Con}>
+                    <div className={st.Top_Con}>
+                        <input className={st.Input} type="search" autoComplete="off" placeholder="Type name or usertag" onChange={(e) => userNameChanged(e.target.value)} onKeyPress={(e) => keyPressed(e)}/>
+                        {searchEnabled && <div className={st.buttonCon}>
+                            <img className={st.Icon} src={TwitterIcon} alt="Twitter" onClick={(e) => onSearchButtonClick(RequestType.inital)}/>
+                            <button className={st.searchButton} onClick={(e) => onSearchButtonClick(RequestType.inital)}>Search</button>
+                        </div>}
+                    </div>
+                    <SearchList 
+                        data={userObjects}
+                        addedUsers={addedUsers}
+                        onAddUser={addUserFunc}
+                        />
+                    <div className={st.buttonMore_Con}>
+                        {(userObjects.length % 20 === 0) && (userObjects.length !== 0) && 
+                            <button className={st.buttonMore} onClick={(e) => onSearchButtonClick(RequestType.more)}>
+                                Show more...
+                            </button>
+                        }
+                    </div>
+                    <div className={st.loading_Con}>
+                        {loading && <CircularProgress/>}
                     </div>
                 </div>
             </div>
