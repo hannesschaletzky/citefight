@@ -10,10 +10,10 @@ import {Twitter_User} from 'components/Interfaces'
 import {SysMsgType} from 'components/Interfaces'
 import {SetupEventType} from 'components/Interfaces'
 import {SetupJoinStatus} from 'components/Interfaces'
+import {TwitterStatus} from 'components/Interfaces'
 //import {PusherConState} from 'components/Interfaces'
 
 import Search from './search/Search'
-import SearchTestComp from './search/SearchTestComp'
 import Interaction from './interaction/Interaction'
 import Players from './players/Players'
 import Chat from './chat/Chat'
@@ -30,6 +30,7 @@ let userName = ""
 
 export default function Setup() {
     //states
+    const ref_twitterStatus = useRef(TwitterStatus.none)
     const ref_twitterUsers = useRef(init_twitterUser);
     const ref_players = useRef(init_players);
     const ref_chat = useRef(init_chat);
@@ -38,7 +39,7 @@ export default function Setup() {
 
     //const [pusherConState, setPusherConState] = useState(PusherConState.initialized)
     
-    const channelName = 'presence-Game1'
+    const channelName = 'presence-Game2'
 
     //params hook
     //const { id } = useParams<Record<string, string | undefined>>()
@@ -66,6 +67,7 @@ export default function Setup() {
                 return i
             }
         }
+        console.log('ERROR: could not find user in players array')
         return -1
     }
 
@@ -194,27 +196,24 @@ export default function Setup() {
 
 
     const leaveGame = () => {
-
-        //check if connected
-        if (pusherClient === null) {
-            console.log('no client to disconnect')
-            return
-        }
-        if (pusherChannel === null) {
-            console.log('no channel to disconnect')
-            return
-        }
-
+        
         //unbind channels & disconnect
-        pusherChannel.unbind()
-        pusherClient.disconnect()
-        pusherChannel = null
-        pusherClient = null 
-
+        if (pusherChannel !== null) {
+            pusherChannel.unbind()
+            pusherChannel = null
+            console.log('channed unbound')
+        }
+        if (pusherClient !== null) {
+            pusherClient.disconnect()
+            pusherClient = null 
+            console.log('client disconnected')
+        }
+        
         //reset refs
         ref_twitterUsers.current = []
         ref_chat.current = []
         ref_players.current = []
+        ref_twitterStatus.current = TwitterStatus.none
 
         //reset vars
         setJoinStatus(SetupJoinStatus.NotJoined)
@@ -266,8 +265,8 @@ export default function Setup() {
             //insert welcome first
             let currentUrl = window.location.href
             addSysMsg(SysMsgType.welcome,   '🎉 Welcome to your matchroom!') 
-            addSysMsg(SysMsgType.welcome,   '🎉 Invite the people you wanna play by sending them the match-link.' +
-                                            ' Copy the URL from the top-button or the link below.' +
+            addSysMsg(SysMsgType.welcome,   '🎉 Invite the people you wanna play by sending them the match-link (Browser-URL).' +
+                                            ' You can also let others scan the QR Code.' +
                                             ' The game will start when everyone is ready.') 
             addSysMsg(SysMsgType.welcome,   currentUrl) 
             joinPlayer(triggerUser)
@@ -412,6 +411,9 @@ export default function Setup() {
     */
     const handleEvent_Player = (event:any) => {
 
+        let str = JSON.stringify(event.data, null, 4);
+        console.log(str)
+
         //console.log(pusherChannel.members.count)
         //security
         if (event.type !== SetupEventType.Player) {
@@ -515,13 +517,15 @@ export default function Setup() {
   return (
     <div className={st.Content_Con}>
         {Search(
+            ref_twitterStatus.current,
             ref_joinStatus.current, //pass status bc. you cant do && with functional comp.
             ref_twitterUsers.current,
             st.Left_Panel, //pass outside panel css-class, so it can be embedded and returned
             onNewTwitterUserAdded
             )
         }
-        {(ref_joinStatus.current === SetupJoinStatus.Joined) && 
+        {(ref_joinStatus.current === SetupJoinStatus.Joined) &&
+         (ref_twitterUsers.current.length > 0) &&
             <div className={st.Center_Panel}>
                 {ref_twitterUsers.current.length}
             </div>
@@ -557,226 +561,3 @@ export default function Setup() {
     </div>
   );
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-//{pusherConState}
-
-
-/*
-    //check if already subscribed
-    let _channel = pusherClient.channel(channelName)
-    if (_channel !== undefined) {
-        if (_channel.subscribed) {
-            return
-        }
-    }
-*/
-
-
-/*
-
-
-
-
-    //synchronous compressing
-        let state:any = null
-        await compressBody(ref_setupState.current)
-            .then((res) => {
-                state = res
-                console.log('success compressing')
-            })
-            .catch((err) => {
-                console.log('Error compressing\n-> return')
-                return
-            })
-
-
-
-    import {compress} from 'Extensions'
-import {decompress} from 'Extensions'
-
-    const compressBody = (body:any) => {
-
-        var a = 'a very very long string to be squashed';
-	    var b = compress(a, false); // 'a veryāăąlong striċ to bečquashed'
-        console.log(b)
-
-        let c = decompress(b)
-        console.log(c)
-
-        console.log(Buffer.from(a).byteLength)
-        console.log(Buffer.from(b).byteLength)
-
-        var zlib = require('zlib');
-
-        //convert data to string and create init buffer
-        let str = JSON.stringify(body) 
-        var initBuffer:Buffer = Buffer.from(str)
-        console.log("Init Buffer: " + initBuffer.byteLength);
-
-        return new Promise( function( resolve, reject ) {
-            zlib.deflate(initBuffer, function(err:any, buf:Buffer) {
-                if(err){
-                    console.log("Error Zipping\n" + err);
-                    reject(err);
-                }
-                console.log("Zipped to: " + buf.byteLength);
-                resolve(buf);
-
-                
-                zlib.inflate(buf, function(err:any, buf:any) {
-                        console.log("in the inflate callback:", buf);
-                        console.log("to string:", buf.toString("utf8") );
-                });
-                
-            });
-        });
-    }
-
-
-
-*/
-
-
-
-/*
-            //GET AUTH TOKEN FOR USER
-            let socketId = _pusherClient.connection.socket_id;
-            const response = await fetch('/api/pusher/auth', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'pusherchannel': channelName,
-                    'socketid': socketId
-                },
-                body: '', 
-            });
-            const body = await response.text();
-            //parse to object
-            let obj = JSON.parse(body);
-            let auth = obj.auth
-            console.log('auth: ' + auth)
-            */
-
-
-
-
-
-            /*
-    ##################################
-    ##################################
-        EVENT: Admin
-    ##################################
-    ##################################
-    */
-   /*
-    const handleEvent_Admin = (event:any) => {
-
-        //security
-        if (event.type !== SetupEventType.Admin) {
-            console.log('EventType mismatch in handleEvent_Admin:\n\n' + event)
-            return
-        }
-        let triggerUser = event.data
-
-        //JOIN
-        if (event.adminType === AdminType.join) {
-            
-            //encapsulated join
-            const joinPlayer = (name:string) => {
-                let newUser = createPlayerObject(name)
-                ref_players.current.push(newUser)
-                addSysMsg(SysMsg.userJoined, name)
-            }
-
-            if (ref_players.current.length === 0 && triggerUser === userName) {
-                
-                console.log('you are the only person in the room')
-                joinPlayer(triggerUser)
-                forceUpdate()
-                return
-            }
-
-            if (ref_players.current[0].name === userName) {
-                console.log('BROADCAST join for: ' + triggerUser)
-                joinPlayer(triggerUser)
-                fireEvent_Chat()
-                fireEvent_Player()
-            }
-        }
-
-        //LEAVE
-        else if (event.adminType === AdminType.leave) {
-
-            //first admin
-            if (ref_players.current[0].name === userName) {
-                if (triggerUser === userName) {
-                    return
-                }
-            }
-            //second admin
-            if (ref_players.current[1].name === userName)  {
-                if (triggerUser !== ref_players.current[0].name) {
-                   return
-                }
-            }
-
-            //remove user
-            for (let i=0; i<ref_players.current.length;i++) {
-                let user = ref_players.current[i]
-                if (user.name === triggerUser) {
-                    ref_players.current.splice(i,1);
-                    break
-                }
-            }
-            //insert message
-            addSysMsg(SysMsg.userLeft, triggerUser)
-            //broadcast state
-            console.log('BROADCAST leave for: ' + triggerUser)
-            fireEvent_Chat()
-            fireEvent_Player()
-        }
-        
-    }
-
-    const fireEvent_Admin = async (adminType: AdminType) => {
-
-        if (adminType===AdminType.join) {
-            console.log('Joining... \nasking for current state')
-        }
-
-        //prepare
-        let event:Setup_Event = {
-            type: SetupEventType.Admin,
-            adminType: adminType,
-            data: userName
-        }
-
-        //exectue
-        const response = await fetch('/api/pusher/setup/trigger', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'pusherchannel': channelName,
-                'pusherevent': SetupEventType.Admin
-            },
-            body: JSON.stringify(event), 
-        });
-
-        //read response
-        const body = await response.text();
-        console.log(body)
-    }
-    */

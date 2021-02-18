@@ -7,23 +7,27 @@ import CircularProgress from '@material-ui/core/CircularProgress';
 
 import {Twitter_User} from 'components/Interfaces'
 import {SetupJoinStatus} from 'components/Interfaces'
+import {TwitterStatus} from 'components/Interfaces'
 
 import TwitterIcon from 'assets/footer/Twitter_Icon.png'
 
 const stateInitArray:Twitter_User[] = []
 
 export default function Search( 
-                                joinType: SetupJoinStatus, 
+                                twitterStatus:TwitterStatus,
+                                joinType: SetupJoinStatus,
                                 addedUsers:Twitter_User[],
                                 panelContainer:string,
-                                addUserFunc:(par1: Twitter_User) => void) {
+                                addUserFunc:(par1: Twitter_User) 
+                                => void) 
+                                {
     const [page, setPage] = useState(1);
     const [userObjects, setUserObjects] = useState(stateInitArray);
     const [searchInput, setSearchInput] = useState("");
     const [lastSearchString, setLastSearchString] = useState("");
     const [searchEnabled, setSearchEnabled] = useState(false);
     const [loading, setLoading] = useState(false);
-
+    
     enum RequestType {
         inital,
         more
@@ -34,6 +38,14 @@ export default function Search(
     useEffect(() => {
         
     });
+    */
+
+    /*
+    ##################################
+    ##################################
+            Twitter API Search
+    ##################################
+    ##################################
     */
 
 
@@ -134,9 +146,27 @@ export default function Search(
         return body;
     };
 
+    /*
+    ##################################
+    ##################################
+            Twitter Sign in
+    ##################################
+    ##################################
+    */
+
+    const onSignInButtonClicked = () => {
+        console.log('trying to sign in')
+    }
+
+
+
 
     /*
-        HANDLERS
+    ##################################
+    ##################################
+            Handlers
+    ##################################
+    ##################################
     */
     const userNameChanged = (name: string) => {
         setSearchInput(name)
@@ -158,56 +188,78 @@ export default function Search(
 
     const getContent = () => {
         /*
-            -> conditions have to be passed to the function in order to avoid
-                -> React has detected a change in the order of Hooks
-                -> Uncaught Invariant Violation: Rendered more hooks than during the previous render
+            -> conditions have to be passed to the function of the component in order to avoid
+                -> "React has detected a change in the order of Hooks"
+                -> "Uncaught Invariant Violation: Rendered more hooks than during the previous render"
                 https://reactjs.org/docs/hooks-rules.html
         */
         let rtn = <div></div>
-        if (joinType === SetupJoinStatus.Joined) {
-            rtn = 
-            <div className={panelContainer} /* coming from parent container*/>
-                <div className={st.Con}>
-                    <div className={st.Top_Con}>
-                        <input  className={st.Input} 
-                                type="search" 
-                                autoComplete="off" 
-                                placeholder="Enter username or tag..." 
-                                onChange={(e) => userNameChanged(e.target.value)} 
-                                onKeyPress={(e) => keyPressed(e)}/>
-                        {searchEnabled && 
-                            <div className={st.Button_Con}>
-                                <img className={st.Icon} 
-                                     src={TwitterIcon} 
-                                     alt="Twitter" 
-                                     onClick={(e) => onSearchButtonClick(RequestType.inital)}/>
-                                <button className={st.Search} 
-                                        onClick={(e) => onSearchButtonClick(RequestType.inital)}>
-                                            Search
-                                </button>
-                            </div>
-                        }
-                    </div>
-                    <div className={st.List_Con}>
-                        <SearchList
-                            data={userObjects}
-                            addedUsers={addedUsers}
-                            onAddUser={addUserFunc}
-                        />
-                        <div className={st.Bottom_Con}>
-                            {(userObjects.length % 20 === 0) && (userObjects.length !== 0) && 
-                                <button className={st.More} 
-                                        onClick={(e) => onSearchButtonClick(RequestType.more)}>
-                                    Show more...
-                                </button>
-                            }
-                            {loading && 
-                                <CircularProgress/>
-                            }
+        if (joinType === SetupJoinStatus.Joined) { 
+            if (twitterStatus === TwitterStatus.none) {
+                rtn = 
+                <div className={panelContainer} /*coming from parent container*/>
+                    <div className={st.SignIn_Con}>
+                        <div className={st.Button_Con}>
+                            <img className={st.Icon} 
+                                src={TwitterIcon} 
+                                alt="Sign into Twitter" 
+                                onClick={() => onSignInButtonClicked()}/>
+                            <button className={st.Search} 
+                                    onClick={() => onSignInButtonClicked()}>
+                                        Sign in
+                            </button>
+                        </div>
+                        <div className={st.SignIn_Caption}>
+                            Sign into your Twitter to browse Twitter and add the profiles you wanna play.
                         </div>
                     </div>
                 </div>
-            </div>
+            }
+            else if (twitterStatus === TwitterStatus.signedIn) {
+                rtn = 
+                <div className={panelContainer} /*coming from parent container*/>
+                    <div className={st.Con}>
+                        <div className={st.Top_Con}>
+                            <input  className={st.Input} 
+                                    type="search" 
+                                    autoComplete="off" 
+                                    placeholder="Enter username or tag..." 
+                                    onChange={(e) => userNameChanged(e.target.value)} 
+                                    onKeyPress={(e) => keyPressed(e)}/>
+                            {searchEnabled && 
+                                <div className={st.Button_Con}>
+                                    <img className={st.Icon} 
+                                        src={TwitterIcon} 
+                                        alt="Twitter" 
+                                        onClick={(e) => onSearchButtonClick(RequestType.inital)}/>
+                                    <button className={st.Search} 
+                                            onClick={(e) => onSearchButtonClick(RequestType.inital)}>
+                                                Search
+                                    </button>
+                                </div>
+                            }
+                        </div>
+                        <div className={st.List_Con}>
+                            <SearchList
+                                data={userObjects}
+                                addedUsers={addedUsers}
+                                onAddUser={addUserFunc}
+                            />
+                            <div className={st.Bottom_Con}>
+                                {(userObjects.length % 20 === 0) && (userObjects.length !== 0) && 
+                                    <button className={st.More} 
+                                            onClick={(e) => onSearchButtonClick(RequestType.more)}>
+                                        Show more...
+                                    </button>
+                                }
+                                {loading && 
+                                    <CircularProgress/>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
         }
         return rtn
     }
@@ -217,10 +269,13 @@ export default function Search(
   );
 }
 
+
+
 /*
-<div className={st.Con}>
-<div className={st.Con}>
+
+
+
+
+
+
 */
-
-
-

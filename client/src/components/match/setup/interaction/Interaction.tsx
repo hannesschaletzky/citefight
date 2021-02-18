@@ -7,8 +7,11 @@ import {Setup_Player} from 'components/Interfaces'
 import {didUserExceedLimit} from 'components/Logic'
 
 import CopyIcon from 'assets/setup/Copy_Icon.png'
+import QRCodeIcon from 'assets/setup/QR_Code_Icon.png'
 
 import CircularProgress from '@material-ui/core/CircularProgress';
+//https://www.npmjs.com/package/react-qr-code -> FOR CREDITS
+import QRCode from "react-qr-code";
 
 class Interaction extends Component <any, any> {
 
@@ -16,13 +19,15 @@ class Interaction extends Component <any, any> {
     actionTimestamps:string[] = []
     exceededMsgSent = false
     maxNameChars = 25
+    currentUrl = window.location.href
 
     constructor(props: any) {
         super(props);
         this.state = {
             userName: '',
             joinEnabled: false,
-            userNameInfo: ''
+            userNameInfo: '',
+            showQRCode: false
         };
     }
 
@@ -65,8 +70,7 @@ class Interaction extends Component <any, any> {
             this.sendExceedingLimitMsg()
             return
         }
-        let currentUrl = window.location.href
-        navigator.clipboard.writeText(currentUrl)
+        navigator.clipboard.writeText(this.currentUrl)
         this.addTimestamp()
         this.props.addInfoMsg('copied matchlink')
     }
@@ -80,6 +84,13 @@ class Interaction extends Component <any, any> {
         if (!this.exceededMsgSent) {
             this.props.addInfoMsg('easy boy... too many actions')
             this.exceededMsgSent = true
+        }
+    }
+
+    onQRCodeClick(show:boolean) {
+        this.setState({showQRCode: show})
+        if (show) {
+            console.log('QR Code for: ' + this.currentUrl)
         }
     }
 
@@ -125,13 +136,23 @@ class Interaction extends Component <any, any> {
     render() { 
 
         let user:Setup_Player = this.props.user
-
+        //as soon as user has joined, there has to be a user object
+        if (user === undefined && this.props.status === SetupJoinStatus.Joined) {
+            console.log('Interaction.tsx ERROR: no user object given')
+            return <div> CIRITCAL ERROR: no user object given</div>
+        }
+        
         return ( 
             <div>
                 {(this.props.status === SetupJoinStatus.NotJoined || 
                 this.props.status === SetupJoinStatus.Failed) &&
                     <div className={st.Header_Con}>
                         Type your name and join the room! 
+                    </div>
+                }
+                {(this.state.userNameInfo !== '') &&
+                    <div className={st.Error_Con}>
+                        {this.state.userNameInfo}
                     </div>
                 }
                 <div className={st.Con}>
@@ -169,15 +190,21 @@ class Interaction extends Component <any, any> {
                             <div className={st.Share_Con} title="Click to copy matchlink" onClick={() => this.onCopyClicked()}>
                                 <img className={st.Copy_Icon} src={CopyIcon} alt="Copy"/>
                             </div>
+                            <div className={st.Share_Con} title="Click to create QR code" onClick={() => this.onQRCodeClick(!this.state.showQRCode)}>
+                                <img className={st.Copy_Icon} src={QRCodeIcon} alt="QR_Code"/>
+                            </div>
                         </div>
                     }
                     {(this.props.status === SetupJoinStatus.Connecting) && 
                         <CircularProgress/>
                     }
                 </div>
-                {(this.state.userNameInfo !== '') &&
-                    <div className={st.Error_Con}>
-                        {this.state.userNameInfo}
+                {this.state.showQRCode &&
+                    <div className={st.QR_Code_Con} onClick={() => this.onQRCodeClick(!this.state.showQRCode)}>
+                        <QRCode value={this.currentUrl}/>
+                        <button className={st.closeQRCode} >
+                            Close QR Code
+                        </button>
                     </div>
                 }
             </div>

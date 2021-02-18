@@ -1,3 +1,9 @@
+export enum TwitterStatus {
+    none = '1',
+    signedIn = '2',
+    error = '3'
+}
+
 export enum SysMsgType {
     none = '1',
     userJoined = '2',

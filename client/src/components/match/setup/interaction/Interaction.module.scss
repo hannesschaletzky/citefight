@@ -1,6 +1,12 @@
 $sdbg: false; //show debugging background = sdbg
 @import "styles/app.global.scss";
 
+/*
+
+  BEFORE JOINED
+
+*/
+
 .Header_Con {
   margin-bottom: 10px;
   text-align: center;
@@ -8,6 +14,25 @@ $sdbg: false; //show debugging background = sdbg
   @extend .HelveticaNeueBoldFont;
   font-size: calc(8px + 2vmin);
 }
+
+.Error_Con {
+  margin: 5px;
+  padding: 5px;
+
+  display: flex;
+  align-items: center;
+
+  font-size: 8pt;
+
+  @extend .borderWithRoundedCorners;
+  background-color: rgba(239, 243, 12, 0.5);
+}
+
+/*
+
+  AFTER JOINED
+
+*/
 
 .Con {
   height: 100%;
@@ -133,15 +158,35 @@ $sdbg: false; //show debugging background = sdbg
   opacity: 0.7;
 }
 
-.Error_Con {
-  margin: 5px;
-  padding: 5px;
+/*
 
+  QR CODE
+
+*/
+
+.QR_Code_Con {
+  //use full screen as base
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  left: 0;
+  //center QR Code
   display: flex;
+  flex-direction: column;
+  justify-content: center;
   align-items: center;
+  //make it click through
+  //pointer-events: none;
+  //background
+  background-color: rgba(211, 211, 211, 0.95);
+}
 
-  font-size: 8pt;
-
-  @extend .borderWithRoundedCorners;
-  background-color: rgba(239, 243, 12, 0.5);
+.closeQRCode {
+  @extend .Button_Base;
+  margin-top: 10px;
+  background-color: rgba($unready_colour, 0.9);
+  &:hover {
+    background-color: rgba($unready_colour, 0.7);
+  }
 }

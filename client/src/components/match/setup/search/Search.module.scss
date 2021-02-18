@@ -1,8 +1,36 @@
 $sdbg: false; //show debugging background = sdbg
 @import "styles/app.global.scss";
 
+/*
+
+  USER IS NOT SIGNED IN
+
+*/
+.SignIn_Con {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+
+  text-align: center;
+
+  @extend .HelveticaNeueRegularFont;
+  font-size: calc(2px + 2vmin);
+}
+
+.SignIn_Caption {
+  width: 60%;
+  margin-top: 10px;
+}
+
+/*
+
+  USER IS SIGNED IN
+
+*/
 .Con {
-  height: 60% !important; //400px
+  max-height: 500px !important; //400px
   display: flex;
   flex-direction: column;
 
@@ -18,11 +46,12 @@ $sdbg: false; //show debugging background = sdbg
 
 .Top_Con {
   height: 50px;
+  margin-top: 10px;
+  margin-left: 10px;
+  margin-right: 10px;
   display: flex;
   justify-content: space-evenly;
   align-items: center;
-  margin-left: 10px;
-  margin-right: 10px;
 }
 
 .Input {
