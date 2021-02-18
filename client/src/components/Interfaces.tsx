@@ -1,3 +1,9 @@
+export enum NotificationType {
+    Success = 'Not_Success',
+    Warning = 'Not_Warning',
+    Error = 'Not_Error'
+}
+
 export enum TwitterStatus {
     none = '1',
     signedIn = '2',
@@ -44,6 +50,13 @@ export enum SetupChatStatus {
 /*
     SETUP OBJECTS
 */
+
+export interface Setup_Notification {
+    display: boolean;
+    msg: string;
+    type: NotificationType;
+    scssClass: string;
+}
 
 export interface Setup_Event {
     type: SetupEventType;

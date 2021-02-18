@@ -86,3 +86,56 @@ $sdbg: false; //show debugging background = sdbg
     background-color: rgba(229, 233, 20, 0.2);
   }
 }
+
+/*
+
+    NOTIFICATION 
+
+*/
+
+.Not_Base {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 55px; //header height
+  height: 30px;
+  margin-top: 2px;
+  margin-left: 5px;
+  margin-right: 5px;
+
+  //text & cursor
+  cursor: pointer;
+  @extend .HelveticaNeueRegularFont;
+  color: black;
+
+  //align items center
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  @extend .borderWithRoundedCorners;
+}
+
+.Not_Success {
+  @extend .Not_Base;
+  background-color: rgba(41, 216, 18, 0.7);
+}
+
+.Not_Warning {
+  @extend .Not_Base;
+  background-color: rgba(243, 239, 13, 0.7);
+}
+
+.Not_Error {
+  @extend .Not_Base;
+  background-color: rgba(235, 27, 27, 0.7);
+}
+
+.Not_Text {
+  margin-left: 15px;
+}
+
+.Not_Close {
+  @extend .HelveticaNeueRegularFont;
+  margin-right: 15px;
+}

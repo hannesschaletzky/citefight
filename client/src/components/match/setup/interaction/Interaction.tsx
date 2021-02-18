@@ -3,6 +3,7 @@ import st from './Interaction.module.scss'
 
 import {SetupJoinStatus} from 'components/Interfaces'
 import {Setup_Player} from 'components/Interfaces'
+import {NotificationType} from 'components/Interfaces'
 
 import {didUserExceedLimit} from 'components/Logic'
 
@@ -17,7 +18,6 @@ class Interaction extends Component <any, any> {
 
     //array to store timestamps of user actions
     actionTimestamps:string[] = []
-    exceededMsgSent = false
     maxNameChars = 25
     currentUrl = window.location.href
 
@@ -50,50 +50,44 @@ class Interaction extends Component <any, any> {
 
     onLeaveClick() {   
         //reset vars
-        this.exceededMsgSent = false
         this.actionTimestamps = []
         //fire event in parent
         this.props.onLeaveClick() 
     }
 
     onToogleReady(ready:boolean) {
-        if (didUserExceedLimit(this.actionTimestamps, 5)) {
-            this.sendExceedingLimitMsg()
-            return
-        }
-        this.addTimestamp()
+        if (this.actionsExceeded()) return
         this.props.onToogleReadyClick(ready)
     }
 
     onCopyClicked() {
-        if (didUserExceedLimit(this.actionTimestamps, 5)) {
-            this.sendExceedingLimitMsg()
-            return
-        }
+        if (this.actionsExceeded()) return
         navigator.clipboard.writeText(this.currentUrl)
-        this.addTimestamp()
-        this.props.addInfoMsg('copied matchlink')
-    }
-
-    addTimestamp() {
-        this.exceededMsgSent = false
-        this.actionTimestamps.push(new Date().toISOString())
-    }
-
-    sendExceedingLimitMsg() {
-        if (!this.exceededMsgSent) {
-            this.props.addInfoMsg('easy boy... too many actions')
-            this.exceededMsgSent = true
-        }
+        this.props.addNotification('copied matchlink', NotificationType.Success)
     }
 
     onQRCodeClick(show:boolean) {
-        this.setState({showQRCode: show})
         if (show) {
+            //only count when user wants to show
+            if (this.actionsExceeded()) return
             console.log('QR Code for: ' + this.currentUrl)
         }
+        this.setState({showQRCode: show})
     }
 
+
+
+    //ACTIONS EXCEEDED
+    actionsExceeded():boolean {
+        if (didUserExceedLimit(this.actionTimestamps, 7)) {
+            //actions exceeded
+            this.props.addNotification('easy boy... too many actions', NotificationType.Warning)
+            return true
+        }
+        //not exceeded -> add timestamp
+        this.actionTimestamps.push(new Date().toISOString())
+        return false
+    }
 
     /*
     ##################################
@@ -147,7 +141,7 @@ class Interaction extends Component <any, any> {
                 {(this.props.status === SetupJoinStatus.NotJoined || 
                 this.props.status === SetupJoinStatus.Failed) &&
                     <div className={st.Header_Con}>
-                        Type your name and join the room! 
+                        Type your name and join in! 
                     </div>
                 }
                 {(this.state.userNameInfo !== '') &&
@@ -202,7 +196,7 @@ class Interaction extends Component <any, any> {
                 {this.state.showQRCode &&
                     <div className={st.QR_Code_Con} onClick={() => this.onQRCodeClick(!this.state.showQRCode)}>
                         <QRCode value={this.currentUrl}/>
-                        <button className={st.closeQRCode} >
+                        <button className={st.closeQRCode}>
                             Close QR Code
                         </button>
                     </div>

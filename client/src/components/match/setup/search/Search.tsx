@@ -210,7 +210,7 @@ export default function Search(
                             </button>
                         </div>
                         <div className={st.SignIn_Caption}>
-                            Sign into your Twitter to browse Twitter and add the profiles you wanna play.
+                            Sign in to browse Twitter and add the profiles you wanna play.
                         </div>
                     </div>
                 </div>

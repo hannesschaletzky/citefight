@@ -11,6 +11,9 @@ import {SysMsgType} from 'components/Interfaces'
 import {SetupEventType} from 'components/Interfaces'
 import {SetupJoinStatus} from 'components/Interfaces'
 import {TwitterStatus} from 'components/Interfaces'
+import {Setup_Notification} from 'components/Interfaces'
+import {NotificationType} from 'components/Interfaces'
+
 //import {PusherConState} from 'components/Interfaces'
 
 import Search from './search/Search'
@@ -23,10 +26,17 @@ const Pusher = require('pusher-js');
 const init_twitterUser:Twitter_User[] = []
 const init_players:Setup_Player[] = []
 const init_chat:Setup_ChatMsg[] = []
+const init_Notification:Setup_Notification = {
+    display: false,
+    msg: "",
+    type: NotificationType.Success,
+    scssClass: ''
+}
 
 let pusherClient:any = null
 let pusherChannel:any = null
 let userName = ""
+let notTimeout = setTimeout(() => {}, 1)
 
 export default function Setup() {
     //states
@@ -35,6 +45,7 @@ export default function Setup() {
     const ref_players = useRef(init_players);
     const ref_chat = useRef(init_chat);
     const ref_joinStatus = useRef(SetupJoinStatus.NotJoined)
+    const ref_notification = useRef(init_Notification)
     const [,forceUpdate] = useReducer(x => x + 1, 0);
 
     //const [pusherConState, setPusherConState] = useState(PusherConState.initialized)
@@ -99,7 +110,7 @@ export default function Setup() {
         else if (type === SysMsgType.info) {
             msg.m = '📢 ' + inputMsg
         }
-
+        
         //add
         ref_chat.current.push(msg)
     }
@@ -500,9 +511,30 @@ export default function Setup() {
         toogleReady(ready)
     } 
 
-    const addInfoMsg = (msg:string) => {
-        addSysMsg(SysMsgType.info, msg)
+    const addNotification = (msg:string, notType:NotificationType) => {
+        let newNot:Setup_Notification = {
+            display: true,
+            msg: msg,
+            type: notType,
+            scssClass: ''
+        }
+        //set scss class
+        if (notType === NotificationType.Success) {
+            newNot.scssClass = st.Not_Success
+        }
+        else if (notType === NotificationType.Warning) {
+            newNot.scssClass = st.Not_Warning
+        }
+        else if (notType === NotificationType.Error) {
+            newNot.scssClass = st.Not_Error
+        }
+        ref_notification.current = newNot
         forceUpdate()
+
+        //clear old timeout 
+        clearTimeout(notTimeout)
+        //set new
+        notTimeout = setTimeout(onNotificationCloseClick, 5000);
     }
 
     /*
@@ -512,7 +544,11 @@ export default function Setup() {
     ##################################
     ##################################
     */
-    
+
+    const onNotificationCloseClick = () => {
+        ref_notification.current.display = false
+        forceUpdate()
+    }
 
   return (
     <div className={st.Content_Con}>
@@ -538,7 +574,7 @@ export default function Setup() {
                     onJoinClick={onJoinTriggered}
                     onLeaveClick={onLeaveTriggered}
                     onToogleReadyClick={onToogleReady}
-                    addInfoMsg={addInfoMsg}
+                    addNotification={addNotification}
                 />
             </div>
             {(ref_joinStatus.current === SetupJoinStatus.Joined) && 
@@ -558,6 +594,17 @@ export default function Setup() {
                 </div>
             }
         </div>
+        {ref_notification.current.display && 
+            <div className={ref_notification.current.scssClass} onClick={() => onNotificationCloseClick()}>
+                <div className={st.Not_Text}>
+                    {ref_notification.current.msg}
+                </div>
+                <div className={st.Not_Close}>
+                    x
+                </div>
+            </div>
+            
+        }
     </div>
   );
 }

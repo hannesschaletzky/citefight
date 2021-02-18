@@ -171,7 +171,7 @@ class Chat extends Component <any, any> {
                     <div className={st.Info_Con_TooMuch}>
                         <img className={st.Info_Icon} src={WarningIcon} alt="Warning"/>
                         <div>
-                            Easy Boy...
+                            Easy boy... many messages
                         </div>
                     </div>
                 }
