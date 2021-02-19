@@ -206,6 +206,41 @@ app.get('/api/twitter/users', (req, res) => {
 });
 
 
+/*
+  OAUTH USER TOKEN
+  //let apiKey = y5tnv0KUnZnaR81Jj2MKaBRH8
+*/
+
+app.post('/api/twitter/userAuth', (req, res) => {
+
+  var unirest = require('unirest');
+  var req = unirest('POST', 'https://api.twitter.com/oauth/request_token')
+    .headers({
+      'Authorization': 'OAuth '+
+      'oauth_consumer_key="y5tnv0KUnZnaR81Jj2MKaBRH8",'+
+      'oauth_signature_method="HMAC-SHA1",'+
+      'oauth_timestamp="1613693675",'+
+      'oauth_nonce="y6Qvgni5ino",'+
+      'oauth_callback="http%3A%2F%2Flocalhost%3A3000%2Fstart",'+
+      'oauth_signature="K59UGA%2BsZI6p41UpOsBuYJpgFZc%3D"'
+    })
+    .end(function (res) { 
+      if (res.error) {
+        console.log(res.error)
+        //throw new Error(res.error)
+      }
+      console.log(res.raw_body);
+    });
+
+});
+
+
+
+
+
+
+
+
 app.get('/api/twitter/tweets', (req, res) => {
 
   let params = {
