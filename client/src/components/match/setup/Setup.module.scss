@@ -88,9 +88,9 @@ $sdbg: false; //show debugging background = sdbg
 }
 
 /*
-
-    NOTIFICATION 
-
+  ################################
+  NOTIFICATIONS
+  ################################
 */
 
 .Not_Base {
@@ -98,8 +98,8 @@ $sdbg: false; //show debugging background = sdbg
   left: 0;
   right: 0;
   top: 55px; //header height
-  height: 30px;
-  margin-top: 2px;
+  height: 25px;
+  margin-top: 5px;
   margin-left: 5px;
   margin-right: 5px;
 
@@ -118,7 +118,7 @@ $sdbg: false; //show debugging background = sdbg
 
 .Not_Success {
   @extend .Not_Base;
-  background-color: rgba(41, 216, 18, 0.7);
+  background-color: rgba(41, 216, 18, 0.4);
 }
 
 .Not_Warning {

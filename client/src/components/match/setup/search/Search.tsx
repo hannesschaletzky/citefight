@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import st from './Search.module.scss'
-import styled from 'styled-components';
 
 import SearchList from './SearchList'
 import CircularProgress from '@material-ui/core/CircularProgress';
@@ -154,8 +153,17 @@ export default function Search(
     ##################################
     */
 
-    const onSignInButtonClicked = () => {
+    const onSignInButtonClicked = async () => {
         console.log('trying to sign in')
+        //exectue
+        const response = await fetch('/api/twitter/userAuth', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: '', 
+        });
+        console.log(response)
     }
 
 
@@ -196,6 +204,7 @@ export default function Search(
         let rtn = <div></div>
         if (joinType === SetupJoinStatus.Joined) { 
             if (twitterStatus === TwitterStatus.none) {
+                //NOT SIGNED IN
                 rtn = 
                 <div className={panelContainer} /*coming from parent container*/>
                     <div className={st.SignIn_Con}>
@@ -216,6 +225,7 @@ export default function Search(
                 </div>
             }
             else if (twitterStatus === TwitterStatus.signedIn) {
+                //SIGNED IN
                 rtn = 
                 <div className={panelContainer} /*coming from parent container*/>
                     <div className={st.Con}>

@@ -1,78 +1,7 @@
 $sdbg: false; //show debugging background = sdbg
 @import "styles/app.global.scss";
 
-/*
-
-  BEFORE JOINED
-
-*/
-
-.Header_Con {
-  margin-bottom: 10px;
-  text-align: center;
-
-  @extend .HelveticaNeueBoldFont;
-  font-size: calc(8px + 2vmin);
-}
-
-.Error_Con {
-  margin: 5px;
-  padding: 5px;
-
-  display: flex;
-  align-items: center;
-
-  font-size: 8pt;
-
-  @extend .borderWithRoundedCorners;
-  background-color: rgba(239, 243, 12, 0.5);
-}
-
-/*
-
-  AFTER JOINED
-
-*/
-
-.Con {
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  @if $sdbg {
-    background-color: mediumpurple;
-  }
-}
-
-.Input {
-  height: 40px;
-  flex: 4;
-  text-align: center;
-
-  @extend .HelveticaNeueBoldFont;
-
-  //border
-  border: 2px solid;
-  border-color: rgba(143, 143, 143, 0.8);
-  border-radius: 8px;
-  outline: none;
-
-  &:focus {
-    border-color: rgba(8, 8, 8, 0.6);
-  }
-
-  &::placeholder {
-    /* Chrome, Firefox, Opera, Safari 10.1+ */
-    color: rgba(0, 0, 0, 0.2);
-    opacity: 1; /* Firefox */
-  }
-}
-
-.Joined_Con {
-  display: inherit; //flex
-}
-
+//BUTTON TEMPLATE
 .Button_Base {
   height: 40px;
   cursor: pointer;
@@ -90,14 +19,105 @@ $sdbg: false; //show debugging background = sdbg
   }
 }
 
+/*
+  ################################
+  BEFORE JOIN
+  ################################
+*/
+
+.BeforeJoin_Con {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.Caption {
+  text-align: center;
+
+  @extend .HelveticaNeueRegularFont;
+  font-size: calc(8px + 2vmin);
+}
+
+.Input {
+  height: 40px;
+  margin-top: 10px;
+  text-align: center;
+
+  @extend .HelveticaNeueBoldFont;
+
+  //border
+  border: 1px solid;
+  border-color: $HelveticaNeueRegularColor;
+  border-radius: 8px;
+  outline: none;
+
+  &:focus {
+    border: 2px solid;
+    border-color: $HelveticaNeueRegularColor;
+  }
+
+  &::placeholder {
+    /* Chrome, Firefox, Opera, Safari 10.1+ */
+    color: rgba(0, 0, 0, 0.2);
+    opacity: 1; /* Firefox */
+  }
+}
+
 .Button_Join {
   @extend .Button_Base;
-  margin-left: 10px;
-  flex: 1;
+  margin-top: 10px;
   background-color: rgba($ready_colour, 0.8);
   &:hover {
     background-color: rgba($ready_colour, 0.6);
   }
+}
+
+.Error_Con {
+  margin: 5px;
+  padding: 5px;
+
+  display: flex;
+  align-items: center;
+
+  font-size: 8pt;
+
+  @extend .borderWithRoundedCorners;
+  background-color: rgba(239, 243, 12, 0.5);
+}
+
+/*
+  ################################
+  DURING JOIN
+  ################################
+*/
+
+.DuringJoin_Con {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/*
+  ################################
+  AFTER JOIN
+  ################################
+*/
+
+.Con {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  @if $sdbg {
+    background-color: mediumpurple;
+  }
+}
+
+.AfterJoin_Con {
+  display: flex;
+  justify-content: space-evenly;
 }
 
 .Button_Leave {
@@ -110,7 +130,7 @@ $sdbg: false; //show debugging background = sdbg
 
 .Button_Ready {
   @extend .Button_Base;
-  margin-left: 25px;
+  flex-shrink: 0;
   background-color: rgba($ready_colour, 0.8);
   &:hover {
     background-color: rgba($ready_colour, 0.6);
@@ -119,17 +139,17 @@ $sdbg: false; //show debugging background = sdbg
 
 .Button_Unready {
   @extend .Button_Base;
-  margin-left: 25px;
+  flex-shrink: 0;
   background-color: rgba($unready_colour, 0.9);
   &:hover {
     background-color: rgba($unready_colour, 0.7);
   }
 }
 
-.Share_Con {
-  margin-left: 25px;
+.Icon_Con {
   height: 36px;
   width: 36px;
+  flex-shrink: 0;
   cursor: pointer;
 
   //align items on both axis centrally
@@ -140,9 +160,6 @@ $sdbg: false; //show debugging background = sdbg
   box-shadow: 2px 2px rgba(5, 19, 19, 0.5);
   outline: none;
   @extend .borderWithRoundedCorners;
-  @if $sdbg {
-    background-color: maroon;
-  }
 
   &:hover {
     background-color: rgb(243, 243, 243);
@@ -152,20 +169,14 @@ $sdbg: false; //show debugging background = sdbg
   }
 }
 
-.Copy_Icon {
+.Icon {
   width: 25px;
   height: 25px;
   opacity: 0.7;
 }
 
-/*
-
-  QR CODE
-
-*/
-
+//this will take the entire screen
 .QR_Code_Con {
-  //use full screen as base
   position: absolute;
   top: 0;
   bottom: 0;
@@ -176,9 +187,6 @@ $sdbg: false; //show debugging background = sdbg
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  //make it click through
-  //pointer-events: none;
-  //background
   background-color: rgba(211, 211, 211, 0.95);
 }
 

@@ -29,14 +29,14 @@ const init_chat:Setup_ChatMsg[] = []
 const init_Notification:Setup_Notification = {
     display: false,
     msg: "",
-    type: NotificationType.Success,
+    type: NotificationType.Not_Success,
     scssClass: ''
 }
 
 let pusherClient:any = null
 let pusherChannel:any = null
 let userName = ""
-let notTimeout = setTimeout(() => {}, 1)
+let notTimeout = setTimeout(() => {}, 1) //store notification-timeout 
 
 export default function Setup() {
     //states
@@ -113,6 +113,37 @@ export default function Setup() {
         
         //add
         ref_chat.current.push(msg)
+    }
+
+    const showNotification = (msg:string, notType:NotificationType)  => {
+        let newNot:Setup_Notification = {
+            display: true,
+            msg: msg,
+            type: notType,
+            scssClass: ''
+        }
+        //set scss class
+        if (notType === NotificationType.Not_Success) {
+            newNot.scssClass = st.Not_Success
+        }
+        else if (notType === NotificationType.Not_Warning) {
+            newNot.scssClass = st.Not_Warning
+        }
+        else if (notType === NotificationType.Not_Error) {
+            newNot.scssClass = st.Not_Error
+        }
+        //update UI
+        ref_notification.current = newNot
+        forceUpdate()
+
+        //clear old timeout && set new timer to hide it after seconds
+        clearTimeout(notTimeout)
+        notTimeout = setTimeout(hideNotification, 5000);
+    }
+
+    const hideNotification = () => {
+        ref_notification.current.display = false
+        forceUpdate()
     }
 
 
@@ -511,30 +542,8 @@ export default function Setup() {
         toogleReady(ready)
     } 
 
-    const addNotification = (msg:string, notType:NotificationType) => {
-        let newNot:Setup_Notification = {
-            display: true,
-            msg: msg,
-            type: notType,
-            scssClass: ''
-        }
-        //set scss class
-        if (notType === NotificationType.Success) {
-            newNot.scssClass = st.Not_Success
-        }
-        else if (notType === NotificationType.Warning) {
-            newNot.scssClass = st.Not_Warning
-        }
-        else if (notType === NotificationType.Error) {
-            newNot.scssClass = st.Not_Error
-        }
-        ref_notification.current = newNot
-        forceUpdate()
-
-        //clear old timeout 
-        clearTimeout(notTimeout)
-        //set new
-        notTimeout = setTimeout(onNotificationCloseClick, 5000);
+    const onNewNotification = (msg:string, notType:NotificationType) => {
+        showNotification(msg, notType)
     }
 
     /*
@@ -544,67 +553,62 @@ export default function Setup() {
     ##################################
     ##################################
     */
-
-    const onNotificationCloseClick = () => {
-        ref_notification.current.display = false
-        forceUpdate()
-    }
-
-  return (
-    <div className={st.Content_Con}>
-        {Search(
-            ref_twitterStatus.current,
-            ref_joinStatus.current, //pass status bc. you cant do && with functional comp.
-            ref_twitterUsers.current,
-            st.Left_Panel, //pass outside panel css-class, so it can be embedded and returned
-            onNewTwitterUserAdded
-            )
-        }
-        {(ref_joinStatus.current === SetupJoinStatus.Joined) &&
-         (ref_twitterUsers.current.length > 0) &&
-            <div className={st.Center_Panel}>
-                {ref_twitterUsers.current.length}
-            </div>
-        }
-        <div className={st.Right_Panel}>
-            <div className={st.Interaction_Con}>
-                <Interaction
-                    status={ref_joinStatus.current}
-                    user={ref_players.current[getIndexOfUser(userName)]}
-                    onJoinClick={onJoinTriggered}
-                    onLeaveClick={onLeaveTriggered}
-                    onToogleReadyClick={onToogleReady}
-                    addNotification={addNotification}
-                />
-            </div>
-            {(ref_joinStatus.current === SetupJoinStatus.Joined) && 
-                <div className={st.Players_Con}>
-                    <Players   
-                        data={ref_players.current}
-                        currentUser={userName}
-                    />
+    
+    return (
+        <div className={st.Content_Con}>
+            {Search(
+                ref_twitterStatus.current,
+                ref_joinStatus.current, //pass status bc. you cant do && with functional comp.
+                ref_twitterUsers.current,
+                st.Left_Panel, //pass outside panel css-class, so it can be embedded and returned
+                onNewTwitterUserAdded
+                )
+            }
+            {(ref_joinStatus.current === SetupJoinStatus.Joined) &&
+            (ref_twitterUsers.current.length > 0) &&
+                <div className={st.Center_Panel}>
+                    {ref_twitterUsers.current.length}
                 </div>
             }
-            {(ref_joinStatus.current === SetupJoinStatus.Joined) && 
-                <div className={st.Chat_Con}>
-                    <Chat   
-                        data={ref_chat.current}
-                        onNewMsg={onNewChatMessage}
+            <div className={st.Right_Panel}>
+                <div className={st.Interaction_Con}>
+                    <Interaction
+                        status={ref_joinStatus.current}
+                        user={ref_players.current[getIndexOfUser(userName)]}
+                        onJoinClick={onJoinTriggered}
+                        onLeaveClick={onLeaveTriggered}
+                        onToogleReadyClick={onToogleReady}
+                        addNotification={onNewNotification}
                     />
                 </div>
+                {(ref_joinStatus.current === SetupJoinStatus.Joined) && 
+                    <div className={st.Players_Con}>
+                        <Players   
+                            data={ref_players.current}
+                            currentUser={userName}
+                        />
+                    </div>
+                }
+                {(ref_joinStatus.current === SetupJoinStatus.Joined) && 
+                    <div className={st.Chat_Con}>
+                        <Chat   
+                            data={ref_chat.current}
+                            onNewMsg={onNewChatMessage}
+                        />
+                    </div>
+                }
+            </div>
+            {ref_notification.current.display && 
+                <div className={ref_notification.current.scssClass} onClick={() => hideNotification()}>
+                    <div className={st.Not_Text}>
+                        {ref_notification.current.msg}
+                    </div>
+                    <div className={st.Not_Close}>
+                        x
+                    </div>
+                </div>
+                
             }
         </div>
-        {ref_notification.current.display && 
-            <div className={ref_notification.current.scssClass} onClick={() => onNotificationCloseClick()}>
-                <div className={st.Not_Text}>
-                    {ref_notification.current.msg}
-                </div>
-                <div className={st.Not_Close}>
-                    x
-                </div>
-            </div>
-            
-        }
-    </div>
-  );
+    );
 }

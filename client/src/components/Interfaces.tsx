@@ -1,7 +1,7 @@
 export enum NotificationType {
-    Success = 'Not_Success',
-    Warning = 'Not_Warning',
-    Error = 'Not_Error'
+    Not_Success = 'Not_Success',
+    Not_Warning = 'Not_Warning',
+    Not_Error = 'Not_Error'
 }
 
 export enum TwitterStatus {

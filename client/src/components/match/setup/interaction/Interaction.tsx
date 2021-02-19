@@ -26,7 +26,7 @@ class Interaction extends Component <any, any> {
         this.state = {
             userName: '',
             joinEnabled: false,
-            userNameInfo: '',
+            userNameError: '',
             showQRCode: false
         };
     }
@@ -56,21 +56,27 @@ class Interaction extends Component <any, any> {
     }
 
     onToogleReady(ready:boolean) {
-        if (this.actionsExceeded()) return
+        if (this.actionsExceeded()) {
+            return
+        }
         this.props.onToogleReadyClick(ready)
     }
 
     onCopyClicked() {
-        if (this.actionsExceeded()) return
+        if (this.actionsExceeded()) {
+            return
+        }
         navigator.clipboard.writeText(this.currentUrl)
-        this.props.addNotification('copied matchlink', NotificationType.Success)
+        this.props.addNotification('copied matchlink', NotificationType.Not_Success)
     }
 
     onQRCodeClick(show:boolean) {
         if (show) {
             //only count when user wants to show
-            if (this.actionsExceeded()) return
-            console.log('QR Code for: ' + this.currentUrl)
+            if (this.actionsExceeded()) {
+                return
+            }
+            //console.log('QR Code for: ' + this.currentUrl)
         }
         this.setState({showQRCode: show})
     }
@@ -81,7 +87,7 @@ class Interaction extends Component <any, any> {
     actionsExceeded():boolean {
         if (didUserExceedLimit(this.actionTimestamps, 7)) {
             //actions exceeded
-            this.props.addNotification('easy boy... too many actions', NotificationType.Warning)
+            this.props.addNotification('easy boy... small cooldown - too many actions', NotificationType.Not_Warning)
             return true
         }
         //not exceeded -> add timestamp
@@ -104,14 +110,14 @@ class Interaction extends Component <any, any> {
         }
         else if (name.length > this.maxNameChars) {
             this.setState({joinEnabled: false})
-            this.setState({userNameInfo: this.maxNameChars + ' characters maximum'})
+            this.setState({userNameError: this.maxNameChars + ' characters maximum'})
         }
         else if (!this.checkUserNameContent(name)) {
             this.setState({joinEnabled: false})
-            this.setState({userNameInfo: 'Letters, numbers and "_" are allowed'})
+            this.setState({userNameError: 'Letters, numbers and "_" are allowed'})
         }
         else {
-            this.setState({userNameInfo: ''})
+            this.setState({userNameError: ''})
             this.setState({userName: name})
             this.setState({joinEnabled: true})
         }
@@ -129,70 +135,78 @@ class Interaction extends Component <any, any> {
 
     render() { 
 
-        let user:Setup_Player = this.props.user
         //as soon as user has joined, there has to be a user object
+        let user:Setup_Player = this.props.user
         if (user === undefined && this.props.status === SetupJoinStatus.Joined) {
             console.log('Interaction.tsx ERROR: no user object given')
             return <div> CIRITCAL ERROR: no user object given</div>
         }
+
+        //specify content to return
+        let content = <div></div>
+        if (this.props.status === SetupJoinStatus.NotJoined || 
+            this.props.status === SetupJoinStatus.Failed) {
+            //BEFORE JOIN
+            content = 
+            <div className={st.BeforeJoin_Con}>
+                <div className={st.Caption}>
+                    Type your name and join in! 
+                </div>
+                <input  className={st.Input}
+                            type="search" 
+                            autoComplete="off" 
+                            placeholder="Enter a name"
+                            onChange={e => this.userNameChanged(e.target.value)} 
+                            onKeyUp={e => this.keyPressed(e)}/>
+                {(this.state.userNameError !== '') &&
+                    <div className={st.Error_Con}>
+                        {this.state.userNameError}
+                    </div>
+                }
+                {this.state.joinEnabled && 
+                    <button className={st.Button_Join} onClick={() => this.onJoinClick()}>
+                        Join
+                    </button>
+                }
+            </div>
+        }
+        else if (this.props.status === SetupJoinStatus.Connecting) {
+            //DURING JOIN
+            content = 
+            <div className={st.DuringJoin_Con}>
+                <CircularProgress/>
+            </div>
+        }
+        else if (this.props.status === SetupJoinStatus.Joined) {
+            //JOINED
+            content = 
+            <div className={st.AfterJoin_Con}>
+                <button className={st.Button_Leave} onClick={() => this.onLeaveClick()}>
+                    Leave
+                </button>
+                {!user.ready && 
+                    <button className={st.Button_Ready} onClick={() => this.onToogleReady(true)}>
+                        Ready
+                    </button>
+                }
+                {user.ready && 
+                    <button className={st.Button_Unready} onClick={() => this.onToogleReady(false)}>
+                        Unready
+                    </button>
+                }
+                <div className={st.Icon_Con} title="Click to copy matchlink" onClick={() => this.onCopyClicked()}>
+                    <img className={st.Icon} src={CopyIcon} alt="Copy"/>
+                </div>
+                <div className={st.Icon_Con} title="Click to create QR code" onClick={() => this.onQRCodeClick(!this.state.showQRCode)}>
+                    <img className={st.Icon} src={QRCodeIcon} alt="QR_Code"/>
+                </div>
+            </div>
+
+        }
         
         return ( 
             <div>
-                {(this.props.status === SetupJoinStatus.NotJoined || 
-                this.props.status === SetupJoinStatus.Failed) &&
-                    <div className={st.Header_Con}>
-                        Type your name and join in! 
-                    </div>
-                }
-                {(this.state.userNameInfo !== '') &&
-                    <div className={st.Error_Con}>
-                        {this.state.userNameInfo}
-                    </div>
-                }
-                <div className={st.Con}>
-                    {(this.props.status === SetupJoinStatus.NotJoined || 
-                    this.props.status === SetupJoinStatus.Failed) &&
-                        <input  className={st.Input}
-                                type="search" 
-                                autoComplete="off" 
-                                placeholder="Enter a name"
-                                onChange={e => this.userNameChanged(e.target.value)} 
-                                onKeyUp={e => this.keyPressed(e)}/>
-                    }
-                    {this.state.joinEnabled && 
-                    (this.props.status === SetupJoinStatus.NotJoined || 
-                    this.props.status === SetupJoinStatus.Failed) &&
-                        <button className={st.Button_Join} onClick={() => this.onJoinClick()}>
-                            Join
-                        </button>
-                    }
-                    {(this.props.status === SetupJoinStatus.Joined) && 
-                        <div className={st.Joined_Con}>
-                            <button className={st.Button_Leave} onClick={() => this.onLeaveClick()}>
-                                Leave
-                            </button>
-                            {!user.ready && 
-                                <button className={st.Button_Ready} onClick={() => this.onToogleReady(true)}>
-                                    Ready
-                                </button>
-                            }
-                            {user.ready && 
-                                <button className={st.Button_Unready} onClick={() => this.onToogleReady(false)}>
-                                    Unready
-                                </button>
-                            }
-                            <div className={st.Share_Con} title="Click to copy matchlink" onClick={() => this.onCopyClicked()}>
-                                <img className={st.Copy_Icon} src={CopyIcon} alt="Copy"/>
-                            </div>
-                            <div className={st.Share_Con} title="Click to create QR code" onClick={() => this.onQRCodeClick(!this.state.showQRCode)}>
-                                <img className={st.Copy_Icon} src={QRCodeIcon} alt="QR_Code"/>
-                            </div>
-                        </div>
-                    }
-                    {(this.props.status === SetupJoinStatus.Connecting) && 
-                        <CircularProgress/>
-                    }
-                </div>
+                {content}
                 {this.state.showQRCode &&
                     <div className={st.QR_Code_Con} onClick={() => this.onQRCodeClick(!this.state.showQRCode)}>
                         <QRCode value={this.currentUrl}/>
@@ -201,11 +215,11 @@ class Interaction extends Component <any, any> {
                         </button>
                     </div>
                 }
-            </div>
-            
+            </div> 
         );
     }
 }
+
 export default Interaction;
 
 

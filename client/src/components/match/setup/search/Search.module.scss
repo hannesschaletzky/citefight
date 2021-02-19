@@ -2,9 +2,9 @@ $sdbg: false; //show debugging background = sdbg
 @import "styles/app.global.scss";
 
 /*
-
-  USER IS NOT SIGNED IN
-
+  ################################
+  NOT SIGNED IN
+  ################################
 */
 .SignIn_Con {
   height: 100%;
@@ -25,9 +25,9 @@ $sdbg: false; //show debugging background = sdbg
 }
 
 /*
-
-  USER IS SIGNED IN
-
+  ################################
+  SIGNED IN
+  ################################
 */
 .Con {
   max-height: 500px !important; //400px
@@ -98,7 +98,6 @@ $sdbg: false; //show debugging background = sdbg
 }
 
 .Icon {
-  //width: 25px;
   height: 25px;
   cursor: inherit;
 }
@@ -116,7 +115,6 @@ $sdbg: false; //show debugging background = sdbg
 
 .List_Con {
   flex: 1;
-  //height: 80%;
   overflow-y: scroll;
   margin-top: 5px;
   padding-bottom: 15px;
