@@ -155,6 +155,17 @@ export default function Search(
 
     const onSignInButtonClicked = async () => {
         console.log('trying to sign in')
+        
+        let request = new Request('/api/twitter/userAuth')
+        const response = await fetch(request)
+        const body = await response.json()
+        if (response.status !== 200) {
+            throw Error(body.message)
+        }
+        console.log(body)
+
+
+        /*
         //exectue
         const response = await fetch('/api/twitter/userAuth', {
             method: 'POST',
@@ -164,6 +175,7 @@ export default function Search(
             body: '', 
         });
         console.log(response)
+        */
     }
 
 
