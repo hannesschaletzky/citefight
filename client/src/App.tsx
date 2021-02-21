@@ -22,7 +22,7 @@ import NotFound from 'components/pages/errorpages/NotFound'
 
 class App extends Component {
   state = {
-
+    
   };
   
 render() {

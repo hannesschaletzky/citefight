@@ -192,6 +192,12 @@ export default function Setup() {
 
         //bind connected
         _pusherClient.connection.bind('connected', async () => {
+            
+            if (pusherClient !== null) {
+                //reconnected
+                console.log('reconnected')
+                return
+            }
             console.log('pusher is connected')
 
             //sub channel
@@ -453,8 +459,8 @@ export default function Setup() {
     */
     const handleEvent_Player = (event:any) => {
 
-        let str = JSON.stringify(event.data, null, 4);
-        console.log(str)
+        //let str = JSON.stringify(event.data, null, 4);
+        //console.log(str)
 
         //console.log(pusherChannel.members.count)
         //security

@@ -4,6 +4,8 @@ import st from './Search.module.scss'
 import SearchList from './SearchList'
 import CircularProgress from '@material-ui/core/CircularProgress';
 
+//import oauthSignature from 'oauth-signature/dist/oauth-signature.js'
+
 import {Twitter_User} from 'components/Interfaces'
 import {SetupJoinStatus} from 'components/Interfaces'
 import {TwitterStatus} from 'components/Interfaces'
@@ -156,6 +158,51 @@ export default function Search(
     const onSignInButtonClicked = async () => {
         console.log('trying to sign in')
         
+        /*
+        let API_Key = process.env.REACT_APP_TWITTER_API_Key
+        let API_Secret = process.env.REACT_APP_TWITTER_API_Secret
+
+        console.log(API_Key)
+        console.log(API_Secret)
+
+        //CREATE SIGNATURE
+        let httpMethod = 'POST'
+        let url = 'https://api.twitter.com/oauth/request_token'
+        let parameters = {
+            oauth_consumer_key : API_Key,
+            oauth_signature_method: 'HMAC-SHA1',
+            oauth_timestamp: '1613733259',
+            oauth_nonce: 'kllo9940pd9333jh',
+            oauth_callback: 'http%3A%2F%2Flocalhost%3A3000%2Fstart', //maybe use normal 
+            oauth_version: '1.0',
+        }
+        let consumerSecret = API_Secret
+        // generates a RFC 3986 encoded, BASE64 encoded HMAC-SHA1 hash
+        let encodedSignature = oauthSignature.generate(httpMethod, url, parameters, consumerSecret)
+        // generates a BASE64 encode HMAC-SHA1 hash
+        let signature = oauthSignature.generate(httpMethod, url, parameters, consumerSecret, { encodeSignature: false});
+        console.log(signature)
+
+
+        //passing additional parameters in header
+        let requestOptions = {
+            headers: {
+                'sig': encodedSignature,
+                'time': parameters.oauth_timestamp,
+                'nonce': parameters.oauth_nonce
+            }
+        };
+        let request = new Request('/api/twitter/userAuthNew', requestOptions)
+        //let request = new Request('/api/twitter/userAuthNew')
+        const response = await fetch(request)
+        const body = await response.json()
+        if (response.status !== 200) {
+            throw Error(body.message)
+        }
+        console.log(body)
+        */
+
+
         let request = new Request('/api/twitter/userAuth')
         const response = await fetch(request)
         const body = await response.json()
@@ -163,19 +210,7 @@ export default function Search(
             throw Error(body.message)
         }
         console.log(body)
-
-
-        /*
-        //exectue
-        const response = await fetch('/api/twitter/userAuth', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: '', 
-        });
-        console.log(response)
-        */
+        
     }
 
 
