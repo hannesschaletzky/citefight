@@ -203,12 +203,25 @@ export default function Search(
         */
 
 
-        let request = new Request('/api/twitter/userAuth')
+        //GET
+        /*
+        //let request = new Request('/api/twitter/userAuth')
+        let request = new Request('/api/twitter/postTweet')
         const response = await fetch(request)
         const body = await response.json()
         if (response.status !== 200) {
             throw Error(body.message)
         }
+        console.log(body)
+        */
+
+        //POST
+        const response = await fetch('/api/twitter/postTweetNew', {
+            method: 'POST',
+            body: JSON.stringify('test'),
+        });
+        //read response
+        const body = await response.text();
         console.log(body)
         
     }

@@ -259,6 +259,238 @@ function getSignature(parameters, base_url, method, secret) {
 */
 
 
+//GOAL:
+//hCtSmYh+iHYCEqBWrE7C7hYmtUk=
+//
+
+
+app.post("/api/twitter/postTweetNew", function(reques, response) {
+
+  var axios = require('axios');
+  var qs = require('qs');
+  var data = qs.stringify({
+    'status': 'Hello Ladies + Gentlemen, a signed OAuth request!',
+    'include_entities': 'true' 
+  });
+  var config = {
+    method: 'post',
+    url: 'https://api.twitter.com/1.1/statuses/update.json',
+    headers: { 
+      'Authorization': 'OAuth oauth_consumer_key="y5tnv0KUnZnaR81Jj2MKaBRH8",oauth_token="1349709202332246017-1lrVoVZ7PhPhTGmeWe25QbCdPzSpK0",oauth_signature_method="HMAC-SHA1",oauth_timestamp="1614013615",oauth_nonce="A",oauth_version="1.0",oauth_signature="cuYoen09oMIrAR6wiXvcIl6AY6A%3D"', 
+      'Content-Type': 'application/x-www-form-urlencoded', 
+      'Cookie': 'personalization_id="v1_hZoc3bDQclmT/9Z1oah2UQ=="; guest_id=v1%3A161400894567148857; lang=en'
+    },
+    data : data
+  };
+
+  axios(config)
+  .then(function (response) {
+    console.log(JSON.stringify(response.data));
+  })
+  .catch(function (error) {
+    console.log(error);
+  });
+
+
+});
+
+
+
+/*
+app.post("/api/twitter/postTweetNew", function(req, res) {
+
+  unirest('POST', 'https://api.twitter.com/1.1/statuses/update.json')
+  .headers({
+    'Authorization': 'OAuth oauth_consumer_key="y5tnv0KUnZnaR81Jj2MKaBRH8",oauth_token="1349709202332246017-1lrVoVZ7PhPhTGmeWe25QbCdPzSpK0",oauth_signature_method="HMAC-SHA1",oauth_timestamp="1614013615",oauth_nonce="A",oauth_version="1.0",oauth_signature="cuYoen09oMIrAR6wiXvcIl6AY6A%3D"',
+    'Content-Type': 'application/x-www-form-urlencoded'
+  })
+  .send('status=Hello Ladies + Gentlemen, a signed OAuth request!')
+  .send('include_entities=true')
+  .end(function (response) { 
+    if (response.error) {
+      console.log(response.raw_body);
+      res.send(response.raw_body);
+      return
+    }
+    console.log(response.raw_body);
+    res.send(response.raw_body);
+  });
+  
+});
+*/
+
+
+/*
+FROM TUTORIAL
+Parameter-String
+GOAL:   include_entities=true&oauth_consumer_key=xvz1evFS4wEEPTGEFPHBog&oauth_nonce=kYjzVBB8Y0ZFabxSWbWovY3uYSQ2pTgmZeNu2VS4cg&oauth_signature_method=HMAC-SHA1&oauth_timestamp=1318622958&oauth_token=370773112-GmHxMAgYyLbNEtIKZeRNFsMKPR9EyMZeS9weJAEb&oauth_version=1.0&status=Hello%20Ladies%20%2B%20Gentlemen%2C%20a%20signed%20OAuth%20request%21
+ACTUAL: include_entities=true&oauth_consumer_key=xvz1evFS4wEEPTGEFPHBog&oauth_nonce=kYjzVBB8Y0ZFabxSWbWovY3uYSQ2pTgmZeNu2VS4cg&oauth_signature_method=HMAC-SHA1&oauth_timestamp=1318622958&oauth_token=370773112-GmHxMAgYyLbNEtIKZeRNFsMKPR9EyMZeS9weJAEb&oauth_version=1.0&status=Hello%20Ladies%20%2B%20Gentlemen%2C%20a%20signed%20OAuth%20request%21
+
+Signature-Base-String
+GOAL:   POST&https%3A%2F%2Fapi.twitter.com%2F1.1%2Fstatuses%2Fupdate.json&include_entities%3Dtrue%26oauth_consumer_key%3Dxvz1evFS4wEEPTGEFPHBog%26oauth_nonce%3DkYjzVBB8Y0ZFabxSWbWovY3uYSQ2pTgmZeNu2VS4cg%26oauth_signature_method%3DHMAC-SHA1%26oauth_timestamp%3D1318622958%26oauth_token%3D370773112-GmHxMAgYyLbNEtIKZeRNFsMKPR9EyMZeS9weJAEb%26oauth_version%3D1.0%26status%3DHello%2520Ladies%2520%252B%2520Gentlemen%252C%2520a%2520signed%2520OAuth%2520request%2521
+ACTUAL: POST&https%3A%2F%2Fapi.twitter.com%2F1.1%2Fstatuses%2Fupdate.json&include_entities%3Dtrue%26oauth_consumer_key%3Dxvz1evFS4wEEPTGEFPHBog%26oauth_nonce%3DkYjzVBB8Y0ZFabxSWbWovY3uYSQ2pTgmZeNu2VS4cg%26oauth_signature_method%3DHMAC-SHA1%26oauth_timestamp%3D1318622958%26oauth_token%3D370773112-GmHxMAgYyLbNEtIKZeRNFsMKPR9EyMZeS9weJAEb%26oauth_version%3D1.0%26status%3DHello%2520Ladies%2520%252B%2520Gentlemen%252C%2520a%2520signed%2520OAuth%2520request%2521
+
+SigningKey:
+GOAL:   kAcSOqF21Fu85e7zjz7ZN2U4ZRhfV3WpwPAoE3Z7kBw&LswwdoUaIvS8ltyTt5jkRh4J50vUPVVHtR2YPi5kE
+ACTUAL: kAcSOqF21Fu85e7zjz7ZN2U4ZRhfV3WpwPAoE3Z7kBw&LswwdoUaIvS8ltyTt5jkRh4J50vUPVVHtR2YPi5kE
+
+Signature:
+GOAL:   hCtSmYh+iHYCEqBWrE7C7hYmtUk=
+ACTUAL: hCtSmYh+iHYCEqBWrE7C7hYmtUk=
+--> ALL GOOD 
+
+FROM POSTMAN:
+GOAL:   cuYoen09oMIrAR6wiXvcIl6AY6A%3D
+ACTUAL: cuYoen09oMIrAR6wiXvcIl6AY6A%3D
+
+*/
+
+//https://developer.mozilla.org/de/docs/Web/JavaScript/Reference/Global_Objects/encodeURIComponent
+function fixedEncodeURIComponent(str) {
+  return encodeURIComponent(str).replace(/[!'()*]/g, function(c) {
+    return '%' + c.charCodeAt(0).toString(16);
+  });
+}
+
+app.get('/api/twitter/postTweet', (req, response) => {
+
+  const dotenv = require('dotenv');
+  dotenv.config(); 
+  let SERVER_TWITTER_API_Key = process.env.SERVER_TWITTER_API_Key
+  let SERVER_TWITTER_API_Secret = process.env.SERVER_TWITTER_API_Secret
+  let SERVER_TWITTER_Access_Token = process.env.SERVER_TWITTER_Access_Token
+  let SERVER_TWITTER_Access_Token_Secret = process.env.SERVER_TWITTER_Access_Token_Secret
+
+  //FAKE DATA
+  /*
+  SERVER_TWITTER_API_Key = 'xvz1evFS4wEEPTGEFPHBog'
+  SERVER_TWITTER_API_Secret = 'kAcSOqF21Fu85e7zjz7ZN2U4ZRhfV3WpwPAoE3Z7kBw'
+  SERVER_TWITTER_Access_Token = '370773112-GmHxMAgYyLbNEtIKZeRNFsMKPR9EyMZeS9weJAEb'
+  SERVER_TWITTER_Access_Token_Secret = 'LswwdoUaIvS8ltyTt5jkRh4J50vUPVVHtR2YPi5kE'
+  */
+  console.log('SERVER_TWITTER_API_Key: ' + SERVER_TWITTER_API_Key)
+  console.log('SERVER_TWITTER_API_Secret: ' + SERVER_TWITTER_API_Secret)
+  console.log('SERVER_TWITTER_Access_Token: ' + SERVER_TWITTER_Access_Token)
+  console.log('SERVER_TWITTER_Access_Token_Secret: ' + SERVER_TWITTER_Access_Token_Secret)
+
+  const baseURL = 'https://api.twitter.com/1.1/statuses/update.json'
+  const httpMethod = 'POST';
+  //const callback = "http://localhost:3000/start"
+  //const callback_enc = "http%3A%2F%2Flocalhost%3A3000%2Fstart"
+
+  const params = {
+    status: 'Hello Ladies + Gentlemen, a signed OAuth request!',
+    include_entities: true,
+    oauth_consumer_key: SERVER_TWITTER_API_Key,
+    oauth_token: SERVER_TWITTER_Access_Token,
+    oauth_signature_method: "HMAC-SHA1",
+    oauth_timestamp: "1614013615",
+    oauth_nonce: "A",
+    oauth_version: "1.0"
+  }
+  console.log(params)
+
+  //percent encode every key & value
+  let encodedParams = {}
+  for (k in params) {
+    const value = fixedEncodeURIComponent(params[k]);
+    const key = fixedEncodeURIComponent(k);
+    encodedParams[key] = value
+  }
+  console.log(encodedParams)
+
+  //order from A to Z
+  let orderedParams = {};
+  Object.keys(encodedParams).sort().forEach(function(k) {
+      orderedParams[k] = encodedParams[k];
+  });
+  console.log(orderedParams)
+
+  //parameter-string
+  let paramsString = ""
+  for (k in orderedParams) {
+    const value = orderedParams[k];
+    const key = k;
+    paramsString += key + '=' + value + '&'
+  }
+  paramsString = paramsString.substring(0, paramsString.length-1) //remove last &
+  console.log(paramsString)
+
+  //signature base string
+  let signatureBaseString = ""
+  let baseURL_enc = fixedEncodeURIComponent(baseURL)
+  let paramsString_enc = fixedEncodeURIComponent(paramsString) 
+  signatureBaseString += httpMethod + '&'
+  signatureBaseString += baseURL_enc + '&'
+  signatureBaseString += paramsString_enc
+  console.log(signatureBaseString)
+  //The percent ‘%’ characters in the parameter string should be encoded as %25 in the signature base string.
+  //oauth_callback=http%253A%252F%252Flocalhost%253A3000%252Fstart
+  //oauth_callback%3Dhttp%25253A%25252F%25252Flocalhost%25253A3000%25252Fstart
+
+  //signing key
+  let consumerSecret_enc = fixedEncodeURIComponent(SERVER_TWITTER_API_Secret)
+  let accessSecrent_enc = fixedEncodeURIComponent(SERVER_TWITTER_Access_Token_Secret)
+  let signingKey = consumerSecret_enc + '&' + accessSecrent_enc
+  console.log(signingKey)
+
+  //calculating signature (HMAC-SHA1 hashing)
+  const crypto = require('crypto');
+  const oauth_signature = crypto.createHmac("sha1", signingKey)
+                                .update(signatureBaseString)
+                                .digest()
+                                .toString('base64');
+  console.log('\n' + oauth_signature)
+
+  const oauth_signature_enc = fixedEncodeURIComponent(oauth_signature);
+  console.log('\n' + oauth_signature_enc)
+  
+  let oauthheader = 
+    'OAuth '+
+      ' oauth_consumer_key="'+SERVER_TWITTER_API_Key+'",'+
+      ' oauth_token="'+SERVER_TWITTER_Access_Token+'",'+
+      ' oauth_signature_method="'+params.oauth_signature_method+'",'+
+      ' oauth_timestamp="'+params.oauth_timestamp+'",'+
+      ' oauth_nonce="'+params.oauth_nonce+'",'+
+      ' oauth_version="'+params.oauth_version+'",'+
+      ' oauth_signature="'+oauth_signature_enc+'"'
+  console.log(oauthheader)
+  
+  /*
+  .headers({
+      'Authorization': oauthheader
+    })
+    .send('status=' + params.status)
+    .send('include_entities=' + params.include_entities)
+  */
+
+  //execute
+  unirest(httpMethod, baseURL)
+    .headers({
+      'Authorization': oauthheader
+    })
+    .send('status=' + params.status)
+    .send('include_entities=' + params.include_entities)
+    .end(function (res) { 
+      if (res.error) {
+        console.log('\n' + res.raw_body)
+          response.send({
+            status: 400,
+            body: 'ERROR'
+        })
+      }
+      else {
+        console.log(res.raw_body);
+        response.send({
+          status: 200,
+          body: res.raw_body
+        })
+      }
+    });
+    
+});
+
+
 
 
 
@@ -266,20 +498,24 @@ app.get('/api/twitter/userAuth', (req, response) => {
 
   const dotenv = require('dotenv');
   dotenv.config(); 
-  const SERVER_TWITTER_API_Key = process.env.SERVER_TWITTER_API_Key
-  const SERVER_TWITTER_API_Secret = process.env.SERVER_TWITTER_API_Secret
+  let SERVER_TWITTER_API_Key = process.env.SERVER_TWITTER_API_Key
+  let SERVER_TWITTER_API_Secret = process.env.SERVER_TWITTER_API_Secret
   
+  //SERVER_TWITTER_API_Key = 'y5tnv0KUnZnaR81Jj2MKaBRH8'
+  //SERVER_TWITTER_API_Secret = 'DEBCiqAzh5DuvJ1Q7CVRKIDAK3Q9Nf3F5OklTuodZaPw5kHuvH'
+
   const baseURL = 'https://api.twitter.com/oauth/request_token'
   const httpMethod = 'POST';
-  const callback_encoded = "http%3A%2F%2Flocalhost%3A3000%2Fstart"
   const callback = "http://localhost:3000/start"
+  const callback_enc = "http%3A%2F%2Flocalhost%3A3000%2Fstart"
+  
   
   const params = {
-        oauth_consumer_key:SERVER_TWITTER_API_Key,
-        oauth_token:SERVER_TWITTER_API_Secret,
+        oauth_consumer_key: SERVER_TWITTER_API_Key,
+        //oauth_token: SERVER_TWITTER_API_Secret,
         oauth_signature_method: "HMAC-SHA1",
-        oauth_timestamp: "1613903399",
-        oauth_nonce: "A",
+        oauth_timestamp: "1614010416",
+        oauth_nonce: "9FGfGe8lFTm",
         oauth_callback: callback,
         oauth_version: "1.0"
   }
@@ -304,8 +540,8 @@ app.get('/api/twitter/userAuth', (req, response) => {
   //parameter-string
   let paramsString = ""
   for (k in orderedParams) {
-    const value = encodeURIComponent(orderedParams[k]);
-    const key = encodeURIComponent(k);
+    const value = orderedParams[k];
+    const key = k;
     paramsString += key + '=' + value + '&'
   }
   paramsString = paramsString.substring(0, paramsString.length-1) //remove last &
@@ -336,20 +572,23 @@ app.get('/api/twitter/userAuth', (req, response) => {
                                 .toString('base64');
   console.log('\n' + oauth_signature)
 
-  //const oauth_signature_enc = encodeURIComponent(oauth_signature);
-  //console.log('\n' + oauth_signature_enc)
+  const oauth_signature_enc = encodeURIComponent(oauth_signature);
+  console.log('\n' + oauth_signature_enc)
   
+  let oauthheader = 
+    'OAuth '+
+      ' oauth_consumer_key="'+SERVER_TWITTER_API_Key+'",'+
+      ' oauth_signature_method="'+params.oauth_signature_method+'",'+
+      ' oauth_timestamp="'+params.oauth_timestamp+'",'+
+      ' oauth_nonce="'+params.oauth_nonce+'",'+
+      ' oauth_callback="'+callback_enc+'",'+
+      ' oauth_signature="'+oauth_signature_enc+'"'
+  console.log(oauthheader)
   
   //execute
   unirest(httpMethod, baseURL)
     .headers({
-      'Authorization': 'OAuth '+
-      'oauth_consumer_key="'+SERVER_TWITTER_API_Key+'",'+
-      'oauth_signature_method="'+params.oauth_signature_method+'",'+
-      'oauth_timestamp="'+params.oauth_timestamp+'",'+
-      'oauth_nonce="'+params.oauth_nonce+'",'+
-      'oauth_callback="'+callback_encoded+'",'+
-      'oauth_signature="'+oauth_signature+'"'
+      'Authorization': oauthheader
     })
     .end(function (res) { 
       if (res.error) {
