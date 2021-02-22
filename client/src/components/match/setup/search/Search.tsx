@@ -215,6 +215,18 @@ export default function Search(
         console.log(body)
         */
 
+        
+        //GET
+        let request = new Request('/api/twitter/postTweetNew')
+        const response = await fetch(request)
+        const body = await response.json()
+        if (response.status !== 200) {
+            throw Error(body.message)
+        }
+        console.log(body)
+        
+
+        /*
         //POST
         const response = await fetch('/api/twitter/postTweetNew', {
             method: 'POST',
@@ -223,6 +235,7 @@ export default function Search(
         //read response
         const body = await response.text();
         console.log(body)
+        */
         
     }
 
