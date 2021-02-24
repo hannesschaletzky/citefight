@@ -3,7 +3,9 @@ export enum LocalStorage {
     Token_Secret = 'Token_Secret',
     Access_Token = 'Access_Token',
     Access_Token_Secret = 'Access_Token_Secret',
-    MatchID = 'MatchID'
+    MatchID = 'MatchID',
+    Username = 'Username',
+    TwitterLoginSuccess = 'TwitterLoginSuccess'
 }
 
 export enum NotificationType {

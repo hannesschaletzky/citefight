@@ -117,6 +117,9 @@ export default function TwitterCallback() {
             let tokenSecret = str.substring(start, end)
             localStorage.setItem(LocalStorage.Access_Token_Secret, tokenSecret)
 
+            //set success
+            sessionStorage.setItem(LocalStorage.TwitterLoginSuccess, '1')
+
             console.log('rerouting back to matchroom')
             setStatus(CallbackStatus.success)
         }

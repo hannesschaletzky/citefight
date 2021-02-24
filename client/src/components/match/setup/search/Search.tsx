@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import  { Redirect } from 'react-router-dom'
 import st from './Search.module.scss'
 
@@ -46,13 +46,19 @@ export default function Search(
     const [redirectURL, setRedirectURL] = useState('')
 
     
-
-    // Similar to componentDidMount and componentDidUpdate:
-    /*
     useEffect(() => {
-        
+        let accessToken = localStorage.getItem(LocalStorage.Access_Token)
+        let accessToken_Secret = localStorage.getItem(LocalStorage.Access_Token_Secret)
+        if (accessToken !== null && accessToken_Secret != null) {
+            console.log('twitter access token and secret available')
+            //validate tokens with call
+            // -> https://developer.twitter.com/en/docs/twitter-api/v1/accounts-and-users/manage-account-settings/api-reference/get-account-verify_credentials
+
+            //if valid -> enable search
+            //invalid -> show twitter login button again
+        }
     });
-    */
+    
 
     /*
     ##################################

@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import st from './Interaction.module.scss'
 
+import {LocalStorage} from 'components/Interfaces'
 import {SetupJoinStatus} from 'components/Interfaces'
 import {Setup_Player} from 'components/Interfaces'
 import {NotificationType} from 'components/Interfaces'
@@ -24,6 +25,7 @@ class Interaction extends Component <any, any> {
     constructor(props: any) {
         super(props);
         this.state = {
+            lastUserName: this.props.lastUserName,
             userName: '',
             joinEnabled: false,
             userNameError: '',
@@ -43,9 +45,20 @@ class Interaction extends Component <any, any> {
             return
         }
         
+        //reset 
+        this.setState({joinEnabled: false})
+
         //fire event in parent
         this.props.onJoinClick(this.state.userName) 
+        
+    }
+
+    onQuickJoinClick() {
+        //reset 
         this.setState({joinEnabled: false})
+        //fire event in parent
+        let userName = localStorage.getItem(LocalStorage.Username)
+        this.props.onJoinClick(userName)
     }
 
     onLeaveClick() {   
@@ -166,6 +179,11 @@ class Interaction extends Component <any, any> {
                 {this.state.joinEnabled && 
                     <button className={st.Button_Join} onClick={() => this.onJoinClick()}>
                         Join
+                    </button>
+                }
+                {(localStorage.getItem(LocalStorage.Username) !== null) &&
+                    <button className={st.Button_Join} onClick={() => this.onQuickJoinClick()}>
+                        Quick Join as '{localStorage.getItem(LocalStorage.Username)}'
                     </button>
                 }
             </div>

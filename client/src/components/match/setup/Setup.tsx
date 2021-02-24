@@ -1,8 +1,8 @@
 /* eslint-disable react/jsx-pascal-case */
-import { useRef, useReducer } from 'react';
+import { useRef, useReducer, useEffect } from 'react';
 import st from './Setup.module.scss'
 
-import {Setup_Event} from 'components/Interfaces'
+import {LocalStorage, Setup_Event} from 'components/Interfaces'
 import {Setup_Player} from 'components/Interfaces'
 import {Setup_ChatMsg} from 'components/Interfaces'
 import {Twitter_User} from 'components/Interfaces'
@@ -53,6 +53,22 @@ export default function Setup() {
 
     //params hook
     //const { matchID } = useParams<Record<string, string | undefined>>()
+
+    useEffect(() => {
+
+        //automatically join when coming from twitter login
+        let twitterLoginSucces = sessionStorage.getItem(LocalStorage.TwitterLoginSuccess)
+        if (twitterLoginSucces === '1') {
+            let savedUsername = localStorage.getItem(LocalStorage.Username)
+            if (savedUsername !== null) {
+                //join with saved username
+                userName = savedUsername
+                sessionStorage.removeItem(LocalStorage.TwitterLoginSuccess) //prevent infinite loop
+                joinGame()
+            }
+        }
+        
+    })
 
     /*
     ##################################
@@ -220,6 +236,8 @@ export default function Setup() {
                     assignJoinEventAdmin()
                 });
 
+                //set control vars
+                localStorage.setItem(LocalStorage.Username, userName)
                 //request current state from lobby
                 fireEvent_Join()
             });
@@ -256,6 +274,7 @@ export default function Setup() {
 
         //reset vars
         setJoinStatus(SetupJoinStatus.NotJoined)
+        localStorage.removeItem(LocalStorage.Username)
         
         console.log('successfully disconnected')
     }
