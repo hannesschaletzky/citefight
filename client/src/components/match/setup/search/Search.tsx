@@ -184,23 +184,29 @@ export default function Search(
         else {
             console.log(body)
             //"oauth_token=i-7ofAAAAAABLx8pAAABd86SI80&oauth_token_secret=IvoJA3G2XzQ41c9IlfgZb8HHQY8Vw6Rq&oauth_callback_confirmed=true"
-            
-            //extract token
             let str: string = body.body
-            let start = str.indexOf('=') + 1;
+
+            //extract token
+            let search = '='
+            let start = str.indexOf(search) + search.length;
             let end = str.indexOf('&');
             let token = str.substring(start, end)
 
             //extract token_secret
-            start = str.indexOf('secret=') + 7;
+            search = 'secret='
+            start = str.indexOf(search) + search.length;
             end = str.lastIndexOf('&');
             let tokenSecret = str.substring(start, end)
 
             //extract matchID
             let current = window.location.href
             let matchID = current.substr(current.lastIndexOf('/') + 1)
-            
-            //save to local storage
+
+            //reset old access token + secret retrieved in step 3
+            localStorage.removeItem(LocalStorage.Access_Token)
+            localStorage.removeItem(LocalStorage.Access_Token_Secret)
+
+            //save tokens for current step 1
             localStorage.setItem(LocalStorage.Token, token)
             localStorage.setItem(LocalStorage.Token_Secret, tokenSecret)
             localStorage.setItem(LocalStorage.MatchID, matchID)

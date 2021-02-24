@@ -398,7 +398,7 @@ app.get('/api/twitter/access_token', (req, res) => {
     oauth_token: token,
     oauth_verifier: token_verifier,
     oauth_signature_method: "HMAC-SHA1",
-    oauth_timestamp: '1614161531', //Math.round(new Date().getTime() / 1000),
+    oauth_timestamp: Math.round(new Date().getTime() / 1000),
     oauth_nonce: "A",
     oauth_version: "1.0"
   }

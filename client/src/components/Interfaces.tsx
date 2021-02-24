@@ -1,6 +1,8 @@
 export enum LocalStorage {
     Token = 'Token',
     Token_Secret = 'Token_Secret',
+    Access_Token = 'Access_Token',
+    Access_Token_Secret = 'Access_Token_Secret',
     MatchID = 'MatchID'
 }
 
