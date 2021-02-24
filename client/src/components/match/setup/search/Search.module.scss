@@ -1,6 +1,11 @@
 $sdbg: false; //show debugging background = sdbg
 @import "styles/app.global.scss";
 
+.TokenStatus_Con {
+  color: red;
+  margin-top: 5px;
+}
+
 /*
   ################################
   NOT SIGNED IN

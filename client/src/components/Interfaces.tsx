@@ -1,3 +1,9 @@
+export enum LocalStorage {
+    Token = 'Token',
+    Token_Secret = 'Token_Secret',
+    MatchID = 'MatchID'
+}
+
 export enum NotificationType {
     Not_Success = 'Not_Success',
     Not_Warning = 'Not_Warning',
@@ -5,9 +11,11 @@ export enum NotificationType {
 }
 
 export enum TwitterStatus {
-    none = '1',
-    signedIn = '2',
-    error = '3'
+    none,
+    tokenRequested,
+    tokenReceived,
+    signedIn,
+    error
 }
 
 export enum SysMsgType {

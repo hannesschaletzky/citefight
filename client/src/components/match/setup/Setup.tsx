@@ -1,7 +1,6 @@
 /* eslint-disable react/jsx-pascal-case */
-import { useEffect, useRef, useReducer } from 'react';
+import { useRef, useReducer } from 'react';
 import st from './Setup.module.scss'
-//import { useParams } from 'react-router-dom';
 
 import {Setup_Event} from 'components/Interfaces'
 import {Setup_Player} from 'components/Interfaces'
@@ -53,15 +52,7 @@ export default function Setup() {
     const channelName = 'presence-Game2'
 
     //params hook
-    //const { id } = useParams<Record<string, string | undefined>>()
-
-    
-    
-    useEffect(() => {
-
-    })
-    
-
+    //const { matchID } = useParams<Record<string, string | undefined>>()
 
     /*
     ##################################
@@ -559,62 +550,91 @@ export default function Setup() {
     ##################################
     ##################################
     */
-    
-    return (
-        <div className={st.Content_Con}>
-            {Search(
-                ref_twitterStatus.current,
-                ref_joinStatus.current, //pass status bc. you cant do && with functional comp.
-                ref_twitterUsers.current,
-                st.Left_Panel, //pass outside panel css-class, so it can be embedded and returned
-                onNewTwitterUserAdded
-                )
+
+    const getContent = () => {
+
+        //LOCAL FUNCTION TO CHECK IF MATCH ID GIVEN IS VALID
+        const isValidMatchID = () => {
+            let current = window.location.href
+            let matchID = current.substr(current.lastIndexOf('/') + 1);
+            if (matchID.length > 0 && /^\d+$/.test(matchID)) {
+                console.log('valid id: ' + matchID)
+                return true
             }
-            {(ref_joinStatus.current === SetupJoinStatus.Joined) &&
-            (ref_twitterUsers.current.length > 0) &&
-                <div className={st.Center_Panel}>
-                    {ref_twitterUsers.current.length}
-                </div>
-            }
-            <div className={st.Right_Panel}>
-                <div className={st.Interaction_Con}>
-                    <Interaction
-                        status={ref_joinStatus.current}
-                        user={ref_players.current[getIndexOfUser(userName)]}
-                        onJoinClick={onJoinTriggered}
-                        onLeaveClick={onLeaveTriggered}
-                        onToogleReadyClick={onToogleReady}
-                        addNotification={onNewNotification}
-                    />
-                </div>
-                {(ref_joinStatus.current === SetupJoinStatus.Joined) && 
-                    <div className={st.Players_Con}>
-                        <Players   
-                            data={ref_players.current}
-                            currentUser={userName}
-                        />
+            console.log('invalid id: ' + matchID)
+            return false
+        }
+
+        //check URL
+        let rtn = <div></div>
+        if (!isValidMatchID()) {
+            let current = window.location.href
+            let matchID = current.substr(current.lastIndexOf('/') + 1);
+            rtn = <div>'{matchID}' is an invalid matchID! Only numbers allowed</div>
+        }
+        else {
+            rtn = 
+                <div className={st.Content_Con}>
+                {Search(
+                    ref_twitterStatus.current,
+                    ref_joinStatus.current, //pass status bc. you cant do && with functional comp.
+                    ref_twitterUsers.current,
+                    st.Left_Panel, //pass outside panel css-class, so it can be embedded and returned
+                    onNewTwitterUserAdded
+                    )
+                }
+                {(ref_joinStatus.current === SetupJoinStatus.Joined) &&
+                (ref_twitterUsers.current.length > 0) &&
+                    <div className={st.Center_Panel}>
+                        {ref_twitterUsers.current.length}
                     </div>
                 }
-                {(ref_joinStatus.current === SetupJoinStatus.Joined) && 
-                    <div className={st.Chat_Con}>
-                        <Chat   
-                            data={ref_chat.current}
-                            onNewMsg={onNewChatMessage}
+                <div className={st.Right_Panel}>
+                    <div className={st.Interaction_Con}>
+                        <Interaction
+                            status={ref_joinStatus.current}
+                            user={ref_players.current[getIndexOfUser(userName)]}
+                            onJoinClick={onJoinTriggered}
+                            onLeaveClick={onLeaveTriggered}
+                            onToogleReadyClick={onToogleReady}
+                            addNotification={onNewNotification}
                         />
                     </div>
+                    {(ref_joinStatus.current === SetupJoinStatus.Joined) && 
+                        <div className={st.Players_Con}>
+                            <Players   
+                                data={ref_players.current}
+                                currentUser={userName}
+                            />
+                        </div>
+                    }
+                    {(ref_joinStatus.current === SetupJoinStatus.Joined) && 
+                        <div className={st.Chat_Con}>
+                            <Chat   
+                                data={ref_chat.current}
+                                onNewMsg={onNewChatMessage}
+                            />
+                        </div>
+                    }
+                </div>
+                {ref_notification.current.display && 
+                    <div className={ref_notification.current.scssClass} onClick={() => hideNotification()}>
+                        <div className={st.Not_Text}>
+                            {ref_notification.current.msg}
+                        </div>
+                        <div className={st.Not_Close}>
+                            x
+                        </div>
+                    </div>
+                    
                 }
             </div>
-            {ref_notification.current.display && 
-                <div className={ref_notification.current.scssClass} onClick={() => hideNotification()}>
-                    <div className={st.Not_Text}>
-                        {ref_notification.current.msg}
-                    </div>
-                    <div className={st.Not_Close}>
-                        x
-                    </div>
-                </div>
-                
-            }
-        </div>
+        }
+
+        return rtn
+    }
+    
+    return (
+        getContent()
     );
 }

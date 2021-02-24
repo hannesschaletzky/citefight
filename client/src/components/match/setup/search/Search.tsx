@@ -1,18 +1,31 @@
 import React, { useState } from 'react';
+import  { Redirect } from 'react-router-dom'
 import st from './Search.module.scss'
 
 import SearchList from './SearchList'
 import CircularProgress from '@material-ui/core/CircularProgress';
+import TwitterIcon from 'assets/footer/Twitter_Icon.png'
 
 //import oauthSignature from 'oauth-signature/dist/oauth-signature.js'
 
+import {TwitterStatus} from 'components/Interfaces'
 import {Twitter_User} from 'components/Interfaces'
 import {SetupJoinStatus} from 'components/Interfaces'
-import {TwitterStatus} from 'components/Interfaces'
-
-import TwitterIcon from 'assets/footer/Twitter_Icon.png'
+import {LocalStorage} from 'components/Interfaces'
 
 const stateInitArray:Twitter_User[] = []
+
+enum TokenStatus {
+    init,
+    requested,
+    error,
+    //no received, since there is a immediate redirect on receive
+}
+
+enum RequestType {
+    inital,
+    more
+}
 
 export default function Search( 
                                 twitterStatus:TwitterStatus,
@@ -28,11 +41,11 @@ export default function Search(
     const [lastSearchString, setLastSearchString] = useState("");
     const [searchEnabled, setSearchEnabled] = useState(false);
     const [loading, setLoading] = useState(false);
+    const [_twitterStatus, setTwitterStatus] = useState(twitterStatus)
+    const [tokenStatus, setTokenStatus] = useState(TokenStatus.init)
+    const [redirectURL, setRedirectURL] = useState('')
+
     
-    enum RequestType {
-        inital,
-        more
-    }
 
     // Similar to componentDidMount and componentDidUpdate:
     /*
@@ -157,28 +170,46 @@ export default function Search(
 
     const onSignInButtonClicked = async () => {
         console.log('trying to sign in')
+        setTokenStatus(TokenStatus.requested)
 
-        //GET
-        /*
-        let request = new Request('/api/twitter/postTweetNew')
-        const response = await fetch(request)
-        const body = await response.json()
-        if (response.status !== 200) {
-            throw Error(body.message)
-        }
-        console.log(body)
-        */
-        
         //userAuth
-        let request = new Request('/api/twitter/userAuth')
+        let request = new Request('/api/twitter/request_token')
         const response = await fetch(request)
         const body = await response.json()
-        if (response.status !== 200) {
-            throw Error(body.message)
+        if (body.status !== 200) {
+            console.log('ERROR retrieving user token from: api.twitter.com/oauth/request_token')
+            console.log(body)
+            setTokenStatus(TokenStatus.error)
         }
-        console.log(body)
+        else {
+            console.log(body)
+            //"oauth_token=i-7ofAAAAAABLx8pAAABd86SI80&oauth_token_secret=IvoJA3G2XzQ41c9IlfgZb8HHQY8Vw6Rq&oauth_callback_confirmed=true"
+            
+            //extract token
+            let str: string = body.body
+            let start = str.indexOf('=') + 1;
+            let end = str.indexOf('&');
+            let token = str.substring(start, end)
 
-        
+            //extract token_secret
+            start = str.indexOf('secret=') + 7;
+            end = str.lastIndexOf('&');
+            let tokenSecret = str.substring(start, end)
+
+            //extract matchID
+            let current = window.location.href
+            let matchID = current.substr(current.lastIndexOf('/') + 1)
+            
+            //save to local storage
+            localStorage.setItem(LocalStorage.Token, token)
+            localStorage.setItem(LocalStorage.Token_Secret, tokenSecret)
+            localStorage.setItem(LocalStorage.MatchID, matchID)
+
+            //redirect user to: /redirect/:token
+            setRedirectURL('/redirect/' + token)
+            setTwitterStatus(TwitterStatus.tokenReceived)
+            
+        }
     }
 
 
@@ -218,7 +249,7 @@ export default function Search(
         */
         let rtn = <div></div>
         if (joinType === SetupJoinStatus.Joined) { 
-            if (twitterStatus === TwitterStatus.none) {
+            if (_twitterStatus === TwitterStatus.none) {
                 //NOT SIGNED IN
                 rtn = 
                 <div className={panelContainer} /*coming from parent container*/>
@@ -236,10 +267,25 @@ export default function Search(
                         <div className={st.SignIn_Caption}>
                             Sign in to browse Twitter and add the profiles you wanna play.
                         </div>
+                        <div className={st.TokenStatus_Con}>
+                            {(tokenStatus === TokenStatus.error) &&
+                            <div>
+                                There was an error receiving the token.
+                            </div>
+                            }
+                            {(tokenStatus === TokenStatus.requested) &&
+                                <CircularProgress/>
+                            }
+                        </div>
                     </div>
                 </div>
             }
-            else if (twitterStatus === TwitterStatus.signedIn) {
+            else if (_twitterStatus === TwitterStatus.tokenReceived) {
+                //FIRST TOKEN RECEIVED
+                rtn = 
+                    <Redirect to={redirectURL}/>
+            }
+            else if (_twitterStatus === TwitterStatus.signedIn) {
                 //SIGNED IN
                 rtn = 
                 <div className={panelContainer} /*coming from parent container*/>
