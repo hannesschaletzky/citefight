@@ -454,7 +454,7 @@ export default function Search(
                                 twitterStatus = {twitterStatus}
                             />
                             {(userObjects.length % 20 === 0) && 
-                                <div className={st.Bottom_Con}>
+                                <div className={st.More_Con}>
                                     <button className={st.More} 
                                             onClick={(e) => onSearchButtonClick(RequestType.more)}>
                                         Show more...

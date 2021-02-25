@@ -8,7 +8,8 @@ $sdbg: false; //show debugging background = sdbg
 */
 
 .Login_Con {
-  max-height: 150px;
+  height: 50px;
+  margin-bottom: 10px;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -38,7 +39,7 @@ $sdbg: false; //show debugging background = sdbg
 */
 .Search_Con {
   margin-top: 10px;
-  max-height: 500px !important; //400px
+  max-height: 450px !important;
   display: flex;
   flex-direction: column;
 
@@ -84,20 +85,16 @@ $sdbg: false; //show debugging background = sdbg
 }
 
 .Button_Con {
+  height: 40px;
+  padding-left: 4px;
   margin-left: 5px;
-  margin-right: 5px;
-  padding: 3px;
+
   display: flex;
   justify-content: center;
   align-items: center;
   cursor: pointer;
 
-  //border
-  border: 1.7px solid;
-  border-color: transparent;
   border-radius: 8px;
-
-  //shadow, colour
   box-shadow: 2px 2px rgba(5, 19, 19, 0.527);
   background-color: rgba(236, 236, 234, 0.705);
 
@@ -147,7 +144,7 @@ $sdbg: false; //show debugging background = sdbg
   MORE
   ################################
 */
-.Bottom_Con {
+.More_Con {
   height: 50px;
   display: flex;
   justify-content: center;
@@ -172,6 +169,11 @@ $sdbg: false; //show debugging background = sdbg
   background-color: rgba(236, 236, 234, 0.705);
 }
 
+/*
+  ################################
+  LOADING
+  ################################
+*/
 .loading_Con {
   margin-top: 10px;
   margin-bottom: 10px;
@@ -179,11 +181,6 @@ $sdbg: false; //show debugging background = sdbg
   justify-content: center;
 }
 
-/*
-  ################################
-  LOADING
-  ################################
-*/
 .Loading_Con {
   margin: 10px;
   display: flex;

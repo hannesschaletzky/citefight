@@ -194,6 +194,7 @@ function getBotToken() {
   diff = now.getTime() - ref.getTime()
   if (diff > ((windowSizeSeconds)*1000)) {
     console.log('resetting bot1')
+    bot1_firstCall = ref.toISOString()
     bot1_CallCount = 0
   }
   //BOT 2
@@ -201,6 +202,7 @@ function getBotToken() {
   diff = now.getTime() - ref.getTime()
   if (diff > ((windowSizeSeconds)*1000)) {
     console.log('resetting bot2')
+    bot2_firstCall = ref.toISOString()
     bot2_CallCount = 0
   }
   //BOT 3
@@ -208,6 +210,7 @@ function getBotToken() {
   diff = now.getTime() - ref.getTime()
   if (diff > ((windowSizeSeconds)*1000)) {
     console.log('resetting bot3')
+    bot3_firstCall = ref.toISOString()
     bot3_CallCount = 0
   }
 
