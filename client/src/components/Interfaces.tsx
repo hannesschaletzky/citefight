@@ -14,14 +14,6 @@ export enum NotificationType {
     Not_Error = 'Not_Error'
 }
 
-export enum TwitterStatus {
-    none,
-    tokenRequested,
-    tokenReceived,
-    signedIn,
-    error
-}
-
 export enum SysMsgType {
     none = '1',
     userJoined = '2',

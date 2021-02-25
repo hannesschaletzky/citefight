@@ -8,13 +8,23 @@ import TwitterIcon from 'assets/footer/Twitter_Icon.png'
 
 //import oauthSignature from 'oauth-signature/dist/oauth-signature.js'
 
-import {TwitterStatus} from 'components/Interfaces'
 import {Twitter_User} from 'components/Interfaces'
 import {SetupJoinStatus} from 'components/Interfaces'
 import {LocalStorage} from 'components/Interfaces'
+import {NotificationType} from 'components/Interfaces'
 
 const stateInitArray:Twitter_User[] = []
 
+//general status
+enum TwitterStatus {
+    none,
+    tokenRequested,
+    tokenReceived,
+    signedIn,
+    error
+}
+
+//status for step 1
 enum TokenStatus {
     init,
     requested,
@@ -22,18 +32,26 @@ enum TokenStatus {
     //no received, since there is a immediate redirect on receive
 }
 
+//status for saved token from localstorage
+enum TokenVerify {
+    init,
+    pending,
+    fail,
+    success
+}
+
+//search request type
 enum RequestType {
     inital,
     more
 }
 
-export default function Search( 
-                                twitterStatus:TwitterStatus,
+export default function Search(
                                 joinType: SetupJoinStatus,
                                 addedUsers:Twitter_User[],
                                 panelContainer:string,
-                                addUserFunc:(par1: Twitter_User) 
-                                => void) 
+                                addUserFunc:(par1: Twitter_User) => void,
+                                newNotification:(msg:string, notType:NotificationType) => void) 
                                 {
     const [page, setPage] = useState(1);
     const [userObjects, setUserObjects] = useState(stateInitArray);
@@ -41,24 +59,55 @@ export default function Search(
     const [lastSearchString, setLastSearchString] = useState("");
     const [searchEnabled, setSearchEnabled] = useState(false);
     const [loading, setLoading] = useState(false);
-    const [_twitterStatus, setTwitterStatus] = useState(twitterStatus)
+    const [twitterStatus, setTwitterStatus] = useState(TwitterStatus.none)
     const [tokenStatus, setTokenStatus] = useState(TokenStatus.init)
+    const [tokenVerifyStatus, setTokenVerifyStatus] = useState(TokenVerify.init)
     const [redirectURL, setRedirectURL] = useState('')
 
     
     useEffect(() => {
+
+        //CHECK IF USER ALREADY HAS VALID TOKEN IN LOCAL STORAGE
+        //only verify once
+        if (tokenVerifyStatus !== TokenVerify.init) {
+            return
+        }
+        //verify token & secret
+        setTokenVerifyStatus(TokenVerify.pending)
         let accessToken = localStorage.getItem(LocalStorage.Access_Token)
         let accessToken_Secret = localStorage.getItem(LocalStorage.Access_Token_Secret)
         if (accessToken !== null && accessToken_Secret != null) {
-            console.log('twitter access token and secret available')
-            //validate tokens with call
-            // -> https://developer.twitter.com/en/docs/twitter-api/v1/accounts-and-users/manage-account-settings/api-reference/get-account-verify_credentials
-
-            //if valid -> enable search
-            //invalid -> show twitter login button again
+            console.log('token & secret available -> verify')
+            verifyCredentials(accessToken, accessToken_Secret)
+                .then(res => {
+                    //success -> enable search
+                    setTwitterStatus(TwitterStatus.signedIn)
+                }) 
+                .catch(err => {
+                    setTokenVerifyStatus(TokenVerify.fail)
+                });
         }
-    });
+    }, [tokenVerifyStatus]);
     
+
+    /*
+    ##################################
+    ##################################
+                GENERAL
+    ##################################
+    ##################################
+    */
+
+    //send error notification to setup
+    const showErrNot = (msg: string) => {
+        console.log(msg)
+        newNotification('Error: ' + msg, NotificationType.Not_Error)
+    }
+
+    const showWarNot = (msg: string) => {
+        console.log(msg)
+        newNotification('Warning: ' + msg, NotificationType.Not_Warning)
+    }
 
     /*
     ##################################
@@ -73,13 +122,13 @@ export default function Search(
 
         //dont fire mutiple requests
         if (loading) {
-            console.log('already loading')
+            showErrNot('already loading')
             return
         }
 
         //check if search string is provided
         if (!searchEnabled && RequestType.inital) {
-            console.log('no input string')
+            showErrNot('no input string')
             return
         }
 
@@ -108,7 +157,7 @@ export default function Search(
         }
 
         if (qString === "" || newPage === -1) {
-            console.log('not all query parameters given')
+            showErrNot('not all query parameters given')
             return
         }
 
@@ -118,9 +167,10 @@ export default function Search(
             .then(res => {
                 if (res.status !== 200) {
                     //error
-                    console.log('error occured: ' + res.message)
+                    showErrNot(res.message)
                     if (res.status === 44) {
                         //-> no more users to show
+                        showWarNot('no more users available')
                     }
                 }
                 else {
@@ -143,6 +193,7 @@ export default function Search(
                 setLoading(false)
             }) 
             .catch(err => {
+                showErrNot('critical system error occured, check console')
                 console.log(err)
                 setLoading(false)
             });
@@ -150,11 +201,23 @@ export default function Search(
 
 
     const getUsers = async (name: string, page: number) => {
+
+        let accessToken = localStorage.getItem(LocalStorage.Access_Token)
+        let accessToken_Secret = localStorage.getItem(LocalStorage.Access_Token_Secret)
+        if (accessToken === null) {
+            accessToken = ""
+        }
+        if (accessToken_Secret === null) {
+            accessToken_Secret = ""
+        }
+
         //passing additional parameters in header
         var requestOptions = {
             headers: {
                 'q': name,
-                'page': page.toString()
+                'page': page.toString(),
+                'token': accessToken,
+                'token_secret': accessToken_Secret
             }
         };
         let request = new Request('/api/twitter/users', requestOptions)
@@ -183,13 +246,13 @@ export default function Search(
         const response = await fetch(request)
         const body = await response.json()
         if (body.status !== 200) {
-            console.log('ERROR retrieving user token from: api.twitter.com/oauth/request_token')
-            console.log(body)
+            showErrNot(body.message) //maybe not body.message 
             setTokenStatus(TokenStatus.error)
         }
         else {
             console.log(body)
-            //"oauth_token=i-7ofAAAAAABLx8pAAABd86SI80&oauth_token_secret=IvoJA3G2XzQ41c9IlfgZb8HHQY8Vw6Rq&oauth_callback_confirmed=true"
+            //"oauth_token=i-7ofAAAAAABLx8pAAABd86SI80&
+            //oauth_token_secret=IvoJA3G2XzQ41c9IlfgZb8HHQY8Vw6Rq&oauth_callback_confirmed=true"
             let str: string = body.body
 
             //extract token
@@ -223,6 +286,30 @@ export default function Search(
             
         }
     }
+
+    const verifyCredentials = async (accessToken: string, accessToken_Secret: string) => {
+        //passing additional parameters in header
+        var requestOptions = {
+            headers: {
+                'token': accessToken,
+                'token_secret': accessToken_Secret
+            }
+        };
+        let request = new Request('/api/twitter/verify_token', requestOptions)
+
+        const response = await fetch(request)
+        const body = await response.json()
+        if (body.status !== 200) {
+            showErrNot(body.message) 
+            setTokenVerifyStatus(TokenVerify.fail)
+            throw new Error(body)
+        }
+        else {
+            console.log('valid token & secret')
+            setTokenVerifyStatus(TokenVerify.success)
+            return "200";
+        }
+    };
 
 
 
@@ -261,7 +348,7 @@ export default function Search(
         */
         let rtn = <div></div>
         if (joinType === SetupJoinStatus.Joined) { 
-            if (_twitterStatus === TwitterStatus.none) {
+            if (twitterStatus === TwitterStatus.none) {
                 //NOT SIGNED IN
                 rtn = 
                 <div className={panelContainer} /*coming from parent container*/>
@@ -288,16 +375,22 @@ export default function Search(
                             {(tokenStatus === TokenStatus.requested) &&
                                 <CircularProgress/>
                             }
+                            {(tokenVerifyStatus === TokenVerify.fail) &&
+                            <div>
+                                Previously used user-credentials could not be verified, please sign in again.
+                            </div>
+
+                            }
                         </div>
                     </div>
                 </div>
             }
-            else if (_twitterStatus === TwitterStatus.tokenReceived) {
+            else if (twitterStatus === TwitterStatus.tokenReceived) {
                 //FIRST TOKEN RECEIVED
                 rtn = 
                     <Redirect to={redirectURL}/>
             }
-            else if (_twitterStatus === TwitterStatus.signedIn) {
+            else if (twitterStatus === TwitterStatus.signedIn) {
                 //SIGNED IN
                 rtn = 
                 <div className={panelContainer} /*coming from parent container*/>

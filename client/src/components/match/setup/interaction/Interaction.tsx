@@ -151,7 +151,7 @@ class Interaction extends Component <any, any> {
         //as soon as user has joined, there has to be a user object
         let user:Setup_Player = this.props.user
         if (user === undefined && this.props.status === SetupJoinStatus.Joined) {
-            console.log('Interaction.tsx ERROR: no user object given')
+            //console.log('Interaction.tsx ERROR: no user object given')
             return <div> CIRITCAL ERROR: no user object given</div>
         }
 

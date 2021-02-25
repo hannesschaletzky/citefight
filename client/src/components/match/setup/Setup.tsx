@@ -9,7 +9,6 @@ import {Twitter_User} from 'components/Interfaces'
 import {SysMsgType} from 'components/Interfaces'
 import {SetupEventType} from 'components/Interfaces'
 import {SetupJoinStatus} from 'components/Interfaces'
-import {TwitterStatus} from 'components/Interfaces'
 import {Setup_Notification} from 'components/Interfaces'
 import {NotificationType} from 'components/Interfaces'
 
@@ -39,7 +38,6 @@ let notTimeout = setTimeout(() => {}, 1) //store notification-timeout
 
 export default function Setup() {
     //states
-    const ref_twitterStatus = useRef(TwitterStatus.none)
     const ref_twitterUsers = useRef(init_twitterUser);
     const ref_players = useRef(init_players);
     const ref_chat = useRef(init_chat);
@@ -85,7 +83,7 @@ export default function Setup() {
                 return i
             }
         }
-        console.log('ERROR: could not find user in players array')
+        //console.log('ERROR: could not find user in players array')
         return -1
     }
 
@@ -270,11 +268,9 @@ export default function Setup() {
         ref_twitterUsers.current = []
         ref_chat.current = []
         ref_players.current = []
-        ref_twitterStatus.current = TwitterStatus.none
 
-        //reset vars
-        setJoinStatus(SetupJoinStatus.NotJoined)
-        localStorage.removeItem(LocalStorage.Username)
+        //reset vars -> small timeout to let pusher fully disconnect
+        setTimeout(() => setJoinStatus(SetupJoinStatus.NotJoined), 500)
         
         console.log('successfully disconnected')
     }
@@ -577,10 +573,9 @@ export default function Setup() {
             let current = window.location.href
             let matchID = current.substr(current.lastIndexOf('/') + 1);
             if (matchID.length > 0 && /^\d+$/.test(matchID)) {
-                console.log('valid id: ' + matchID)
                 return true
             }
-            console.log('invalid id: ' + matchID)
+            console.log('INVALID ID: ' + matchID)
             return false
         }
 
@@ -595,11 +590,11 @@ export default function Setup() {
             rtn = 
                 <div className={st.Content_Con}>
                 {Search(
-                    ref_twitterStatus.current,
                     ref_joinStatus.current, //pass status bc. you cant do && with functional comp.
                     ref_twitterUsers.current,
                     st.Left_Panel, //pass outside panel css-class, so it can be embedded and returned
-                    onNewTwitterUserAdded
+                    onNewTwitterUserAdded,
+                    onNewNotification
                     )
                 }
                 {(ref_joinStatus.current === SetupJoinStatus.Joined) &&
