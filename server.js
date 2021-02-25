@@ -133,23 +133,17 @@ app.post('/api/pusher/setup/trigger', (req, res) => {
 const TwitterV1 = require('twitter');
 const TwitterV2 = require('twitter-v2');
 
-function getTwitterClient(version, token="", tokenSecret="") {
+function getTwitterClient(version, token, tokenSecret) {
 
   //get env vars
   const dotenv = require('dotenv');
   dotenv.config(); 
   const SERVER_TWITTER_API_Key = process.env.SERVER_TWITTER_API_Key
   const SERVER_TWITTER_API_Secret = process.env.SERVER_TWITTER_API_Secret
-  let SERVER_TWITTER_Access_Token = process.env.SERVER_TWITTER_Access_Token
-  let SERVER_TWITTER_Access_Token_Secret = process.env.SERVER_TWITTER_Access_Token_Secret
+  let SERVER_TWITTER_Access_Token = token
+  let SERVER_TWITTER_Access_Token_Secret = tokenSecret
   const SERVER_TWITTER_API_BEARER = process.env.SERVER_TWITTER_API_BEARER
-  //set token and secret if given by user
-  if (token !== "") {
-    SERVER_TWITTER_Access_Token = token
-  }
-  if (tokenSecret !== "") {
-    SERVER_TWITTER_Access_Token_Secret = tokenSecret
-  }
+  
   /*
   console.log('SERVER_TWITTER_API_Key: ' + SERVER_TWITTER_API_Key)
   console.log('SERVER_TWITTER_API_Secret: ' + SERVER_TWITTER_API_Secret)
@@ -174,7 +168,87 @@ function getTwitterClient(version, token="", tokenSecret="") {
     });
     return client
   }
+}
 
+let callLimit = 900
+let windowSizeSeconds = 60*15 //15 mins 
+
+let bot1_firstCall = new Date().toISOString()
+let bot1_CallCount = 0
+let bot2_firstCall = new Date().toISOString()
+let bot2_CallCount = 0
+let bot3_firstCall = new Date().toISOString()
+let bot3_CallCount = 0
+
+function getBotToken() {
+  //get env vars
+  const dotenv = require('dotenv');
+  dotenv.config(); 
+  let token = ""
+  let token_secret = ""
+
+  //check counter reset
+  let now = new Date(), ref, diff;
+  //BOT 1
+  ref = new Date(bot1_firstCall)
+  diff = now.getTime() - ref.getTime()
+  if (diff > ((windowSizeSeconds)*1000)) {
+    console.log('resetting bot1')
+    bot1_CallCount = 0
+  }
+  //BOT 2
+  ref = new Date(bot2_firstCall)
+  diff = now.getTime() - ref.getTime()
+  if (diff > ((windowSizeSeconds)*1000)) {
+    console.log('resetting bot2')
+    bot2_CallCount = 0
+  }
+  //BOT 3
+  ref = new Date(bot3_firstCall)
+  diff = now.getTime() - ref.getTime()
+  if (diff > ((windowSizeSeconds)*1000)) {
+    console.log('resetting bot3')
+    bot3_CallCount = 0
+  }
+
+  //determine bot to use
+  //BOT 1
+  if (bot1_CallCount < callLimit) {
+    //set first-call-time
+    if (bot1_CallCount === 0) {
+      bot1_firstCall = new Date().toISOString()
+    }
+    //return credentials
+    //console.log('use bot1')
+    bot1_CallCount++
+    return {'token':process.env.SERVER_TWITTER_Bot1_Token, 
+            'token_secret':process.env.SERVER_TWITTER_Bot1_Token_Secret}
+  }
+  //BOT 2
+  else if (bot2_CallCount < callLimit) {
+    if (bot2_CallCount === 0) {
+      bot2_firstCall = new Date().toISOString()
+    }
+    //console.log('use bot2')
+    bot2_CallCount++
+    return {'token':process.env.SERVER_TWITTER_Bot2_Token, 
+            'token_secret':process.env.SERVER_TWITTER_Bot2_Token_Secret}
+  }
+  //BOT 3
+  else if (bot3_CallCount < callLimit) {
+    if (bot3_CallCount === 0) {
+      bot3_firstCall = new Date().toISOString()
+    }
+    //console.log('use bot3')
+    bot3_CallCount++
+    return {'token':process.env.SERVER_TWITTER_Bot3_Token,
+            'token_secret':process.env.SERVER_TWITTER_Bot3_Token_Secret}
+  }
+
+  //SEND MESSAGE OR SAVE SOMEWHERE THAT LIMIT WAS EXCEEDED -> ADD MORE BOTS THEN
+
+  return {'token':'', 
+          'token_secret':''}
 }
 
 app.get('/api/twitter/users', (req, res) => {
@@ -184,6 +258,24 @@ app.get('/api/twitter/users', (req, res) => {
   let page = req.headers.page
   let token = req.headers.token
   let token_secret = req.headers.token_secret
+
+  //get bot token if user did not provide own
+  if (token === "" || token_secret === "") {
+    let result = getBotToken()
+    token = result.token
+    token_secret = result.token_secret
+    //check if still empty
+    if (token === "" || token_secret === "") {
+      res.send({
+        status: 999,
+        message: 'could not fetch bot access token or secret'
+      })
+      return
+    }
+  }
+
+  
+
   let params = {
     q: q,
     page: page,
@@ -194,16 +286,16 @@ app.get('/api/twitter/users', (req, res) => {
   let clientv1 = getTwitterClient(1, token, token_secret)
   clientv1.get('users/search', params, function(error, users, response) {
     if (!error) {
-      console.log('retrieved ' + users.length + 'users')
+      //console.log('retrieved ' + users.length + 'users')
       res.send({ 
         status: 200,
         data: users
       })
     }
     else {
-      console.log(error);
       let status = error[0].status
       let message = error[0].message
+      console.log(status + ' ' + message);
       res.send({
         status: status,
         message: message

@@ -6,23 +6,15 @@ import SearchList from './SearchList'
 import CircularProgress from '@material-ui/core/CircularProgress';
 import TwitterIcon from 'assets/footer/Twitter_Icon.png'
 
-//import oauthSignature from 'oauth-signature/dist/oauth-signature.js'
+import {didUserExceedLimit} from 'components/Logic'
 
 import {Twitter_User} from 'components/Interfaces'
 import {SetupJoinStatus} from 'components/Interfaces'
 import {LocalStorage} from 'components/Interfaces'
 import {NotificationType} from 'components/Interfaces'
+import {TwitterStatus} from 'components/Interfaces'
 
 const stateInitArray:Twitter_User[] = []
-
-//general status
-enum TwitterStatus {
-    none,
-    tokenRequested,
-    tokenReceived,
-    signedIn,
-    error
-}
 
 //status for step 1
 enum TokenStatus {
@@ -46,6 +38,8 @@ enum RequestType {
     more
 }
 
+let actionTimestamps:string[] = []
+
 export default function Search(
                                 joinType: SetupJoinStatus,
                                 addedUsers:Twitter_User[],
@@ -65,6 +59,7 @@ export default function Search(
     const [redirectURL, setRedirectURL] = useState('')
 
     
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     useEffect(() => {
 
         //CHECK IF USER ALREADY HAS VALID TOKEN IN LOCAL STORAGE
@@ -79,15 +74,15 @@ export default function Search(
         if (accessToken !== null && accessToken_Secret != null) {
             console.log('token & secret available -> verify')
             verifyCredentials(accessToken, accessToken_Secret)
-                .then(res => {
+                .then(() => {
                     //success -> enable search
                     setTwitterStatus(TwitterStatus.signedIn)
                 }) 
-                .catch(err => {
+                .catch(() => {
                     setTokenVerifyStatus(TokenVerify.fail)
                 });
         }
-    }, [tokenVerifyStatus]);
+    });
     
 
     /*
@@ -109,10 +104,22 @@ export default function Search(
         newNotification('Warning: ' + msg, NotificationType.Not_Warning)
     }
 
+    //ACTIONS EXCEEDED
+    const actionsExceeded = () => {
+        if (didUserExceedLimit(actionTimestamps, 20, 30000)) {
+            //actions exceeded
+            newNotification('easy boy... small cooldown - too many actions', NotificationType.Not_Warning)
+            return true
+        }
+        //not exceeded -> add timestamp
+        actionTimestamps.push(new Date().toISOString())
+        return false
+    }
+
     /*
     ##################################
     ##################################
-            Twitter API Search
+            Search Users
     ##################################
     ##################################
     */
@@ -120,9 +127,13 @@ export default function Search(
 
     const onSearchButtonClick = (type: RequestType) => {
 
+        if (actionsExceeded()) {
+            return
+        }
+
         //dont fire mutiple requests
         if (loading) {
-            showErrNot('already loading')
+            showWarNot('already loading')
             return
         }
 
@@ -238,6 +249,12 @@ export default function Search(
     */
 
     const onSignInButtonClicked = async () => {
+
+        //alredy requested
+        if (tokenStatus === TokenStatus.requested) {
+            return
+        }
+
         console.log('trying to sign in')
         setTokenStatus(TokenStatus.requested)
 
@@ -339,109 +356,137 @@ export default function Search(
         }
     }
 
-    const getContent = () => {
+
+    /*
+    ##################################
+    ##################################
+            CONTENT
+    ##################################
+    ##################################
+    */
+    const getLoginComponent = () => {
         /*
-            -> conditions have to be passed to the function of the component in order to avoid
-                -> "React has detected a change in the order of Hooks"
-                -> "Uncaught Invariant Violation: Rendered more hooks than during the previous render"
-                https://reactjs.org/docs/hooks-rules.html
+            conditions like 'joinType' have to be passed to the Search component in order to avoid
+            errors in parent component like:
+            -> "React has detected a change in the order of Hooks"
+            -> "Uncaught Invariant Violation: Rendered more hooks than during the previous render"
+            https://reactjs.org/docs/hooks-rules.html
         */
         let rtn = <div></div>
-        if (joinType === SetupJoinStatus.Joined) { 
-            if (twitterStatus === TwitterStatus.none) {
-                //NOT SIGNED IN
-                rtn = 
-                <div className={panelContainer} /*coming from parent container*/>
-                    <div className={st.SignIn_Con}>
-                        <div className={st.Button_Con}>
-                            <img className={st.Icon} 
-                                src={TwitterIcon} 
-                                alt="Sign into Twitter" 
-                                onClick={() => onSignInButtonClicked()}/>
-                            <button className={st.Search} 
-                                    onClick={() => onSignInButtonClicked()}>
-                                        Sign in
-                            </button>
-                        </div>
-                        <div className={st.SignIn_Caption}>
-                            Sign in to browse Twitter and add the profiles you wanna play.
-                        </div>
-                        <div className={st.TokenStatus_Con}>
-                            {(tokenStatus === TokenStatus.error) &&
-                            <div>
-                                There was an error receiving the token.
-                            </div>
-                            }
-                            {(tokenStatus === TokenStatus.requested) &&
-                                <CircularProgress/>
-                            }
-                            {(tokenVerifyStatus === TokenVerify.fail) &&
-                            <div>
-                                Previously used user-credentials could not be verified, please sign in again.
-                            </div>
-
-                            }
-                        </div>
-                    </div>
+        if (twitterStatus === TwitterStatus.none) {
+            //NOT SIGNED IN
+            rtn = 
+            <div className={st.Login_Con}>
+                <div className={st.Button_Con} title="Sign into your twitter to play your followed profiles">
+                    <img className={st.Icon} 
+                        src={TwitterIcon} 
+                        alt="Sign into Twitter" 
+                        onClick={() => onSignInButtonClicked()}/>
+                    <button className={st.Search} 
+                            onClick={() => onSignInButtonClicked()}>
+                                Sign in
+                    </button>
                 </div>
-            }
-            else if (twitterStatus === TwitterStatus.tokenReceived) {
-                //FIRST TOKEN RECEIVED
-                rtn = 
-                    <Redirect to={redirectURL}/>
-            }
-            else if (twitterStatus === TwitterStatus.signedIn) {
-                //SIGNED IN
-                rtn = 
-                <div className={panelContainer} /*coming from parent container*/>
-                    <div className={st.Con}>
-                        <div className={st.Top_Con}>
-                            <input  className={st.Input} 
-                                    type="search" 
-                                    autoComplete="off" 
-                                    placeholder="Enter username or tag..." 
-                                    onChange={(e) => userNameChanged(e.target.value)} 
-                                    onKeyPress={(e) => keyPressed(e)}/>
-                            {searchEnabled && 
-                                <div className={st.Button_Con}>
-                                    <img className={st.Icon} 
-                                        src={TwitterIcon} 
-                                        alt="Twitter" 
-                                        onClick={(e) => onSearchButtonClick(RequestType.inital)}/>
-                                    <button className={st.Search} 
-                                            onClick={(e) => onSearchButtonClick(RequestType.inital)}>
-                                                Search
-                                    </button>
-                                </div>
-                            }
+                <div className={st.TokenStatus_Con}>
+                    {(tokenStatus === TokenStatus.error) &&
+                        <div>
+                            There was an error receiving the token.
                         </div>
+                    }
+                    {(tokenStatus === TokenStatus.requested) &&
+                        <CircularProgress/>
+                    }
+                    {(tokenVerifyStatus === TokenVerify.fail) &&
+                        <div>
+                            Previously used user-credentials could not be verified, please sign in again.
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+        else if (twitterStatus === TwitterStatus.tokenReceived) {
+            //FIRST TOKEN RECEIVED
+            rtn = 
+                <Redirect to={redirectURL}/>
+        }
+        else if (twitterStatus === TwitterStatus.signedIn) {
+            //SIGNED IN
+            rtn = 
+            <div className={st.Login_Con}>
+                You are signed in with your twitter user!
+            </div>
+        }
+        return rtn
+    }
+
+    const getContent = () => { 
+        if (joinType === SetupJoinStatus.Joined) {
+            let rtn =  
+            <div className={panelContainer} /*coming from parent container*/>
+                {getLoginComponent()}
+                <div className={st.Search_Con}>
+                    <div className={st.Top_Con}>
+                        <input  className={st.Input} 
+                                type="search" 
+                                autoComplete="off" 
+                                placeholder="Enter username or tag..."
+                                onChange={(e) => userNameChanged(e.target.value)} 
+                                onKeyPress={(e) => keyPressed(e)}/>
+                        {searchEnabled && 
+                            <div className={st.Button_Con}>
+                                <img className={st.Icon} 
+                                    src={TwitterIcon} 
+                                    alt="Twitter" 
+                                    onClick={(e) => onSearchButtonClick(RequestType.inital)}/>
+                                <button className={st.Search} 
+                                        onClick={(e) => onSearchButtonClick(RequestType.inital)}>
+                                            Search
+                                </button>
+                            </div>
+                        }
+                    </div>
+                    {userObjects.length !== 0  && 
                         <div className={st.List_Con}>
                             <SearchList
                                 data={userObjects}
                                 addedUsers={addedUsers}
                                 onAddUser={addUserFunc}
+                                twitterStatus = {twitterStatus}
                             />
-                            <div className={st.Bottom_Con}>
-                                {(userObjects.length % 20 === 0) && (userObjects.length !== 0) && 
+                            {(userObjects.length % 20 === 0) && 
+                                <div className={st.Bottom_Con}>
                                     <button className={st.More} 
                                             onClick={(e) => onSearchButtonClick(RequestType.more)}>
                                         Show more...
                                     </button>
-                                }
-                                {loading && 
-                                    <CircularProgress/>
-                                }
+                                </div>
+                            }
+                            {loading && //"more" loading
+                            <div className={st.Loading_Con}>
+                                <CircularProgress/>
                             </div>
+                            }
                         </div>
+                    }
+                    {loading && userObjects.length === 0 && //"inital" loading
+                    <div className={st.Loading_Con}>
+                        <CircularProgress/>
                     </div>
+                    }
+                    {userObjects.length === 0 &&
+                        <div className={st.EmptyResults_Con}>
+                            Search for public Twitter profiles and add them by clicking the card.
+                        </div>
+                    }
                 </div>
-            }
+            </div>
+            return rtn
         }
-        return rtn
+        return <div></div>
     }
 
   return (
-    getContent()
+      getContent()
   );
 }
 

@@ -3,7 +3,6 @@ import  { Redirect } from 'react-router-dom'
 
 import {LocalStorage} from 'components/Interfaces'
 import CircularProgress from '@material-ui/core/CircularProgress';
-import Callback from 'pusher-js/types/src/core/events/callback';
 
 enum CallbackStatus {
     denied,

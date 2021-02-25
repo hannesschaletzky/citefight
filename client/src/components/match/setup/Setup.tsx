@@ -590,7 +590,7 @@ export default function Setup() {
             rtn = 
                 <div className={st.Content_Con}>
                 {Search(
-                    ref_joinStatus.current, //pass status bc. you cant do && with functional comp.
+                    ref_joinStatus.current,
                     ref_twitterUsers.current,
                     st.Left_Panel, //pass outside panel css-class, so it can be embedded and returned
                     onNewTwitterUserAdded,

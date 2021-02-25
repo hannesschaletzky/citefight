@@ -2,6 +2,8 @@ import React, { Component } from 'react';
 import st from './SearchList.module.scss'
 
 import {Twitter_User} from 'components/Interfaces'
+import {TwitterStatus} from 'components/Interfaces'
+
 import VerifiedIcon from 'assets/tweet/VerifiedIcon.png'
 
 enum ActionConType {
@@ -142,7 +144,7 @@ class Search_List extends Component <any, any> {
                                     </button>
                                 </div>
                             }
-                            {(actionCon === ActionConType.follow) &&
+                            {(actionCon === ActionConType.follow) && this.props.twitterStatus === TwitterStatus.signedIn && 
                                 <div className={st.Actions_Con}>
                                     <button className={st.Button_Follow} onClick={() => this.followUser(user)}>
                                         Follow

@@ -1,18 +1,14 @@
 $sdbg: false; //show debugging background = sdbg
 @import "styles/app.global.scss";
 
-.TokenStatus_Con {
-  color: red;
-  margin-top: 5px;
-}
-
 /*
   ################################
-  NOT SIGNED IN
+  LOGIN
   ################################
 */
-.SignIn_Con {
-  height: 100%;
+
+.Login_Con {
+  max-height: 150px;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -24,17 +20,24 @@ $sdbg: false; //show debugging background = sdbg
   font-size: calc(2px + 2vmin);
 }
 
+//not used
 .SignIn_Caption {
-  width: 60%;
+  width: 100%;
   margin-top: 10px;
+}
+
+.TokenStatus_Con {
+  color: red;
+  margin-top: 5px;
 }
 
 /*
   ################################
-  SIGNED IN
+  SEARCH
   ################################
 */
-.Con {
+.Search_Con {
+  margin-top: 10px;
   max-height: 500px !important; //400px
   display: flex;
   flex-direction: column;
@@ -54,6 +57,7 @@ $sdbg: false; //show debugging background = sdbg
   margin-top: 10px;
   margin-left: 10px;
   margin-right: 10px;
+  flex-shrink: 0;
   display: flex;
   justify-content: space-evenly;
   align-items: center;
@@ -125,6 +129,24 @@ $sdbg: false; //show debugging background = sdbg
   padding-bottom: 15px;
 }
 
+/*
+  ################################
+  EMPTY RESULTS
+  ################################
+*/
+.EmptyResults_Con {
+  margin: 15px;
+  text-align: center;
+
+  @extend .HelveticaNeueRegularFont;
+  font-size: calc(2px + 2vmin);
+}
+
+/*
+  ################################
+  MORE
+  ################################
+*/
 .Bottom_Con {
   height: 50px;
   display: flex;
@@ -155,4 +177,16 @@ $sdbg: false; //show debugging background = sdbg
   margin-bottom: 10px;
   display: flex;
   justify-content: center;
+}
+
+/*
+  ################################
+  LOADING
+  ################################
+*/
+.Loading_Con {
+  margin: 10px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }

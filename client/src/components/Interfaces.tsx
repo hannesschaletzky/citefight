@@ -8,6 +8,14 @@ export enum LocalStorage {
     TwitterLoginSuccess = 'TwitterLoginSuccess'
 }
 
+export enum TwitterStatus {
+    none,
+    tokenRequested,
+    tokenReceived,
+    signedIn,
+    error
+}
+
 export enum NotificationType {
     Not_Success = 'Not_Success',
     Not_Warning = 'Not_Warning',
