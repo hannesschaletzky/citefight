@@ -89,6 +89,27 @@ $sdbg: false; //show debugging background = sdbg
 
 /*
   ################################
+  STATE
+  ################################
+*/
+
+.State_Con {
+  //this will take the entire screen
+  position: absolute;
+  top: $header_height;
+  bottom: $footer_height;
+  right: 0;
+  left: 0;
+  //center QR Code
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background-color: $root_backgroundcolor;
+}
+
+/*
+  ################################
   NOTIFICATIONS
   ################################
 */

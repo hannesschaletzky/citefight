@@ -3,6 +3,7 @@ import { useRef, useReducer, useEffect, useState } from 'react';
 import  { Redirect } from 'react-router-dom'
 import st from './Setup.module.scss'
 
+import CircularProgress from '@material-ui/core/CircularProgress';
 
 import {LocalStorage} from 'components/Interfaces'
 import {Setup_Event} from 'components/Interfaces'
@@ -263,29 +264,9 @@ export default function Setup() {
         })
     }
 
-
     const leaveGame = () => {
-        
-        //unbind channels & disconnect
-        if (ref_pusherChannel.current !== null) {
-            ref_pusherChannel.current.unbind()
-            ref_pusherChannel.current = null
-            console.log('channel unbound')
-        }
-        if (ref_pusherClient.current !== null) {
-            ref_pusherClient.current.disconnect()
-            ref_pusherClient.current = null 
-            console.log('client disconnected')
-        }
-        
-        //reset refs
-        ref_twitterUsers.current = []
-        ref_chat.current = []
-        ref_players.current = []
-        forceUpdate()
-        
-        //redirect
-        setTimeout(() => setRedirectToJoin(true), 1000)
+        console.log('leaving')
+        document.location.reload()
     }
 
     /*
@@ -574,12 +555,18 @@ export default function Setup() {
 
     const getContent = () => {
 
+        let content = <div></div>
+
         //check if given MatchID is invalid
         let current = window.location.href
         let matchID = current.substr(current.lastIndexOf('/') + 1);
         if (matchID.length === 0 || !(/^\d+$/.test(matchID))) {
             console.log('INVALID ID: ' + matchID)
-            return <div>'{matchID}' is an invalid Match ID! Only numbers allowed</div>
+            content =  
+                <div className={st.State_Con}>
+                    '{matchID}' is an invalid Match ID! Only numbers allowed
+                </div>
+            return content
         }
 
         //redirect back to join page
@@ -587,65 +574,79 @@ export default function Setup() {
             let redirectURL = '/match/join/' + matchID
             return <Redirect to={redirectURL}/>
         }
-
-        //check pusher state
-        if (ref_pusherState.current !== PusherState.connected) {
-            //return <div>'Could not connect to match.</div>
+        
+        //Pusher State
+        //loading
+        if (ref_pusherState.current === PusherState.init ||
+            ref_pusherState.current === PusherState.connecting) {
+            content =  
+                <div className={st.State_Con}>
+                    Loading
+                    <CircularProgress/>
+                </div>
+        }
+        //connected
+        else if (ref_pusherState.current !== PusherState.connected) {
+            content =  
+                <div className={st.State_Con}>
+                    Could not connect to match
+                </div>
         }
 
-        
-
-        let rtn = 
-        <div className={st.Content_Con}>
-            {Search(
-                ref_twitterUsers.current,
-                st.Left_Panel, //pass outside panel css-class, so it can be embedded and returned
-                onNewTwitterUserAdded,
-                onNewNotification
-                )
-            }
-            {ref_twitterUsers.current.length > 0 &&
-                <div className={st.Center_Panel}>
-                    {ref_twitterUsers.current.length}
-                </div>
-            }
-            <div className={st.Right_Panel}>
-                <div className={st.Interaction_Con}>
-                    <Interaction
-                        user={ref_players.current[getIndexOfUser(ref_username.current)]}
-                        onLeaveClick={onLeaveTriggered}
-                        onToogleReadyClick={onToogleReady}
-                        addNotification={onNewNotification}
-                    />
-                </div>
-                <div className={st.Players_Con}>
-                    <Players   
-                        data={ref_players.current}
-                        currentUser={ref_username.current}
-                    />
-                </div>
-                <div className={st.Chat_Con}>
-                    <Chat   
-                        data={ref_chat.current}
-                        onNewMsg={onNewChatMessage}
-                    />
-                </div>
-            </div>
-            {ref_notification.current.display && 
-                <div className={ref_notification.current.scssClass} onClick={() => hideNotification()}>
-                    <div className={st.Not_Text}>
-                        {ref_notification.current.msg}
-                    </div>
-                    <div className={st.Not_Close}>
-                        x
-                    </div>
-                </div>
-            }
-        </div>
-        return rtn
+        return content
     }
     
     return (
-        getContent()
+        <div>
+            <div>
+                {getContent()}
+            </div>
+            <div className={st.Content_Con}>
+                {Search(
+                    ref_twitterUsers.current,
+                    st.Left_Panel, //pass outside panel css-class, so it can be embedded and returned
+                    onNewTwitterUserAdded,
+                    onNewNotification
+                    )
+                }
+                {ref_twitterUsers.current.length > 0 &&
+                    <div className={st.Center_Panel}>
+                        {ref_twitterUsers.current.length}
+                    </div>
+                }
+                <div className={st.Right_Panel}>
+                    <div className={st.Interaction_Con}>
+                        <Interaction
+                            user={ref_players.current[getIndexOfUser(ref_username.current)]}
+                            onLeaveClick={onLeaveTriggered}
+                            onToogleReadyClick={onToogleReady}
+                            addNotification={onNewNotification}
+                        />
+                    </div>
+                    <div className={st.Players_Con}>
+                        <Players   
+                            data={ref_players.current}
+                            currentUser={ref_username.current}
+                        />
+                    </div>
+                    <div className={st.Chat_Con}>
+                        <Chat   
+                            data={ref_chat.current}
+                            onNewMsg={onNewChatMessage}
+                        />
+                    </div>
+                </div>
+                {ref_notification.current.display && 
+                    <div className={ref_notification.current.scssClass} onClick={() => hideNotification()}>
+                        <div className={st.Not_Text}>
+                            {ref_notification.current.msg}
+                        </div>
+                        <div className={st.Not_Close}>
+                            x
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
     );
 }
