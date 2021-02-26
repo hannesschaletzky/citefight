@@ -9,7 +9,6 @@ import TwitterIcon from 'assets/footer/Twitter_Icon.png'
 import {didUserExceedLimit} from 'components/Logic'
 
 import {Twitter_User} from 'components/Interfaces'
-import {SetupJoinStatus} from 'components/Interfaces'
 import {LocalStorage} from 'components/Interfaces'
 import {NotificationType} from 'components/Interfaces'
 import {TwitterStatus} from 'components/Interfaces'
@@ -41,7 +40,6 @@ enum RequestType {
 let actionTimestamps:string[] = []
 
 export default function Search(
-                                joinType: SetupJoinStatus,
                                 addedUsers:Twitter_User[],
                                 panelContainer:string,
                                 addUserFunc:(par1: Twitter_User) => void,
@@ -419,74 +417,65 @@ export default function Search(
         return rtn
     }
 
-    const getContent = () => { 
-        if (joinType === SetupJoinStatus.Joined) {
-            let rtn =  
-            <div className={panelContainer} /*coming from parent container*/>
-                {getLoginComponent()}
-                <div className={st.Search_Con}>
-                    <div className={st.Top_Con}>
-                        <input  className={st.Input} 
-                                type="search" 
-                                autoComplete="off" 
-                                placeholder="Enter username or tag..."
-                                onChange={(e) => userNameChanged(e.target.value)} 
-                                onKeyPress={(e) => keyPressed(e)}/>
-                        {searchEnabled && 
-                            <div className={st.Button_Con}>
-                                <img className={st.Icon} 
-                                    src={TwitterIcon} 
-                                    alt="Twitter" 
-                                    onClick={(e) => onSearchButtonClick(RequestType.inital)}/>
-                                <button className={st.Search} 
-                                        onClick={(e) => onSearchButtonClick(RequestType.inital)}>
-                                            Search
-                                </button>
-                            </div>
-                        }
+  return (
+    <div className={panelContainer} /*coming from parent container*/>
+        {getLoginComponent()}
+        <div className={st.Search_Con}>
+            <div className={st.Top_Con}>
+                <input  className={st.Input} 
+                        type="search" 
+                        autoComplete="off" 
+                        placeholder="Enter username or tag..."
+                        onChange={(e) => userNameChanged(e.target.value)} 
+                        onKeyPress={(e) => keyPressed(e)}/>
+                {searchEnabled && 
+                    <div className={st.Button_Con}>
+                        <img className={st.Icon} 
+                            src={TwitterIcon} 
+                            alt="Twitter" 
+                            onClick={(e) => onSearchButtonClick(RequestType.inital)}/>
+                        <button className={st.Search} 
+                                onClick={(e) => onSearchButtonClick(RequestType.inital)}>
+                                    Search
+                        </button>
                     </div>
-                    {userObjects.length !== 0  && 
-                        <div className={st.List_Con}>
-                            <SearchList
-                                data={userObjects}
-                                addedUsers={addedUsers}
-                                onAddUser={addUserFunc}
-                                twitterStatus = {twitterStatus}
-                            />
-                            {(userObjects.length % 20 === 0) && 
-                                <div className={st.More_Con}>
-                                    <button className={st.More} 
-                                            onClick={(e) => onSearchButtonClick(RequestType.more)}>
-                                        Show more...
-                                    </button>
-                                </div>
-                            }
-                            {loading && //"more" loading
-                            <div className={st.Loading_Con}>
-                                <CircularProgress/>
-                            </div>
-                            }
+                }
+            </div>
+            {userObjects.length !== 0  && 
+                <div className={st.List_Con}>
+                    <SearchList
+                        data={userObjects}
+                        addedUsers={addedUsers}
+                        onAddUser={addUserFunc}
+                        twitterStatus = {twitterStatus}
+                    />
+                    {(userObjects.length % 20 === 0) && 
+                        <div className={st.More_Con}>
+                            <button className={st.More} 
+                                    onClick={(e) => onSearchButtonClick(RequestType.more)}>
+                                Show more...
+                            </button>
                         </div>
                     }
-                    {loading && userObjects.length === 0 && //"inital" loading
+                    {loading && //"more" loading
                     <div className={st.Loading_Con}>
                         <CircularProgress/>
                     </div>
                     }
-                    {userObjects.length === 0 &&
-                        <div className={st.EmptyResults_Con}>
-                            Search for public Twitter profiles and add them by clicking the card.
-                        </div>
-                    }
                 </div>
+            }
+            {loading && userObjects.length === 0 && //"inital" loading
+            <div className={st.Loading_Con}>
+                <CircularProgress/>
             </div>
-            return rtn
-        }
-        return <div></div>
-    }
-
-  return (
-      getContent()
+            }
+            {userObjects.length === 0 &&
+                <div className={st.EmptyResults_Con}>
+                    Search for public Twitter profiles and add them by clicking the card.
+                </div>
+            }
+        </div>
+    </div>
   );
 }
 

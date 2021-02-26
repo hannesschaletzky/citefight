@@ -5,7 +5,8 @@ export enum LocalStorage {
     Access_Token_Secret = 'Access_Token_Secret',
     MatchID = 'MatchID',
     Username = 'Username',
-    TwitterLoginSuccess = 'TwitterLoginSuccess'
+    TwitterLoginSuccess = 'TwitterLoginSuccess',
+    JoinGame = 'JoinGame'
 }
 
 export enum TwitterStatus {
@@ -36,20 +37,19 @@ export enum SetupEventType {
     Player = 'Setup_Player'
 }
 
-export enum SetupJoinStatus {
-    NotJoined = 'NotJoined',
-    Connecting = 'Connecting',
-    Failed = 'Failed',
-    Joined = 'Joined'
+export enum JoinStatus {
+    init,
+    connecting,
+    error,
 }
 
-export enum PusherConState {
-    initialized = 'initialized',
+export enum PusherState {
+    init = 'init',
     connecting = 'connecting',
     connected = 'connected',
     unavailable = 'unavailable',
-    failed = 'failed',
     disconnected = 'disconnected',
+    error = 'error'
 }
 
 export enum SetupChatStatus {

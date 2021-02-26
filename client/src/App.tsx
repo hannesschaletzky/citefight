@@ -8,6 +8,7 @@ import { BrowserRouter, Route, Switch } from 'react-router-dom'
 import Root_Header from 'components/root/Header'
 import Landing from 'components/pages/Landing'
 
+import Join from 'components/match/join/Join'
 import Match from 'components/match/Match'
 import Setup from 'components/match/setup/Setup'
 import Mockup from 'components/match/Mockup'
@@ -57,9 +58,11 @@ class App extends Component {
                 <Route exact path="/donate" component={Donate}/>
                 <Route exact path="/credits" component={Credits}/>
 
+                  
                 <Route exact path="/match/mockup" component={Mockup}/> 
                 <Route exact path="/match/setup/twittercallback" component={TwitterCallback}/> 
-                <Route path="/match/setup/:id" component={Setup}/> 
+                <Route path="/match/join/:id" component={Join}/>
+                <Route path="/match/setup/:id" component={Setup}/>
                 <Route path="/match/:id" component={Match}/>
 
                 <Route component={NotFound} /* final route for 404 not found *//>
