@@ -1,18 +1,20 @@
 import React, { Component } from 'react';
-import st from './SearchList.module.scss'
+import st from './TwitterProfileList.module.scss'
 
-import {Twitter_User} from 'components/Interfaces'
+import {Twitter_Profile} from 'components/Interfaces'
 import {TwitterStatus} from 'components/Interfaces'
+import {ProfilesUsage} from 'components/Interfaces'
 
 import VerifiedIcon from 'assets/tweet/VerifiedIcon.png'
 
 enum ActionConType {
     init,
     add,
-    follow
+    follow,
+    remove
 }
 
-class Search_List extends Component <any, any> {
+class TwitterProfileList extends Component <any, any> {
 
     constructor(props: any) {
         super(props);
@@ -40,10 +42,10 @@ class Search_List extends Component <any, any> {
         return st.actions_Con_Hidden
     }
 
-    addUser(user: Twitter_User) {
+    addUser(user: Twitter_Profile) {
 
         //retrieve only information that we need, not entire object
-        let parsedUser:Twitter_User = {
+        let parsedUser:Twitter_Profile = {
             id: user.id,
             screen_name: user.screen_name,
             name: user.name,
@@ -56,23 +58,25 @@ class Search_List extends Component <any, any> {
             statuses_count: user.statuses_count,
             profile_image_url_https: user.profile_image_url_https,
         } 
-
         this.props.onAddUser(parsedUser)
-        console.log('added user: ' + user.screen_name)
     }
 
-    followUser(user: Twitter_User) {
+    followUser(user: Twitter_Profile) {
         console.log('Trying to follow: ' + user.screen_name)
+    }
+
+    removeUser(user: Twitter_Profile) {
+        this.props.onRemoveUser(user)
     }
 
     render() { 
 
-        //loop array & add each answer option as new card
-        let users:Twitter_User[] = this.props.data
+        //loop array & add each twitter user as card
+        let users:Twitter_Profile[] = this.props.data
         let cards=[];
         for(let i=0;i<users.length;i++){
 
-            let user:Twitter_User = users[i]
+            let user:Twitter_Profile = users[i]
 
             //construct twitter user url
             let profileUrl = "https://twitter.com/" + user.screen_name
@@ -87,15 +91,21 @@ class Search_List extends Component <any, any> {
 
             //determine action con to display
             let actionCon:ActionConType = ActionConType.init
-            if (!user.protected) {
-                actionCon = ActionConType.add
+            if (this.props.parentType === ProfilesUsage.Search) {
+                if (!user.protected) {
+                    actionCon = ActionConType.add
+                }
+                else if (user.protected && !user.following) {
+                    actionCon = ActionConType.follow
+                }
             }
-            else if (user.protected && !user.following) {
-                actionCon = ActionConType.follow
+            else if (this.props.parentType === ProfilesUsage.Added) {
+                actionCon = ActionConType.remove
             }
 
+            /*
             //check if user already added
-            let addedUsers:Twitter_User[] = this.props.addedUsers
+            let addedUsers:Twitter_Profile[] = this.props.addedUsers
             for(let i=0;i<addedUsers.length;i++) {
                 let item = addedUsers[i]
                 if (item.screen_name === user.screen_name) {
@@ -104,6 +114,7 @@ class Search_List extends Component <any, any> {
                     break
                 }
             }
+            */
 
             //determine if name contains emoji
             let userNameClass = st.UserName
@@ -151,6 +162,13 @@ class Search_List extends Component <any, any> {
                                     </button>
                                 </div>
                             }
+                            {(actionCon === ActionConType.remove) &&
+                                <div className={st.Actions_Con}>
+                                    <button className={st.Button_Remove} onClick={() => this.removeUser(user)}>
+                                        Remove
+                                    </button>
+                                </div>
+                            }
                         </div>
                     </div>
                 </div>
@@ -165,7 +183,7 @@ class Search_List extends Component <any, any> {
     }
 
 }
-export default Search_List;
+export default TwitterProfileList;
 
 function numberWithThousandSep(x: number) {
     return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");

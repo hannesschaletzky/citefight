@@ -13,12 +13,17 @@ $sdbg: false; //show debugging background = sdbg
   }
 }
 
+/*
+  ################################
+  LEFT
+  ################################
+*/
 .Left_Panel {
   height: 90%;
   margin-top: 25px;
   margin-left: 25px;
   margin-right: 25px;
-  flex: 1; //fill space
+  flex: 1; //horizontally
   max-width: 33%;
 
   @if $sdbg {
@@ -26,10 +31,14 @@ $sdbg: false; //show debugging background = sdbg
   }
 }
 
+/*
+  ################################
+  CENTER
+  ################################
+*/
 .Center_Panel {
-  height: 90%;
   margin-top: 25px;
-  flex: 1; //fill space
+  flex: 1; //horizontally
   max-width: 33%;
 
   @if $sdbg {
@@ -37,16 +46,58 @@ $sdbg: false; //show debugging background = sdbg
   }
 }
 
+.Profiles_Con {
+  height: 50%;
+  overflow-y: scroll;
+  @extend .borderWithRoundedCorners;
+
+  @if $sdbg {
+    background-color: rgba(43, 40, 78, 0.5);
+  }
+}
+
+.Profiles_Caption {
+  text-align: center;
+  margin-top: 5px;
+  @extend .HelveticaNeueRegularFont;
+}
+
+.Empty_Profiles_Con {
+  height: 100%;
+  padding-left: 10%;
+  padding-right: 10%;
+  display: flex;
+  align-items: center;
+  text-align: center;
+  @extend .HelveticaNeueRegularFont;
+}
+
+.Info_Con {
+  margin-top: 10px;
+  height: 50%;
+  @extend .borderWithRoundedCorners;
+  @if $sdbg {
+    background-color: rgba(165, 42, 42, 0.4);
+  }
+}
+
+/*
+  ################################
+  RIGHT
+  ################################
+*/
 .Right_Panel {
-  height: 90%;
+  //height: 90%;
   margin-top: 25px;
   margin-left: 25px;
   margin-right: 25px;
-  flex: 1; //fill space
+  flex: 1; //horizontally
   max-width: 33%;
 
+  //stack content vertically
   display: flex;
   flex-direction: column;
+  justify-content: space-evenly;
 
   @if $sdbg {
     background-color: rgba(216, 196, 19, 0.5);
@@ -54,8 +105,8 @@ $sdbg: false; //show debugging background = sdbg
 }
 
 .Interaction_Con {
-  height: 50px;
-  margin-bottom: 10px;
+  //height: 50px;
+  flex: 1;
 
   @if $sdbg {
     background-color: rgba(216, 19, 19, 0.5);
@@ -63,8 +114,10 @@ $sdbg: false; //show debugging background = sdbg
 }
 
 .Players_Con {
-  height: 150px;
+  //height: 150px;
+  flex: 3;
   width: 100%;
+  margin-top: 10px;
   overflow: scroll;
 
   @extend .borderWithRoundedCorners;
@@ -75,10 +128,11 @@ $sdbg: false; //show debugging background = sdbg
 }
 
 .Chat_Con {
-  height: 250px;
+  flex: 5;
+  //height: 250px;
   width: 100%;
-  margin-top: 25px;
-  margin-bottom: 25px;
+  margin-top: 10px;
+  //margin-bottom: 25px;
 
   @extend .borderWithRoundedCorners;
 

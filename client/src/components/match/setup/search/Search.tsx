@@ -2,18 +2,19 @@ import React, { useState, useEffect } from 'react';
 import  { Redirect } from 'react-router-dom'
 import st from './Search.module.scss'
 
-import SearchList from './SearchList'
+import TwitterProfileList from './TwitterProfileList'
 import CircularProgress from '@material-ui/core/CircularProgress';
 import TwitterIcon from 'assets/footer/Twitter_Icon.png'
 
 import {didUserExceedLimit} from 'components/Logic'
 
-import {Twitter_User} from 'components/Interfaces'
+import {Twitter_Profile} from 'components/Interfaces'
 import {LocalStorage} from 'components/Interfaces'
 import {NotificationType} from 'components/Interfaces'
 import {TwitterStatus} from 'components/Interfaces'
+import {ProfilesUsage} from 'components/Interfaces'
 
-const stateInitArray:Twitter_User[] = []
+const stateInitArray:Twitter_Profile[] = []
 
 //status for step 1
 enum TokenStatus {
@@ -40,9 +41,9 @@ enum RequestType {
 let actionTimestamps:string[] = []
 
 export default function Search(
-                                addedUsers:Twitter_User[],
+                                addedUsers:Twitter_Profile[],
                                 panelContainer:string,
-                                addUserFunc:(par1: Twitter_User) => void,
+                                addUserFunc:(par1: Twitter_Profile) => void,
                                 newNotification:(msg:string, notType:NotificationType) => void) 
                                 {
     const [page, setPage] = useState(1);
@@ -443,10 +444,12 @@ export default function Search(
             </div>
             {userObjects.length !== 0  && 
                 <div className={st.List_Con}>
-                    <SearchList
+                    <TwitterProfileList
+                        parentType={ProfilesUsage.Search}
                         data={userObjects}
                         addedUsers={addedUsers}
                         onAddUser={addUserFunc}
+                        onRemoveUser={() => {}}
                         twitterStatus = {twitterStatus}
                     />
                     {(userObjects.length % 20 === 0) && 

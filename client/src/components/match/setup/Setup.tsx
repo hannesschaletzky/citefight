@@ -5,17 +5,19 @@ import st from './Setup.module.scss'
 
 import CircularProgress from '@material-ui/core/CircularProgress';
 
-import {LocalStorage} from 'components/Interfaces'
+import {LocalStorage, TwitterStatus} from 'components/Interfaces'
 import {Setup_Event} from 'components/Interfaces'
 import {Setup_Player} from 'components/Interfaces'
 import {Setup_ChatMsg} from 'components/Interfaces'
-import {Twitter_User} from 'components/Interfaces'
+import {Twitter_Profile} from 'components/Interfaces'
 import {SysMsgType} from 'components/Interfaces'
 import {SetupEventType} from 'components/Interfaces'
 import {Setup_Notification} from 'components/Interfaces'
 import {NotificationType} from 'components/Interfaces'
 import {PusherState} from 'components/Interfaces'
+import {ProfilesUsage} from 'components/Interfaces'
 
+import TwitterProfileList from './search/TwitterProfileList'
 import Search from './search/Search'
 import Interaction from './interaction/Interaction'
 import Players from './players/Players'
@@ -23,10 +25,10 @@ import Chat from './chat/Chat'
 
 const Pusher = require('pusher-js');
 
-const init_twitterUser:Twitter_User[] = []
+const init_profiles:Twitter_Profile[] = []
 const init_players:Setup_Player[] = []
 const init_chat:Setup_ChatMsg[] = []
-const init_Notification:Setup_Notification = {
+const init_notification:Setup_Notification = {
     display: false,
     msg: "",
     type: NotificationType.Not_Success,
@@ -40,11 +42,11 @@ export default function Setup() {
     //state
     const [redirectToJoin,setRedirectToJoin] = useState(false)
     //refs
-    const ref_twitterUsers = useRef(init_twitterUser);
+    const ref_profiles = useRef(init_profiles);
     const ref_players = useRef(init_players);
     const ref_chat = useRef(init_chat);
     const ref_pusherState = useRef(PusherState.init)
-    const ref_notification = useRef(init_Notification)
+    const ref_notification = useRef(init_notification)
 
     //control flow refs
     const ref_username = useRef("")
@@ -234,13 +236,16 @@ export default function Setup() {
 
                 //bind to events
                 ref_pusherChannel.current.bind(SetupEventType.Join, 
-                    (data:any) => handleEvent_Join(data)
+                    (data:Setup_Event) => handleEvent_Join(data)
                 )
                 ref_pusherChannel.current.bind(SetupEventType.Player, 
-                    (data:any) => handleEvent_Player(data)
+                    (data:Setup_Event) => handleEvent_Player(data)
                 )
                 ref_pusherChannel.current.bind(SetupEventType.Chat, 
-                    (data:any) => handleEvent_Chat(data)
+                    (data:Setup_Event) => handleEvent_Chat(data)
+                )
+                ref_pusherChannel.current.bind(SetupEventType.Profile, 
+                    (data:Setup_Event) => handleEvent_Profile(data)
                 )
                 ref_pusherChannel.current.bind('pusher:member_removed', (member:any) => {
                     //remove user
@@ -276,7 +281,7 @@ export default function Setup() {
     ##################################
     ##################################
     */
-    const handleEvent_Join = (event:any) => {
+    const handleEvent_Join = (event:Setup_Event) => {
 
         /*
             ONLY FIRST USER HANDLES THIS
@@ -332,6 +337,7 @@ export default function Setup() {
             joinPlayer(triggerUser)
             fireEvent_Chat()
             fireEvent_Player()
+            fireEvent_Profile()
         }
     }
 
@@ -349,7 +355,7 @@ export default function Setup() {
             headers: {
                 'Content-Type': 'application/json',
                 'pusherchannel': channelName,
-                'pusherevent': SetupEventType.Join
+                'pusherevent': event.type
             },
             body: JSON.stringify(event), 
         });
@@ -381,11 +387,71 @@ export default function Setup() {
     /*
     ##################################
     ##################################
+        EVENT: Player
+    ##################################
+    ##################################
+    */
+    const handleEvent_Player = (event:Setup_Event) => {
+
+        //let str = JSON.stringify(event.data, null, 4);
+        //console.log(str)
+
+        //console.log(pusherChannel.members.count)
+        //security
+        if (event.type !== SetupEventType.Player) {
+            console.log('EventType mismatch in handleEvent_Player:\n\n' + event)
+            return
+        }
+
+        //set new state
+        let newPlayers:Setup_Player[] = event.data
+        console.log('total players: ' + newPlayers.length)
+        ref_players.current = newPlayers
+        setPusherState(PusherState.connected) //force update incl. here
+
+        assignJoinEventAdmin()
+    }
+
+    const fireEvent_Player = async () => {
+
+        //prepare
+        let event:Setup_Event = {
+            type: SetupEventType.Player,
+            data: ref_players.current
+        }
+
+        //execute
+        console.log('broadcast new players')
+        const response = await fetch('/api/pusher/setup/trigger', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'pusherchannel': channelName,
+                'pusherevent': event.type
+            },
+            body: JSON.stringify(event),
+        });
+        
+        //read response
+        const body = await response.text();
+        console.log(body)
+    }
+
+    const toogleReady = (ready:boolean) => {
+        //set yourself ready
+        let i = getIndexOfUser(ref_username.current)
+        ref_players.current[i].ready = ready
+        fireEvent_Player()
+    }
+
+    /*
+    ##################################
+    ##################################
         EVENT: Chat
     ##################################
     ##################################
     */
-    const handleEvent_Chat = (event:any) => {
+    const handleEvent_Chat = (event:Setup_Event) => {
 
         //security
         if (event.type !== SetupEventType.Chat) {
@@ -395,7 +461,7 @@ export default function Setup() {
 
         //set new state
         let newChat:Setup_ChatMsg[] = event.data
-        console.log(newChat.length + ' msgs retr.')
+        console.log('total msgs: ' + newChat.length)
         ref_chat.current = newChat
         forceUpdate()
         
@@ -437,7 +503,7 @@ export default function Setup() {
             headers: {
                 'Content-Type': 'application/json',
                 'pusherchannel': channelName,
-                'pusherevent': SetupEventType.Chat
+                'pusherevent': event.type
             },
             body: JSON.stringify(event),
         });
@@ -447,52 +513,45 @@ export default function Setup() {
         console.log(body)
     }
 
-
-
     /*
     ##################################
     ##################################
-        EVENT: Player
+        EVENT: Profiles
     ##################################
     ##################################
     */
-    const handleEvent_Player = (event:any) => {
-
-        //let str = JSON.stringify(event.data, null, 4);
-        //console.log(str)
+    const handleEvent_Profile = (event:Setup_Event) => {
 
         //console.log(pusherChannel.members.count)
         //security
-        if (event.type !== SetupEventType.Player) {
-            console.log('EventType mismatch in handleEvent_Player:\n\n' + event)
+        if (event.type !== SetupEventType.Profile) {
+            console.log('EventType mismatch in handleEvent_Profile:\n\n' + event)
             return
         }
 
         //set new state
-        let newPlayers:Setup_Player[] = event.data
-        console.log(newPlayers.length + ' total players')
-        ref_players.current = newPlayers
-        setPusherState(PusherState.connected) //force update incl. here
-
-        assignJoinEventAdmin()
+        let newProfiles:Twitter_Profile[] = event.data
+        console.log('total profiles: ' + newProfiles.length)
+        ref_profiles.current = newProfiles
+        forceUpdate()
     }
 
-    const fireEvent_Player = async () => {
+    const fireEvent_Profile = async () => {
 
         //prepare
         let event:Setup_Event = {
-            type: SetupEventType.Player,
-            data: ref_players.current
+            type: SetupEventType.Profile,
+            data: ref_profiles.current
         }
 
         //execute
-        console.log('broadcast new players')
+        console.log('broadcast new profiles')
         const response = await fetch('/api/pusher/setup/trigger', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'pusherchannel': channelName,
-                'pusherevent': SetupEventType.Player
+                'pusherevent': event.type
             },
             body: JSON.stringify(event),
         });
@@ -500,14 +559,6 @@ export default function Setup() {
         //read response
         const body = await response.text();
         console.log(body)
-
-    }
-
-    const toogleReady = (ready:boolean) => {
-        //set yourself ready
-        let i = getIndexOfUser(ref_username.current)
-        ref_players.current[i].ready = ready
-        fireEvent_Player()
     }
 
     /*
@@ -519,10 +570,23 @@ export default function Setup() {
     */
 
     //passed to search component
-    const onNewTwitterUserAdded = (newUser: Twitter_User):void => {
-        console.log('new twitter user added: ' + newUser.screen_name)
-        ref_twitterUsers.current.push(newUser)
-        //@@TODO FIRE EVENT
+    const onAddProfile = (newUser: Twitter_Profile):void => {
+        //check maximum
+        if (ref_profiles.current.length === 15) {
+            showNotification('Maximum number of 15 profiles reached', NotificationType.Not_Error)
+            return
+        }
+        //check already added
+        for(let i=0;i<ref_profiles.current.length;i++) {
+            if (ref_profiles.current[i].screen_name === newUser.screen_name) {
+                showNotification(newUser.name + ' already added!', NotificationType.Not_Error)
+                return
+            }
+        }
+        //add
+        console.log('profile added: ' + newUser.screen_name)
+        ref_profiles.current.push(newUser)
+        fireEvent_Profile()
     }
 
     //passed to chat 
@@ -543,6 +607,17 @@ export default function Setup() {
 
     const onNewNotification = (msg:string, notType:NotificationType) => {
         showNotification(msg, notType)
+    }
+
+    const onRemoveProfile = (deletedUser: Twitter_Profile):void => {
+        for(let i = 0; i<ref_profiles.current.length;i++) {
+            if (ref_profiles.current[i].screen_name === deletedUser.screen_name) {
+                ref_profiles.current.splice(i, 1)
+                console.log('user removed: ' + deletedUser.screen_name)
+                fireEvent_Profile()
+                return
+            }
+        }
     }
 
     /*
@@ -603,17 +678,37 @@ export default function Setup() {
             </div>
             <div className={st.Content_Con}>
                 {Search(
-                    ref_twitterUsers.current,
+                    ref_profiles.current,
                     st.Left_Panel, //pass outside panel css-class, so it can be embedded and returned
-                    onNewTwitterUserAdded,
+                    onAddProfile,
                     onNewNotification
                     )
                 }
-                {ref_twitterUsers.current.length > 0 &&
-                    <div className={st.Center_Panel}>
-                        {ref_twitterUsers.current.length}
+                <div className={st.Center_Panel}>
+                    <div className={st.Profiles_Con}>
+                        {ref_profiles.current.length === 0 &&
+                            <div className={st.Empty_Profiles_Con}>
+                                The Twitter profiles you selected from the search will appear here
+                            </div>
+                        }
+                        {ref_profiles.current.length > 0 &&
+                            <div className={st.Profiles_Caption}>
+                                Total: {ref_profiles.current.length} 
+                            </div>
+                        }
+                        <TwitterProfileList
+                            parentType={ProfilesUsage.Added}
+                            data={ref_profiles.current}
+                            addedUsers={ref_profiles.current}
+                            onAddUser={() => {}}
+                            onRemoveUser={onRemoveProfile}
+                            twitterStatus = {TwitterStatus.none}
+                        />
                     </div>
-                }
+                    <div className={st.Info_Con}>
+                        Here are suggestions, voting, popular categories
+                    </div>
+                </div>
                 <div className={st.Right_Panel}>
                     <div className={st.Interaction_Con}>
                         <Interaction
@@ -624,6 +719,11 @@ export default function Setup() {
                         />
                     </div>
                     <div className={st.Players_Con}>
+                        {ref_players.current.length > 0 &&
+                            <div className={st.Profiles_Caption}>
+                                Total: {ref_players.current.length} 
+                            </div>
+                        }
                         <Players   
                             data={ref_players.current}
                             currentUser={ref_username.current}

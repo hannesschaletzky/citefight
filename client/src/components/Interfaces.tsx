@@ -23,6 +23,11 @@ export enum NotificationType {
     Not_Error = 'Not_Error'
 }
 
+export enum ProfilesUsage {
+    Search,
+    Added
+}
+
 export enum SysMsgType {
     none = '1',
     userJoined = '2',
@@ -34,7 +39,8 @@ export enum SysMsgType {
 export enum SetupEventType {
     Join = 'Setup_Join',
     Chat = 'Setup_Chat',
-    Player = 'Setup_Player'
+    Player = 'Setup_Player',
+    Profile = 'Profile'
 }
 
 export enum JoinStatus {
@@ -93,7 +99,7 @@ export interface Setup_ChatMsg {
 /*
     API TWITTER
 */
-export interface Twitter_User {
+export interface Twitter_Profile {
     id: bigint;
     screen_name: string;
     name: string;
