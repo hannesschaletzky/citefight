@@ -103,6 +103,8 @@ $sdbg: false; //show debugging background = sdbg
   bottom: 0;
   right: 0;
   left: 0;
+  z-index: 1; //overlay everything
+
   //center QR Code
   display: flex;
   flex-direction: column;

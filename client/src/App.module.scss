@@ -1,8 +1,6 @@
 $sdbg: false; //show debugging background = sdbg
 @import "styles/app.global.scss";
 
-$root_border: rgb(241, 238, 238);
-
 //full screen body functioning as base
 .Root_Body {
   position: absolute;
@@ -35,6 +33,8 @@ $root_border: rgb(241, 238, 238);
   margin-bottom: $footer_height;
   height: -webkit-fill-available;
   overflow-y: scroll;
+  //indent content from all sides
+  padding: 20px;
 
   @if $sdbg {
     background-color: rgb(212, 50, 21);

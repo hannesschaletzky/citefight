@@ -37,9 +37,9 @@ class Chat extends Component <any, any> {
         //scroll to bottom when new message was added
         this.scrollToBottom() 
     }
-    private scrollTarget = React.createRef<HTMLDivElement>();
+    private scrollTargetChat = React.createRef<HTMLDivElement>();
     scrollToBottom = () => {
-        const node: HTMLDivElement | null = this.scrollTarget.current; //get the element via ref
+        const node: HTMLDivElement | null = this.scrollTargetChat.current; //get the element via ref
         if (node) { //current ref can be null, so we have to check
             node.scrollIntoView({behavior: 'smooth'}); //scroll to the targeted element
         }
@@ -87,7 +87,7 @@ class Chat extends Component <any, any> {
         else if (value.length > this.inputSizeMax) {
             this.setChatStatus(SetupChatStatus.inputTooLong)
         }
-        else if (didUserExceedLimit(this.messageTimestamps, 5)) {
+        else if (didUserExceedLimit(this.messageTimestamps, 8)) {
             this.setChatStatus(SetupChatStatus.sentTooMuch)
         }
         else {
@@ -149,7 +149,7 @@ class Chat extends Component <any, any> {
             <div className={st.Con}>
                 <div className={st.Messages_Con}>
                     {cards}
-                    <div ref={this.scrollTarget} data-explanation="This is where we scroll to"></div>
+                    <div ref={this.scrollTargetChat}></div>
                 </div>
                 {this.state.status === SetupChatStatus.enabled &&
                     <div className={st.Info_Con_Send}>

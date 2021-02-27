@@ -49,6 +49,7 @@ export default function Join() {
         //check empty or only spaces
         if (name.length === 0) {
             setJoinEnabled(false)
+            setUserNameError('')
         }
         else if (name.length > maxNameChars) {
             setJoinEnabled(false)

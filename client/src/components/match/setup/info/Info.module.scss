@@ -1,0 +1,22 @@
+$sdbg: false; //show debugging background = sdbg
+@import "styles/app.global.scss";
+
+.Con {
+  flex: 1;
+  margin-top: 10px;
+  overflow-y: scroll;
+  @extend .borderWithRoundedCorners;
+  @if $sdbg {
+    background-color: rgba(165, 42, 42, 0.4);
+  }
+}
+
+.Empty_Con {
+  height: 100%;
+  padding-left: 10%;
+  padding-right: 10%;
+  display: flex;
+  align-items: center;
+  text-align: center;
+  @extend .HelveticaNeueRegularFont;
+}

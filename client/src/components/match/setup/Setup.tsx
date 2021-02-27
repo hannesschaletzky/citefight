@@ -5,7 +5,7 @@ import st from './Setup.module.scss'
 
 import CircularProgress from '@material-ui/core/CircularProgress';
 
-import {LocalStorage, TwitterStatus} from 'components/Interfaces'
+import {LocalStorage} from 'components/Interfaces'
 import {Setup_Event} from 'components/Interfaces'
 import {Setup_Player} from 'components/Interfaces'
 import {Setup_ChatMsg} from 'components/Interfaces'
@@ -15,9 +15,9 @@ import {SetupEventType} from 'components/Interfaces'
 import {Setup_Notification} from 'components/Interfaces'
 import {NotificationType} from 'components/Interfaces'
 import {PusherState} from 'components/Interfaces'
-import {ProfilesUsage} from 'components/Interfaces'
 
-import TwitterProfileList from './search/TwitterProfileList'
+import Profiles from './profiles/Profiles'
+import Info from './info/Info'
 import Search from './search/Search'
 import Interaction from './interaction/Interaction'
 import Players from './players/Players'
@@ -84,6 +84,7 @@ export default function Setup() {
         if (ref_pusherState.current === PusherState.init) {
             setRedirectToJoin(true)
         }
+
     })
 
     /*
@@ -169,7 +170,6 @@ export default function Setup() {
         ref_notification.current.display = false
         forceUpdate()
     }
-
 
 
     /*
@@ -271,6 +271,7 @@ export default function Setup() {
 
     const leaveGame = () => {
         console.log('leaving')
+        setPusherState(PusherState.connecting)
         document.location.reload()
     }
 
@@ -572,7 +573,7 @@ export default function Setup() {
     //passed to search component
     const onAddProfile = (newUser: Twitter_Profile):void => {
         //check maximum
-        if (ref_profiles.current.length === 15) {
+        if (ref_profiles.current.length >= 15) {
             showNotification('Maximum number of 15 profiles reached', NotificationType.Not_Error)
             return
         }
@@ -628,7 +629,7 @@ export default function Setup() {
     ##################################
     */
 
-    const getContent = () => {
+    const getSpecialContent = () => {
 
         let content = <div></div>
 
@@ -672,81 +673,56 @@ export default function Setup() {
     }
     
     return (
-        <div>
-            <div>
-                {getContent()}
+    <div className={st.Content_Con}>
+        {getSpecialContent()}
+        {Search(
+            ref_profiles.current,
+            st.Left_Panel, //pass outside panel css-class, so it can be embedded and returned
+            onAddProfile,
+            onNewNotification
+            )
+        }
+        <div className={st.Center_Panel}>
+            {Profiles(
+                ref_profiles.current,
+                onRemoveProfile
+            )
+            }
+            {Info()
+            }
+        </div>
+        <div className={st.Right_Panel}>
+            <div className={st.Interaction_Con}>
+                <Interaction
+                    user={ref_players.current[getIndexOfUser(ref_username.current)]}
+                    onLeaveClick={onLeaveTriggered}
+                    onToogleReadyClick={onToogleReady}
+                    addNotification={onNewNotification}
+                />
             </div>
-            <div className={st.Content_Con}>
-                {Search(
-                    ref_profiles.current,
-                    st.Left_Panel, //pass outside panel css-class, so it can be embedded and returned
-                    onAddProfile,
-                    onNewNotification
-                    )
-                }
-                <div className={st.Center_Panel}>
-                    <div className={st.Profiles_Con}>
-                        {ref_profiles.current.length === 0 &&
-                            <div className={st.Empty_Profiles_Con}>
-                                The Twitter profiles you selected from the search will appear here
-                            </div>
-                        }
-                        {ref_profiles.current.length > 0 &&
-                            <div className={st.Profiles_Caption}>
-                                Total: {ref_profiles.current.length} 
-                            </div>
-                        }
-                        <TwitterProfileList
-                            parentType={ProfilesUsage.Added}
-                            data={ref_profiles.current}
-                            addedUsers={ref_profiles.current}
-                            onAddUser={() => {}}
-                            onRemoveUser={onRemoveProfile}
-                            twitterStatus = {TwitterStatus.none}
-                        />
-                    </div>
-                    <div className={st.Info_Con}>
-                        Here are suggestions, voting, popular categories
-                    </div>
-                </div>
-                <div className={st.Right_Panel}>
-                    <div className={st.Interaction_Con}>
-                        <Interaction
-                            user={ref_players.current[getIndexOfUser(ref_username.current)]}
-                            onLeaveClick={onLeaveTriggered}
-                            onToogleReadyClick={onToogleReady}
-                            addNotification={onNewNotification}
-                        />
-                    </div>
-                    <div className={st.Players_Con}>
-                        {ref_players.current.length > 0 &&
-                            <div className={st.Profiles_Caption}>
-                                Total: {ref_players.current.length} 
-                            </div>
-                        }
-                        <Players   
-                            data={ref_players.current}
-                            currentUser={ref_username.current}
-                        />
-                    </div>
-                    <div className={st.Chat_Con}>
-                        <Chat   
-                            data={ref_chat.current}
-                            onNewMsg={onNewChatMessage}
-                        />
-                    </div>
-                </div>
-                {ref_notification.current.display && 
-                    <div className={ref_notification.current.scssClass} onClick={() => hideNotification()}>
-                        <div className={st.Not_Text}>
-                            {ref_notification.current.msg}
-                        </div>
-                        <div className={st.Not_Close}>
-                            x
-                        </div>
-                    </div>
-                }
+            <div className={st.Players_Con}>
+                <Players   
+                    data={ref_players.current}
+                    currentUser={ref_username.current}
+                />
+            </div>
+            <div className={st.Chat_Con}>
+                <Chat   
+                    data={ref_chat.current}
+                    onNewMsg={onNewChatMessage}
+                />
             </div>
         </div>
+        {ref_notification.current.display && 
+            <div className={ref_notification.current.scssClass} onClick={() => hideNotification()}>
+                <div className={st.Not_Text}>
+                    {ref_notification.current.msg}
+                </div>
+                <div className={st.Not_Close}>
+                    x
+                </div>
+            </div>
+        }
+    </div>
     );
 }

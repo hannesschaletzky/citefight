@@ -44,6 +44,11 @@ class Players extends Component <any, any> {
 
         return ( 
             <div>
+                {this.props.data.length > 0 &&
+                    <div className={st.Caption}>
+                        Total: {this.props.data.length} 
+                    </div>
+                }
                 {cards}
             </div>
         );
