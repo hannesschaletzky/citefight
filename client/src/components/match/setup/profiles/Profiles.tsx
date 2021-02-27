@@ -1,4 +1,3 @@
-import React, { useEffect, useRef } from 'react';
 import st from './Profiles.module.scss';
 
 import {Twitter_Profile} from 'components/Interfaces'
@@ -10,18 +9,6 @@ import TwitterProfileList from '../search/TwitterProfileList'
 export default function Profiles(profiles:Twitter_Profile[],
                                  onRemoveProfile:(deletedUser: Twitter_Profile) => void) {
     
-                
-                                    
-    
-    useEffect(() => {
-        scrollToBottom() 
-    })
-    const profilesEndRef = useRef<null | HTMLDivElement>(null)
-    const scrollToBottom = () => {
-        if (profilesEndRef.current !== null) { 
-            profilesEndRef.current.scrollIntoView({ behavior: 'smooth' })
-        }
-    }
 
 
     const onRemoveClick = (deletedUser: Twitter_Profile) => {
@@ -48,7 +35,6 @@ export default function Profiles(profiles:Twitter_Profile[],
                 onRemoveUser={onRemoveClick}
                 twitterStatus = {TwitterStatus.none}
             />
-            <div ref={profilesEndRef} />
         </div>
     );
 }

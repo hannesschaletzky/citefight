@@ -42,7 +42,6 @@ let actionTimestamps:string[] = []
 
 export default function Search(
                                 addedUsers:Twitter_Profile[],
-                                panelContainer:string,
                                 addUserFunc:(par1: Twitter_Profile) => void,
                                 newNotification:(msg:string, notType:NotificationType) => void) 
                                 {
@@ -419,7 +418,7 @@ export default function Search(
     }
 
   return (
-    <div className={panelContainer} /*coming from parent container*/>
+    <div className={st.Con}>
         {getLoginComponent()}
         <div className={st.Search_Con}>
             <div className={st.Top_Con}>

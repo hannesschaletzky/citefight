@@ -1,5 +1,5 @@
-import React, { Component } from 'react';
-import st from './Chat.module.scss'
+import React, { useEffect, useRef, useState } from 'react';
+import st from './Chat.module.scss';
 
 import {Setup_ChatMsg} from 'components/Interfaces'
 import {SysMsgType} from 'components/Interfaces'
@@ -10,61 +10,46 @@ import {didUserExceedLimit} from 'components/Logic'
 import WarningIcon from 'assets/setup/Warning_Icon.png'
 import SendIcon from 'assets/setup/Send_Icon.png'
 
-class Chat extends Component <any, any> {
+export default function Chat(inputMessages:Setup_ChatMsg[],
+                             onNewMsg:(msg:Setup_ChatMsg) => void) {
+    
+    //state
+    const [userMsg,setUserMsg] = useState('')
+    const [status,setStatus] = useState(SetupChatStatus.disabled)
+                                
+    //control flow
+    let messageTimestamps:string[] = []
+    let inputSizeMax = 100
 
-    //array to store timestamps of sent messages
-    messageTimestamps:string[] = []
-    inputSizeMax = 100
-
-    constructor(props: any) {
-        super(props);
-        this.state = {
-            userMsg: '',
-            status: SetupChatStatus.disabled
-        };
-    }
-
-    componentWillUnmount() {
-        /*
-        // fix Warning: Can't perform a React state update on an unmounted component
-        this.setState = (state,callback)=>{
-            return;
+    
+    //scroll to bottom when new msg arrive
+    useEffect(() => {
+        scrollToBottom() 
+    })
+    const ChatEndRef = useRef<null | HTMLDivElement>(null)
+    const scrollToBottom = () => {
+        if (ChatEndRef.current !== null) { 
+            ChatEndRef.current.scrollIntoView({ behavior: 'smooth' })
         }
-        */
     }
+    
 
-    componentDidUpdate() {
-        //scroll to bottom when new message was added
-        this.scrollToBottom() 
-    }
-    private scrollTargetChat = React.createRef<HTMLDivElement>();
-    scrollToBottom = () => {
-        const node: HTMLDivElement | null = this.scrollTargetChat.current; //get the element via ref
-        if (node) { //current ref can be null, so we have to check
-            node.scrollIntoView({behavior: 'smooth'}); //scroll to the targeted element
-        }
-    };
-
-    sendMessage() {
+    const sendMessage = () => {
         
-        if (this.state.status !== SetupChatStatus.enabled) {
+        if (status !== SetupChatStatus.enabled) {
             return
         }
 
         let newMsg:Setup_ChatMsg = {
             n: '',
-            m: this.state.userMsg,
+            m: userMsg,
             t: SysMsgType.none
         }
 
-        this.props.onNewMsg(newMsg) //fire event in parent
-        this.messageTimestamps.push(new Date().toISOString())
-        this.setState({userMsg: ''})
-        this.setChatStatus(SetupChatStatus.disabled)
-    }
-
-    setChatStatus(_status:SetupChatStatus) {
-        this.setState({status: _status})
+        onNewMsg(newMsg) //fire event in parent
+        messageTimestamps.push(new Date().toISOString())
+        setUserMsg('')
+        setStatus(SetupChatStatus.disabled)
     }
 
     /*
@@ -74,37 +59,34 @@ class Chat extends Component <any, any> {
     ##################################
     ##################################
     */
-    onChange(event:any) {
+    const onChange = (event:any) => {
 
-        //set new text
-        const value = event.target.value;
-        this.setState({userMsg: value})
+        const text = event.target.value;
 
         //check empty or only spaces
-        if (value.length === 0 || !value.trim()) {
-            this.setChatStatus(SetupChatStatus.disabled)
+        if (text.length === 0 || !text.trim()) {
+            setStatus(SetupChatStatus.disabled)
         }
-        else if (value.length > this.inputSizeMax) {
-            this.setChatStatus(SetupChatStatus.inputTooLong)
+        else if (text.length > inputSizeMax) {
+            setStatus(SetupChatStatus.inputTooLong)
         }
-        else if (didUserExceedLimit(this.messageTimestamps, 8)) {
-            this.setChatStatus(SetupChatStatus.sentTooMuch)
+        else if (didUserExceedLimit(messageTimestamps, 8)) {
+            setStatus(SetupChatStatus.sentTooMuch)
         }
         else {
-            this.setChatStatus(SetupChatStatus.enabled)
+            setUserMsg(text)
+            setStatus(SetupChatStatus.enabled)
         }
     }
 
-    keyPressed(event: any) {
+    const keyPressed = (event: any) => {
         //trigger send msg on return
-        if (event.code === 'Enter' && this.state.userMsg !== "") {
-            this.sendMessage()
+        if (event.code === 'Enter' && userMsg !== "") {
+            sendMessage()
         }
     }
 
-    render() { 
-
-        let inputMessages:Setup_ChatMsg[] = this.props.data
+    const getContent = () => {
 
         let cards = []
         for(let i=0;i<inputMessages.length;i++) {
@@ -145,13 +127,13 @@ class Chat extends Component <any, any> {
             cards.push(card)
         }
 
-        return ( 
+        let content = 
             <div className={st.Con}>
                 <div className={st.Messages_Con}>
                     {cards}
-                    <div ref={this.scrollTargetChat}></div>
+                    <div ref={ChatEndRef}/>
                 </div>
-                {this.state.status === SetupChatStatus.enabled &&
+                {status === SetupChatStatus.enabled &&
                     <div className={st.Info_Con_Send}>
                         <img className={st.Info_Icon} src={SendIcon} alt="Info"/>
                         <div>
@@ -159,15 +141,15 @@ class Chat extends Component <any, any> {
                         </div>
                     </div>
                 }
-                {this.state.status === SetupChatStatus.inputTooLong &&
+                {status === SetupChatStatus.inputTooLong &&
                     <div className={st.Info_Con_TooLong}>
                         <img className={st.Info_Icon} src={WarningIcon} alt="Warning"/>
                         <div>
-                            Exceeded {this.inputSizeMax} letters
+                            Exceeded {inputSizeMax} letters
                         </div>
                     </div>
                 }
-                {this.state.status === SetupChatStatus.sentTooMuch &&
+                {status === SetupChatStatus.sentTooMuch &&
                     <div className={st.Info_Con_TooMuch}>
                         <img className={st.Info_Icon} src={WarningIcon} alt="Warning"/>
                         <div>
@@ -180,16 +162,22 @@ class Chat extends Component <any, any> {
                             type="search" 
                             autoComplete="off" 
                             placeholder="Type..." 
-                            value={this.state.userMsg}
-                            onChange={(e) => this.onChange(e)}
-                            onKeyUp={(e) => this.keyPressed(e)}/>
+                            value={userMsg}
+                            onChange={(e) => onChange(e)}
+                            onKeyUp={(e) => keyPressed(e)}/>
                 </div>
             </div>
-        );
+
+        return content
     }
 
+    return (
+        getContent()
+    );
 }
-export default Chat;
+
+
+
 
 
 

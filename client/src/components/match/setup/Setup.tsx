@@ -584,6 +584,14 @@ export default function Setup() {
                 return
             }
         }
+        //check pusher event size
+        let alreadyL = JSON.stringify(ref_profiles.current).length
+        let newUserL = JSON.stringify(newUser).length
+        if ((alreadyL + newUserL) > 9000) {
+            showNotification('Pusher server cannot support more profiles!', NotificationType.Not_Error)
+            return
+        }
+
         //add
         console.log('profile added: ' + newUser.screen_name)
         ref_profiles.current.push(newUser)
@@ -675,19 +683,19 @@ export default function Setup() {
     return (
     <div className={st.Content_Con}>
         {getSpecialContent()}
-        {Search(
-            ref_profiles.current,
-            st.Left_Panel, //pass outside panel css-class, so it can be embedded and returned
-            onAddProfile,
-            onNewNotification
-            )
-        }
+        <div className={st.Left_Panel}>
+            {Search(
+                ref_profiles.current,
+                onAddProfile,
+                onNewNotification
+                )
+            }
+        </div>
         <div className={st.Center_Panel}>
             {Profiles(
                 ref_profiles.current,
                 onRemoveProfile
-            )
-            }
+            )}
             {Info()
             }
         </div>
@@ -707,10 +715,10 @@ export default function Setup() {
                 />
             </div>
             <div className={st.Chat_Con}>
-                <Chat   
-                    data={ref_chat.current}
-                    onNewMsg={onNewChatMessage}
-                />
+                {Chat(
+                    ref_chat.current,
+                    onNewChatMessage
+                )}
             </div>
         </div>
         {ref_notification.current.display && 

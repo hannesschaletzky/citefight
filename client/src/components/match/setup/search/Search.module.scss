@@ -1,6 +1,11 @@
 $sdbg: false; //show debugging background = sdbg
 @import "styles/app.global.scss";
 
+.Con {
+  height: 100%;
+  width: 100%;
+}
+
 /*
   ################################
   LOGIN
@@ -37,7 +42,7 @@ $sdbg: false; //show debugging background = sdbg
 */
 .Search_Con {
   margin-top: 10px;
-  max-height: 89% !important;
+  max-height: 88.8% !important;
   display: flex;
   flex-direction: column;
 
