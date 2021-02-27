@@ -3,8 +3,8 @@ $sdbg: false; //show debugging background = sdbg
 
 $root_border: rgb(241, 238, 238);
 
-.Root_Background {
-  //full screen body functioning as the base for everything
+//full screen body functioning as base
+.Root_Body {
   position: absolute;
   top: 0;
   right: 0;
@@ -14,7 +14,8 @@ $root_border: rgb(241, 238, 238);
 
 .Root_Header {
   //pin to top
-  position: fixed;
+  position: absolute;
+  top: 0;
   height: $header_height;
   width: 100%;
 
@@ -28,28 +29,26 @@ $root_border: rgb(241, 238, 238);
   }
 }
 
-//flexbox used as wrapper to let the content grow & fix footer to bottom of page
-.Root_FlexboxWrapper {
-  margin-top: $header_height;
-
-  display: flex;
-  flex-direction: column;
-  height: 92% !important;
-}
-
+//content fills available space between header and footer
 .Root_Content {
-  flex: 1; //enables growing
-  height: 100%;
-  background-color: $root_backgroundcolor;
+  margin-top: $header_height;
+  margin-bottom: $footer_height;
+  height: -webkit-fill-available;
+  overflow-y: scroll;
+
   @if $sdbg {
-    background-color: rgba(137, 204, 193, 0.678);
+    background-color: rgb(212, 50, 21);
   }
 }
 
 .Root_Footer {
+  //pin to bottom
+  position: absolute;
+  bottom: 0;
   height: $footer_height;
-  flex-shrink: 0; //prevents shrinking
+  width: 100%;
 
+  //top border
   border-top: 1px solid;
   border-color: $root_border;
 

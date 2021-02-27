@@ -37,41 +37,39 @@ class App extends Component {
 
     return (
       
-      <div className={st.Root_Background}>
+      <div className={st.Root_Body}>
 
         <div className={st.Root_Header}>
           <Root_Header/>
         </div>
-        <div className ={st.Root_FlexboxWrapper}>
-          <div className={st.Root_Content}>
-            <BrowserRouter>
-              <Switch>
-                <Route exact path="/" component={Landing}/>
+        <div className ={st.Root_Content}>
+          <BrowserRouter>
+            <Switch>
+              <Route exact path="/" component={Landing}/>
 
-                <Route path="/redirect/:token" render={() => 
-                  <TwitterRedirect onRedirect={(token:string) => this.redirectToTwitterLogin(token)}/>}
-                />
+              <Route path="/redirect/:token" render={() => 
+                <TwitterRedirect onRedirect={(token:string) => this.redirectToTwitterLogin(token)}/>}
+              />
+              
+              <Route exact path="/start" component={Landing}/>
+              <Route exact path="/legal" component={Legal}/>
+              <Route exact path="/about" component={About}/>
+              <Route exact path="/donate" component={Donate}/>
+              <Route exact path="/credits" component={Credits}/>
+
                 
-                <Route exact path="/start" component={Landing}/>
-                <Route exact path="/legal" component={Legal}/>
-                <Route exact path="/about" component={About}/>
-                <Route exact path="/donate" component={Donate}/>
-                <Route exact path="/credits" component={Credits}/>
+              <Route exact path="/match/mockup" component={Mockup}/> 
+              <Route exact path="/match/setup/twittercallback" component={TwitterCallback}/> 
+              <Route path="/match/join/:id" component={Join}/>
+              <Route path="/match/setup/:id" component={Setup}/>
+              <Route path="/match/:id" component={Match}/>
 
-                  
-                <Route exact path="/match/mockup" component={Mockup}/> 
-                <Route exact path="/match/setup/twittercallback" component={TwitterCallback}/> 
-                <Route path="/match/join/:id" component={Join}/>
-                <Route path="/match/setup/:id" component={Setup}/>
-                <Route path="/match/:id" component={Match}/>
-
-                <Route component={NotFound} /* final route for 404 not found *//>
-              </Switch>
-            </BrowserRouter>
-          </div>
-          <div className={st.Root_Footer}>
-            <Root_Footer/>
-          </div>
+              <Route component={NotFound} /* final route for 404 not found *//>
+            </Switch>
+          </BrowserRouter>
+        </div>
+        <div className={st.Root_Footer}>
+          <Root_Footer/>
         </div>
       </div>
 
@@ -80,3 +78,6 @@ class App extends Component {
 }
 
 export default App;
+
+
+
