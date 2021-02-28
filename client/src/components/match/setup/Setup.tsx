@@ -16,7 +16,7 @@ import {Setup_Notification} from 'components/Interfaces'
 import {NotificationType} from 'components/Interfaces'
 import {PusherState} from 'components/Interfaces'
 
-import Profiles from './profiles/Profiles'
+import Lobby from './lobby/Lobby'
 import Info from './info/Info'
 import Search from './search/Search'
 import Interaction from './interaction/Interaction'
@@ -688,14 +688,15 @@ export default function Setup() {
                 ref_profiles.current,
                 onAddProfile,
                 onNewNotification
-                )
-            }
+            )}
         </div>
         <div className={st.Center_Panel}>
-            {Profiles(
-                ref_profiles.current,
-                onRemoveProfile
-            )}
+            <div className={st.Lobby_Con}>
+                {Lobby(
+                    ref_profiles.current,
+                    onRemoveProfile
+                )}
+            </div>
             {Info()
             }
         </div>

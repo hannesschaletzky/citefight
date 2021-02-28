@@ -2,7 +2,7 @@ $sdbg: false; //show debugging background = sdbg
 @import "styles/app.global.scss";
 
 .Con {
-  flex: 1;
+  height: 48%;
   margin-top: 10px;
   overflow-y: scroll;
   @extend .borderWithRoundedCorners;
