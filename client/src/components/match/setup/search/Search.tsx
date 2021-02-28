@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import  { Redirect } from 'react-router-dom'
+import React, { useState } from 'react';
+//import  { Redirect } from 'react-router-dom'
 import st from './Search.module.scss'
 
 import TwitterProfileList from './TwitterProfileList'
@@ -16,6 +16,7 @@ import {ProfilesUsage} from 'components/Interfaces'
 
 const stateInitArray:Twitter_Profile[] = []
 
+/*
 //status for step 1
 enum TokenStatus {
     init,
@@ -31,6 +32,7 @@ enum TokenVerify {
     fail,
     success
 }
+*/
 
 //search request type
 enum RequestType {
@@ -52,14 +54,16 @@ export default function Search(
     const [searchEnabled, setSearchEnabled] = useState(false);
     const [loading, setLoading] = useState(false);
     const [twitterStatus, setTwitterStatus] = useState(TwitterStatus.none)
-    const [tokenStatus, setTokenStatus] = useState(TokenStatus.init)
-    const [tokenVerifyStatus, setTokenVerifyStatus] = useState(TokenVerify.init)
-    const [redirectURL, setRedirectURL] = useState('')
+    //const [tokenStatus, setTokenStatus] = useState(TokenStatus.init)
+    //const [tokenVerifyStatus, setTokenVerifyStatus] = useState(TokenVerify.init)
+    //const [redirectURL, setRedirectURL] = useState('')
 
     
+    /*
     // eslint-disable-next-line react-hooks/exhaustive-deps
     useEffect(() => {
 
+        
         //CHECK IF USER ALREADY HAS VALID TOKEN IN LOCAL STORAGE
         //only verify once
         if (tokenVerifyStatus !== TokenVerify.init) {
@@ -81,6 +85,7 @@ export default function Search(
                 });
         }
     });
+    */
     
 
     /*
@@ -246,6 +251,7 @@ export default function Search(
     ##################################
     */
 
+    /*
     const onSignInButtonClicked = async () => {
 
         //alredy requested
@@ -325,7 +331,7 @@ export default function Search(
             return "200";
         }
     };
-
+    */
 
 
 
@@ -371,6 +377,10 @@ export default function Search(
             https://reactjs.org/docs/hooks-rules.html
         */
         let rtn = <div></div>
+
+        return rtn
+
+        /*
         if (twitterStatus === TwitterStatus.none) {
             //NOT SIGNED IN
             rtn = 
@@ -415,6 +425,7 @@ export default function Search(
             </div>
         }
         return rtn
+        */
     }
 
   return (

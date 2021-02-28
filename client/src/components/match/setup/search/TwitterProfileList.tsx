@@ -86,7 +86,7 @@ class TwitterProfileList extends Component <any, any> {
             let topTitle = user.description
             if (user.protected) {
                 topClassName = st.userCard_Con_Disabled
-                topTitle = 'This profile is not public, if youre logged in with your user, you can follow it'
+                topTitle = 'This profile is not public. Currently only public profiles can be played'
             }
 
             //determine action con to display

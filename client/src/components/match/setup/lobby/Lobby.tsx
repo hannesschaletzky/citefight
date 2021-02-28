@@ -19,7 +19,7 @@ export default function Lobby(isAdmin:boolean, //first user is admin
                               settings:Setup_Settings,
                               onSettingsChanged:(newSettings:Setup_Settings) => void,
                               newNotification:(msg:string, notType:NotificationType) => void) {
-    const [lobbyIndex, setLobbyIndex] = useState(1)
+    const [lobbyIndex, setLobbyIndex] = useState(0) //default to profiles
 
     const getLobbyContent = () => {
         //PROFILES

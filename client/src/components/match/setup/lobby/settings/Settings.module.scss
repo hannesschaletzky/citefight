@@ -15,8 +15,7 @@ $sdbg: false; //show debugging background = sdbg
   @extend .Con;
   opacity: 0.2;
   pointer-events: none; //disable clicking
-  //user cannot copy stuff
-  user-select: none;
+  user-select: none; //disable selecting
 }
 
 .ItemHeader {
@@ -24,11 +23,10 @@ $sdbg: false; //show debugging background = sdbg
   margin-bottom: 3px;
   padding: 3px;
   @extend .HelveticaNeueBoldFont;
-  //@extend .HelveticaNeueRegularFont;
   color: black;
 }
 
-//CONTEN TEMPLATE
+//CONTENT TEMPLATE
 .Content_Con_Template {
   width: 100%;
   display: flex;
@@ -65,7 +63,7 @@ $sdbg: false; //show debugging background = sdbg
 
 /*
   ################################
-  SPEED
+  TIME
   ################################
 */
 .Speed_Con {

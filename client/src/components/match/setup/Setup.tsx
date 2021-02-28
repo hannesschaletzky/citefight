@@ -186,6 +186,45 @@ export default function Setup() {
         forceUpdate()
     }
 
+    /*
+    ##################################
+    ##################################
+            MANAGE MATCH SETUP 
+    ##################################
+    ##################################
+    */
+
+    const triggerMatchSetup = async () => {
+
+
+        let accessToken = localStorage.getItem(LocalStorage.Access_Token)
+        let accessToken_Secret = localStorage.getItem(LocalStorage.Access_Token_Secret)
+        if (accessToken === null) {
+            accessToken = ""
+        }
+        if (accessToken_Secret === null) {
+            accessToken_Secret = ""
+        }
+
+        //passing additional parameters in header
+        var requestOptions = {
+            headers: {
+                'q': 'ID',
+                'token': accessToken,
+                'token_secret': accessToken_Secret
+            }
+        };
+        let request = new Request('/api/twitter/users', requestOptions)
+
+        const response = await fetch(request)
+        const body = await response.json()
+        if (response.status !== 200) {
+            throw Error(body.message)
+        }
+        
+        console.log(body)
+    }
+
 
     /*
     ##################################
@@ -393,7 +432,7 @@ export default function Setup() {
             (unbind to avoid double calling!)
         */
         if (ref_players.current.length > 0) {
-            ref_pusherChannel.current.unbind(SetupEventType.Join);
+            ref_pusherChannel.current.unbind(SetupEventType.Join)
             if (ref_players.current[0].name === ref_username.current ) {
                 //bind
                 ref_pusherChannel.current.bind(SetupEventType.Join,
@@ -430,6 +469,22 @@ export default function Setup() {
         setPusherState(PusherState.connected) //force update incl. here
 
         assignJoinEventAdmin()
+
+        //check if all player are ready
+        let readyCount = 0
+        for(let i=0;i<ref_players.current.length;i++) {
+            if (ref_players.current[i].ready) {
+                readyCount++
+            }
+        }
+        if (readyCount === ref_players.current.length) {
+            console.log('everyone ready!')
+            //let first user trigger management of game content
+            if (ref_username.current === ref_players.current[0].name) {
+                triggerMatchSetup()
+            }
+            //SET EVERYONE TO LOADING SCREEN HERE
+        }
     }
 
     const fireEvent_Players = async () => {
