@@ -20,8 +20,16 @@ class Players extends Component <any, any> {
         let currentUser = this.props.currentUser
 
         let cards = []
+        let readyCount = 0
         for(let i=0;i<players.length;i++) {
             let item:Setup_Player = players[i]
+
+            //calc ready count
+            if (item.ready) {
+                readyCount++
+            }
+
+            //create user cards
             let card = 
             <div className={(item.ready ? st.PlayerCard_Ready : st.PlayerCard)} key={i}>
                 <div className={st.Name_Con}>
@@ -46,7 +54,7 @@ class Players extends Component <any, any> {
             <div>
                 {this.props.data.length > 0 &&
                     <div className={st.Caption}>
-                        Total: {this.props.data.length} 
+                        {readyCount} of {this.props.data.length} ready
                     </div>
                 }
                 {cards}

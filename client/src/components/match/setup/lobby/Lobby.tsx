@@ -1,7 +1,11 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import st from './Lobby.module.scss';
 
 import {Twitter_Profile} from 'components/Interfaces'
+import {Setup_Settings} from 'components/Interfaces'
+import {NotificationType} from 'components/Interfaces'
+
+import {SettingsProps} from 'components/Functional_Interface'
 
 import AddedProfile_Icon from 'assets/setup/AddedProfile_Icon.png'
 import Settings_Icon from 'assets/setup/Settings_Icon.png'
@@ -9,9 +13,13 @@ import Settings_Icon from 'assets/setup/Settings_Icon.png'
 import Settings from './settings/Settings'
 import Profiles from './profiles/Profiles'
 
-export default function Lobby(profiles:Twitter_Profile[],
-                              onRemoveProfile:(profile:Twitter_Profile) => void) {
-    const [lobbyIndex, setLobbyIndex] = useState(0)
+export default function Lobby(isAdmin:boolean, //first user is admin
+                              profiles:Twitter_Profile[],
+                              onRemoveProfile:(profile:Twitter_Profile) => void,
+                              settings:Setup_Settings,
+                              onSettingsChanged:(newSettings:Setup_Settings) => void,
+                              newNotification:(msg:string, notType:NotificationType) => void) {
+    const [lobbyIndex, setLobbyIndex] = useState(1)
 
     const getLobbyContent = () => {
         //PROFILES
@@ -25,8 +33,16 @@ export default function Lobby(profiles:Twitter_Profile[],
         }
         //SETTINGS
         else if (lobbyIndex === 1) {
-            content = 
-                Settings()
+
+            //create react component from functional 
+            let settingsProps:SettingsProps = {
+                settings: settings,
+                isAdmin: isAdmin,
+                onSettingsChanged:onSettingsChanged, 
+                newNotification:newNotification
+            }
+            const comp = React.createElement(Settings, settingsProps)
+            content = comp
         }
         return content
     }
@@ -52,6 +68,11 @@ export default function Lobby(profiles:Twitter_Profile[],
                 </div>
             </div>
             <div className={st.Content}>
+                {!isAdmin && lobbyIndex === 1 &&
+                    <div className={st.No_Admin_Caption}>
+                        Only first player can edit settings
+                    </div>
+                }
                 {getLobbyContent()}
             </div>
         </div>

@@ -1,6 +1,17 @@
 $sdbg: false; //show debugging background = sdbg
 @import "styles/app.global.scss";
 
+/*
+  ################################
+  INTERACTION
+  ################################
+*/
+
+.Con {
+  display: flex;
+  justify-content: space-evenly;
+}
+
 //BUTTON TEMPLATE
 .Button_Base {
   height: 40px;
@@ -17,28 +28,6 @@ $sdbg: false; //show debugging background = sdbg
   &:active {
     box-shadow: 0 0px transparent;
   }
-}
-
-/*
-  ################################
-  AFTER JOIN
-  ################################
-*/
-
-.Con {
-  height: 50px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  @if $sdbg {
-    background-color: mediumpurple;
-  }
-}
-
-.AfterJoin_Con {
-  display: flex;
-  justify-content: space-evenly;
 }
 
 .Button_Leave {
@@ -95,6 +84,12 @@ $sdbg: false; //show debugging background = sdbg
   height: 25px;
   opacity: 0.7;
 }
+
+/*
+  ################################
+  QR CODE
+  ################################
+*/
 
 //this will take the entire screen
 .QR_Code_Con {

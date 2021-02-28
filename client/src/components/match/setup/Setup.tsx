@@ -15,6 +15,7 @@ import {SetupEventType} from 'components/Interfaces'
 import {Setup_Notification} from 'components/Interfaces'
 import {NotificationType} from 'components/Interfaces'
 import {PusherState} from 'components/Interfaces'
+import {Setup_Settings} from 'components/Interfaces'
 
 import Lobby from './lobby/Lobby'
 import Info from './info/Info'
@@ -35,6 +36,13 @@ const init_notification:Setup_Notification = {
     scssClass: ''
 }
 
+//settings to start game with
+const init_settings:Setup_Settings = {
+    rounds: 25,
+    gamespeed: 1,
+    drinking: 0
+}
+
 let init_pusherCient:any = null
 let init_pusherChannel:any = null
 
@@ -42,9 +50,10 @@ export default function Setup() {
     //state
     const [redirectToJoin,setRedirectToJoin] = useState(false)
     //refs
-    const ref_profiles = useRef(init_profiles);
-    const ref_players = useRef(init_players);
-    const ref_chat = useRef(init_chat);
+    const ref_profiles = useRef(init_profiles)
+    const ref_settings = useRef(init_settings)
+    const ref_players = useRef(init_players)
+    const ref_chat = useRef(init_chat)
     const ref_pusherState = useRef(PusherState.init)
     const ref_notification = useRef(init_notification)
 
@@ -247,6 +256,9 @@ export default function Setup() {
                 ref_pusherChannel.current.bind(SetupEventType.Profile, 
                     (data:Setup_Event) => handleEvent_Profile(data)
                 )
+                ref_pusherChannel.current.bind(SetupEventType.Settings, 
+                    (data:Setup_Event) => handleEvent_Settings(data)
+                )
                 ref_pusherChannel.current.bind('pusher:member_removed', (member:any) => {
                     //remove user
                     let i = getIndexOfUser(member.id)
@@ -337,8 +349,9 @@ export default function Setup() {
             console.log('BROADCAST join for: ' + triggerUser)
             joinPlayer(triggerUser)
             fireEvent_Chat()
-            fireEvent_Player()
-            fireEvent_Profile()
+            fireEvent_Players()
+            fireEvent_Profiles()
+            fireEvent_Settings()
         }
     }
 
@@ -413,7 +426,7 @@ export default function Setup() {
         assignJoinEventAdmin()
     }
 
-    const fireEvent_Player = async () => {
+    const fireEvent_Players = async () => {
 
         //prepare
         let event:Setup_Event = {
@@ -442,7 +455,7 @@ export default function Setup() {
         //set yourself ready
         let i = getIndexOfUser(ref_username.current)
         ref_players.current[i].ready = ready
-        fireEvent_Player()
+        fireEvent_Players()
     }
 
     /*
@@ -537,7 +550,7 @@ export default function Setup() {
         forceUpdate()
     }
 
-    const fireEvent_Profile = async () => {
+    const fireEvent_Profiles = async () => {
 
         //prepare
         let event:Setup_Event = {
@@ -547,6 +560,54 @@ export default function Setup() {
 
         //execute
         console.log('broadcast new profiles')
+        const response = await fetch('/api/pusher/setup/trigger', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'pusherchannel': channelName,
+                'pusherevent': event.type
+            },
+            body: JSON.stringify(event),
+        });
+        
+        //read response
+        const body = await response.text();
+        console.log(body)
+    }
+
+    /*
+    ##################################
+    ##################################
+        EVENT: Settings
+    ##################################
+    ##################################
+    */
+    const handleEvent_Settings = (event:Setup_Event) => {
+
+        //console.log(pusherChannel.members.count)
+        //security
+        if (event.type !== SetupEventType.Settings) {
+            console.log('EventType mismatch in handleEvent_Settings:\n\n' + event)
+            return
+        }
+
+        //set new state
+        let newSettings:Setup_Settings = event.data
+        console.log('new Settings received')
+        ref_settings.current = newSettings
+        forceUpdate()
+    }
+
+    const fireEvent_Settings = async () => {
+
+        //prepare
+        let event:Setup_Event = {
+            type: SetupEventType.Settings,
+            data: ref_settings.current
+        }
+
+        //execute
+        console.log('broadcast new settings')
         const response = await fetch('/api/pusher/setup/trigger', {
             method: 'POST',
             headers: {
@@ -595,7 +656,7 @@ export default function Setup() {
         //add
         console.log('profile added: ' + newUser.screen_name)
         ref_profiles.current.push(newUser)
-        fireEvent_Profile()
+        fireEvent_Profiles()
     }
 
     //passed to chat 
@@ -623,11 +684,16 @@ export default function Setup() {
             if (ref_profiles.current[i].screen_name === deletedUser.screen_name) {
                 ref_profiles.current.splice(i, 1)
                 console.log('user removed: ' + deletedUser.screen_name)
-                fireEvent_Profile()
+                fireEvent_Profiles()
                 return
             }
         }
     }
+
+    const onSettingsChanged = (newSettings:Setup_Settings) => {
+        ref_settings.current = newSettings
+        fireEvent_Settings()
+    } 
 
     /*
     ##################################
@@ -636,6 +702,15 @@ export default function Setup() {
     ##################################
     ##################################
     */
+
+    const getAdmin = () => {
+        if (ref_username.current !== null && ref_players.current.length > 0) {
+            if (ref_username.current === ref_players.current[0].name) {
+                return true
+            }
+        }
+        return false
+    }
 
     const getSpecialContent = () => {
 
@@ -693,8 +768,12 @@ export default function Setup() {
         <div className={st.Center_Panel}>
             <div className={st.Lobby_Con}>
                 {Lobby(
+                    getAdmin(),
                     ref_profiles.current,
-                    onRemoveProfile
+                    onRemoveProfile,
+                    ref_settings.current,
+                    onSettingsChanged,
+                    onNewNotification
                 )}
             </div>
             {Info()

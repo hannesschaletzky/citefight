@@ -10,17 +10,15 @@ import {didUserExceedLimit} from 'components/Logic'
 import WarningIcon from 'assets/setup/Warning_Icon.png'
 import SendIcon from 'assets/setup/Send_Icon.png'
 
+let messageTimestamps:string[] = []
+let inputSizeMax = 100
+
 export default function Chat(inputMessages:Setup_ChatMsg[],
                              onNewMsg:(msg:Setup_ChatMsg) => void) {
     
     //state
     const [userMsg,setUserMsg] = useState('')
     const [status,setStatus] = useState(SetupChatStatus.disabled)
-                                
-    //control flow
-    let messageTimestamps:string[] = []
-    let inputSizeMax = 100
-
     
     //scroll to bottom when new msg arrive
     useEffect(() => {
@@ -32,6 +30,9 @@ export default function Chat(inputMessages:Setup_ChatMsg[],
             ChatEndRef.current.scrollIntoView({ behavior: 'smooth' })
         }
     }
+
+    //empty input after sending
+    const InputRef = useRef<null | HTMLInputElement>(null)
     
 
     const sendMessage = () => {
@@ -48,8 +49,14 @@ export default function Chat(inputMessages:Setup_ChatMsg[],
 
         onNewMsg(newMsg) //fire event in parent
         messageTimestamps.push(new Date().toISOString())
-        setUserMsg('')
+        resetInput()
         setStatus(SetupChatStatus.disabled)
+    }
+
+    const resetInput = () => {
+        if (InputRef.current !== null) {
+            InputRef.current.value = ""
+        }
     }
 
     /*
@@ -159,10 +166,11 @@ export default function Chat(inputMessages:Setup_ChatMsg[],
                 }
                 <div>
                     <input  className={st.Input} 
+                            ref={InputRef}
                             type="search" 
                             autoComplete="off" 
                             placeholder="Type..." 
-                            value={userMsg}
+                            //value={userMsg}
                             onChange={(e) => onChange(e)}
                             onKeyUp={(e) => keyPressed(e)}/>
                 </div>

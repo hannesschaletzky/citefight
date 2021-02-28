@@ -40,7 +40,8 @@ export enum SetupEventType {
     Join = 'Setup_Join',
     Chat = 'Setup_Chat',
     Player = 'Setup_Player',
-    Profile = 'Profile'
+    Profile = 'Profile',
+    Settings = 'Settings'
 }
 
 export enum JoinStatus {
@@ -68,6 +69,12 @@ export enum SetupChatStatus {
 /*
     SETUP OBJECTS
 */
+
+export interface Setup_Settings {
+    rounds: number;
+    gamespeed: number;
+    drinking: number;
+}
 
 export interface Setup_Notification {
     display: boolean;

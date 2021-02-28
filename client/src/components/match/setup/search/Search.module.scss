@@ -124,9 +124,9 @@ $sdbg: false; //show debugging background = sdbg
 
 .List_Con {
   flex: 1;
-  overflow-y: scroll;
   margin-top: 5px;
-  padding-bottom: 15px;
+  margin-bottom: 5px;
+  overflow-y: scroll;
 }
 
 /*
@@ -177,12 +177,6 @@ $sdbg: false; //show debugging background = sdbg
   LOADING
   ################################
 */
-.loading_Con {
-  margin-top: 10px;
-  margin-bottom: 10px;
-  display: flex;
-  justify-content: center;
-}
 
 .Loading_Con {
   margin: 10px;

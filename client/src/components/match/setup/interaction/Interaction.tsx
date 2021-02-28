@@ -94,7 +94,7 @@ class Interaction extends Component <any, any> {
         }
 
         let content = 
-        <div className={st.AfterJoin_Con}>
+        <div className={st.Con}>
             <button className={st.Button_Leave} onClick={() => this.onLeaveClick()}>
                 Leave
             </button>

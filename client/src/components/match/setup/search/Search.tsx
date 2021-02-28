@@ -441,6 +441,11 @@ export default function Search(
                     </div>
                 }
             </div>
+            {userObjects.length === 0 &&
+                <div className={st.EmptyResults_Con}>
+                    Search for public Twitter profiles and add them by clicking the card.
+                </div>
+            }
             {userObjects.length !== 0  && 
                 <div className={st.List_Con}>
                     <TwitterProfileList
@@ -457,12 +462,12 @@ export default function Search(
                                     onClick={(e) => onSearchButtonClick(RequestType.more)}>
                                 Show more...
                             </button>
+                            {loading && //"more" loading
+                                <div className={st.Loading_Con}>
+                                    <CircularProgress/>
+                                </div>
+                            }
                         </div>
-                    }
-                    {loading && //"more" loading
-                    <div className={st.Loading_Con}>
-                        <CircularProgress/>
-                    </div>
                     }
                 </div>
             }
@@ -470,11 +475,6 @@ export default function Search(
             <div className={st.Loading_Con}>
                 <CircularProgress/>
             </div>
-            }
-            {userObjects.length === 0 &&
-                <div className={st.EmptyResults_Con}>
-                    Search for public Twitter profiles and add them by clicking the card.
-                </div>
             }
         </div>
     </div>

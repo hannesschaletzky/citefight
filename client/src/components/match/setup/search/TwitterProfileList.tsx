@@ -37,9 +37,9 @@ class TwitterProfileList extends Component <any, any> {
     checkActive(key:string) {
         //if con is in selected state
         if (this.state.activeCard === key) {
-            return st.actions_Con_Show
+            return st.Actions_Con_Show
         }
-        return st.actions_Con_Hidden
+        return st.Actions_Con_Hidden
     }
 
     addUser(user: Twitter_Profile) {
@@ -102,19 +102,6 @@ class TwitterProfileList extends Component <any, any> {
             else if (this.props.parentType === ProfilesUsage.Added) {
                 actionCon = ActionConType.remove
             }
-
-            /*
-            //check if user already added
-            let addedUsers:Twitter_Profile[] = this.props.addedUsers
-            for(let i=0;i<addedUsers.length;i++) {
-                let item = addedUsers[i]
-                if (item.screen_name === user.screen_name) {
-                    //user already added, no actions available
-                    actionCon = ActionConType.init
-                    break
-                }
-            }
-            */
 
             //determine if name contains emoji
             let userNameClass = st.UserName
