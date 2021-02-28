@@ -16,6 +16,9 @@ import {Setup_Notification} from 'components/Interfaces'
 import {NotificationType} from 'components/Interfaces'
 import {PusherState} from 'components/Interfaces'
 import {Setup_Settings} from 'components/Interfaces'
+import {Settings_Roundtime} from 'components/Interfaces'
+import {Settings_DrinkingMode} from 'components/Interfaces'
+import {Settings_Pictures} from 'components/Interfaces'
 
 import Lobby from './lobby/Lobby'
 import Info from './info/Info'
@@ -39,8 +42,11 @@ const init_notification:Setup_Notification = {
 //settings to start game with
 const init_settings:Setup_Settings = {
     rounds: 25,
-    gamespeed: 1,
-    drinking: 0
+    roundtime: Settings_Roundtime.Normal,
+    roundtimeCustom: 20,
+    autoContinue: true,
+    pictures: Settings_Pictures.AtHalftime,
+    drinking: Settings_DrinkingMode.Off
 }
 
 let init_pusherCient:any = null

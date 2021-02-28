@@ -66,14 +66,37 @@ export enum SetupChatStatus {
     sentTooMuch = 'sentTooMuch',
 }
 
+export enum Settings_Roundtime {
+    Little,
+    Normal,
+    Much,
+    Custom
+}
+
+export enum Settings_DrinkingMode {
+    Off,
+    Lightweight,
+    Regular,
+    Beast,
+}
+
+export enum Settings_Pictures {
+    Off,
+    Instantly,
+    AtHalftime
+}
+
 /*
     SETUP OBJECTS
 */
 
 export interface Setup_Settings {
     rounds: number;
-    gamespeed: number;
-    drinking: number;
+    roundtime: Settings_Roundtime;
+    roundtimeCustom: number;
+    drinking: Settings_DrinkingMode;
+    autoContinue: boolean;
+    pictures: Settings_Pictures;
 }
 
 export interface Setup_Notification {

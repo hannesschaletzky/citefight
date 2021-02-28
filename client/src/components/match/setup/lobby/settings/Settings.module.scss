@@ -3,6 +3,7 @@ $sdbg: false; //show debugging background = sdbg
 
 .Con {
   flex: 1;
+  padding-bottom: 10px;
   overflow-y: scroll;
 
   @if $sdbg {
@@ -19,11 +20,19 @@ $sdbg: false; //show debugging background = sdbg
 }
 
 .ItemHeader {
-  margin-top: 5px;
+  margin-top: 20px;
+  margin-bottom: 3px;
   padding: 3px;
   @extend .HelveticaNeueBoldFont;
   //@extend .HelveticaNeueRegularFont;
   color: black;
+}
+
+//CONTEN TEMPLATE
+.Content_Con_Template {
+  width: 100%;
+  display: flex;
+  justify-content: space-evenly;
 }
 
 /*
@@ -32,9 +41,7 @@ $sdbg: false; //show debugging background = sdbg
   ################################
 */
 .Rounds_Con {
-  width: 100%;
-  display: flex;
-  justify-content: center;
+  @extend .Content_Con_Template;
 }
 
 .Rounds_Input {
@@ -62,9 +69,7 @@ $sdbg: false; //show debugging background = sdbg
   ################################
 */
 .Speed_Con {
-  width: 100%;
-  display: flex;
-  justify-content: space-evenly;
+  @extend .Content_Con_Template;
 }
 
 //BUTTON TEMPLATE
@@ -97,6 +102,57 @@ $sdbg: false; //show debugging background = sdbg
   background-color: $unready_colour;
 }
 
+.Speed_Custom_Con {
+  @extend .Content_Con_Template;
+  margin-top: 10px;
+  align-items: center;
+
+  @extend .HelveticaNeueRegularFont;
+  color: black;
+}
+
+/*
+  ################################
+  AUTO CONTINUE
+  ################################
+*/
+
+.AutoContinue_Con {
+  @extend .Content_Con_Template;
+}
+
+.Button_AutoContinue {
+  @extend .Button_Base;
+  color: rgb(80, 80, 80);
+  background-color: rgb(240, 240, 240);
+}
+
+.Button_AutoContinue_Active {
+  @extend .Button_Base;
+  background-color: $unready_colour;
+}
+
+/*
+  ################################
+  PICTURES
+  ################################
+*/
+
+.Pictures_Con {
+  @extend .Content_Con_Template;
+}
+
+.Button_Pictures {
+  @extend .Button_Base;
+  color: rgb(80, 80, 80);
+  background-color: rgb(240, 240, 240);
+}
+
+.Button_Pictures_Active {
+  @extend .Button_Base;
+  background-color: $unready_colour;
+}
+
 /*
   ################################
   DRINKING MODE
@@ -104,9 +160,7 @@ $sdbg: false; //show debugging background = sdbg
 */
 
 .DrinkingMode_Con {
-  width: 100%;
-  display: flex;
-  justify-content: space-evenly;
+  @extend .Content_Con_Template;
 }
 
 .Button_Drinking {
