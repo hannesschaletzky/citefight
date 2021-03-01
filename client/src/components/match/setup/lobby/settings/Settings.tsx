@@ -50,8 +50,8 @@ export default function Settings(props:SettingsProps) {
 
         //determine value to change
         if (type === Type.rounds) {
-            if (value <= 0 || value > 200) {
-                props.newNotification('Valid rounds between 1 and 200', NotificationType.Not_Warning)
+            if (value < 10 || value > 100) {
+                props.newNotification('Valid rounds between 10 and 100', NotificationType.Not_Warning)
                 return
             }
             props.settings.rounds = value

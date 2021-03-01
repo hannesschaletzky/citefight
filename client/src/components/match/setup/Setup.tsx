@@ -197,25 +197,35 @@ export default function Setup() {
     ##################################
     */
 
-    const init_tweets:Tweet[] = []
     const noMoreTweets = useRef(false)
     const currentMaxID = useRef('')
-    const tweets = useRef(init_tweets)
+    const tweets = useRef([])
+
     const triggerMatchSetup = async () => {
 
-        let rounds = 3 //how many rounds will timeline be iterated backwards
+        interface ProfileTweets {
+            profile: Twitter_Profile,
+            tweets: any[]
+        }
+        let profileTweets:ProfileTweets[] = []
 
-        //loop profiles and fetch tweets in several rounds
+        /*
+        ###################
+        EXTRACT TWEETS FROM PROFILE
+        ###################
+        */
+        let iterations = 3 //how many rounds will timeline be iterated backwards
+        //loop profiles
         for(let i=0;i<ref_profiles.current.length;i++) {
             let profile = ref_profiles.current[i]
-            console.log(profile.id_str + ' - fetching tweets for: ' + profile.name)
+            console.log('\n' + profile.id_str + ' - fetching tweets for: ' + profile.screen_name)
 
             currentMaxID.current = ''
             noMoreTweets.current = false
             tweets.current = []
 
-            //loop rounds
-            for(let j=0;j<rounds;j++) {
+            //iterate timeline backwards
+            for(let j=0;j<iterations;j++) {
 
                 if (noMoreTweets.current) {
                     break
@@ -224,22 +234,24 @@ export default function Setup() {
 
                 await getTweets(profile.id_str, currentMaxID.current)
                 .then(res => {
-                    console.log('\t' + res.length)
+                    
                     if (res.length === 0) {
+                        console.log('\t NO TWEETS')
                         noMoreTweets.current = true
                     }
                     else if (res.length === 1 && res[0].id_str === currentMaxID.current) {
                         //last tweet (maxid) came back itself
+                        console.log('\t -> no more tweets')
                         noMoreTweets.current = true
                     }
                     else {
+                        console.log('\t' + res.length)
                         currentMaxID.current = res[res.length-1].id_str
                         if (j >= 1) {
                             //remove last bc its first in new round
                             tweets.current.pop()
                         }
-                        let parsedTweets = parseTweets(res, profile)
-                        tweets.current = tweets.current.concat(parsedTweets)
+                        tweets.current = tweets.current.concat(res)
                     }
                 })
                 .catch(err => {
@@ -247,9 +259,119 @@ export default function Setup() {
                     return
                 })
             }
-            console.log(tweets.current.length + ' total tweets')
-            console.log(tweets.current)
+            console.log('--> ' + tweets.current.length + ' total tweets')
+            //console.log(tweets.current)
+
+            let obj:ProfileTweets = {
+                profile: profile,
+                tweets: tweets.current 
+            }
+            profileTweets.push(obj)
         }
+        //console.log(profileTweets)
+
+        /*
+        ###################
+        EXTRACT RANDOM TWEETS
+        ###################
+        */
+        function getDistinctRandomNumbers(max:number, count:number):number[] {
+            let numbers:number[] = []
+            while (numbers.length < count) {
+                let rnd = getRandomInt(max)
+                //check already added
+                for(let i=0;i<numbers.length;i++) {
+                    if (rnd === numbers[i]) {
+                        continue
+                    }
+                }
+                numbers.push(rnd)
+            }
+            numbers.sort((a, b) => b - a) //sort desc
+            return numbers
+        }
+        function getRandomInt(max:number):number {
+            return Math.floor(Math.random() * Math.floor(max))
+        }
+
+        //calc total available tweets -> adjust rounds if necessary
+        let totalTweets = 0
+        for(let i = 0;i<profileTweets.length;i++) {
+            totalTweets += profileTweets[i].tweets.length
+        }
+        console.log(`${totalTweets} tweets from ${profileTweets.length} profiles for ${ref_settings.current.rounds} rounds available`)
+        if (totalTweets < ref_settings.current.rounds) {
+            console.log(`Set rounds to ${totalTweets} because there are not enough tweets to play`)
+            ref_settings.current.rounds = totalTweets
+        }
+
+        //calc tweet ratio per profile
+        let ratio:number = Math.round(ref_settings.current.rounds/ref_profiles.current.length)
+        console.log('ratio: ' + ratio)
+
+        //choose tweets
+        let tweetsToPlay:any[] = []
+        //add tweets from profileTweetsCopy to tweetsToPlay
+        for(let i=0;i<profileTweets.length;i++) {
+            let item = profileTweets[i]
+            //profile has less than needed or equal
+            if (item.tweets.length < ratio || 
+                item.tweets.length === ratio) {
+                //tweetsToPlay.push(item.tweets)
+                tweetsToPlay = tweetsToPlay.concat(item.tweets)
+                console.log(`Added ${item.tweets.length} tweets from ${item.profile.screen_name}`)
+                profileTweets[i].tweets = []
+            }
+            //profile has more than needed
+            else {
+                let indexes = getDistinctRandomNumbers(item.tweets.length, ratio)
+                //console.log(indexes.toString())
+                for (let j=0;j<indexes.length;j++) {
+                    tweetsToPlay.push(item.tweets[indexes[j]])
+                    profileTweets[i].tweets.splice(indexes[j], 1)
+                }
+                console.log(`Added ${ratio} tweets from ${item.profile.screen_name}`)
+            }
+        }
+        console.log(profileTweets)
+        console.log(tweetsToPlay)
+        console.log(tweetsToPlay.length + ' tweets to play')
+
+        //fill remaining diff (bc of ration rounding bug or profile/s has/have less tweets than ratio)
+        while (tweetsToPlay.length < ref_settings.current.rounds) {
+            //add one tweet from each profile each round
+            for(let i=0;i<profileTweets.length;i++) {
+                if (tweetsToPlay.length === ref_settings.current.rounds) {
+                    break
+                }
+                let item = profileTweets[i]
+                //only add from profile with tweets left
+                if (item.tweets.length > 0) {
+                    let index = getRandomInt(item.tweets.length)
+                    tweetsToPlay.push(item.tweets[index])
+                    profileTweets[i].tweets.splice(index, 1)
+                    console.log(`Added 1 tweet from ${item.profile.screen_name}`)
+                }
+            }
+        }
+        console.log(tweetsToPlay.length + ' tweets to play')
+
+
+        /*
+        ###################
+        EXTRACT TWEET IDS
+        ###################
+        */
+        let tweetIDs:string[] = []
+
+
+
+
+        /*
+        ###################
+        GET TWEET DETAILS
+        ###################
+        */
 
     }
 
