@@ -311,23 +311,57 @@ app.get('/api/twitter/users', (req, res) => {
 
 app.get('/api/twitter/tweets', (req, res) => {
 
+  let userid = req.headers.userid
+  let maxid = req.headers.maxid
+
+  //SETUP PARAMS
+  //get first 200 tweets
   let params = {
-    user_id: '342599843',
+    user_id: userid,
     trim_user: true,
     exclude_replies: true,
     include_rts: false,
-    count: 200
+    count: 200,
+  }
+  if (maxid !== '') {
+    //maxid provided -> iterate back in timeline
+    params = {
+      user_id: userid,
+      trim_user: true,
+      exclude_replies: true,
+      include_rts: false,
+      count: 200,
+      max_id: maxid
+    }
   }
 
-  let clientv1 = getTwitterClient(1, token, token_secret) //token and secret missing
+  //GET TOKEN
+  let result = getBotToken()
+  token = result.token
+  token_secret = result.token_secret
+  if (token === "" || token_secret === "") {
+    res.send({
+      status: 999,
+      message: 'could not fetch bot access token or secret'
+    })
+    return
+  }
+
+  //EXECUTE
+  let clientv1 = getTwitterClient(1, token, token_secret) 
   clientv1.get('statuses/user_timeline', params, function(error, tweets, response) {
     if (!error) {
-      console.log(tweets)
+      //console.log(tweets.length + 'tweets retrieved')
       res.send({ data: tweets})
     }
     else {
-      console.log(error);
-      res.send({ data: 'ERROR: ' + error})
+      let status = error[0].status
+      let message = error[0].message
+      console.log(status + ' ' + message);
+      res.send({
+        status: status,
+        message: message
+      })
     }
   })
 

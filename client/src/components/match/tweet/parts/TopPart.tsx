@@ -34,7 +34,7 @@ class TopPart extends Component <any, any> {
                         </div>
                     </a>
                 </div>
-                {this.tweet_topPart.userVerified === 1 && <img className={st.Verified_Icon} src={VerifiedIcon} alt="Verified" />}
+                {this.tweet_topPart.userVerified && <img className={st.Verified_Icon} src={VerifiedIcon} alt="Verified" />}
                 <a className = {st.Twitter_Icon_Link} href={this.tweet_topPart.tweetURL} target="_blank" rel="noreferrer">
                     <img className={st.Twitter_Icon} src={TwitterIcon} alt="Twitter"/>
                 </a>

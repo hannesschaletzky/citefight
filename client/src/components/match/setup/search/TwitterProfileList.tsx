@@ -43,10 +43,10 @@ class TwitterProfileList extends Component <any, any> {
     }
 
     addUser(user: Twitter_Profile) {
-
+        
         //retrieve only information that we need, not entire object
         let parsedUser:Twitter_Profile = {
-            id: user.id,
+            id_str: user.id_str,
             screen_name: user.screen_name,
             name: user.name,
             description: user.description,

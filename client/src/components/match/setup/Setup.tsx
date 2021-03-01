@@ -5,6 +5,8 @@ import st from './Setup.module.scss'
 
 import CircularProgress from '@material-ui/core/CircularProgress';
 
+import {Tweet, Tweet_TopPart, Tweet_Content, Tweet_BottomPart} from 'components/Interfaces'
+
 import {LocalStorage} from 'components/Interfaces'
 import {Setup_Event} from 'components/Interfaces'
 import {Setup_Player} from 'components/Interfaces'
@@ -26,6 +28,7 @@ import Search from './search/Search'
 import Interaction from './interaction/Interaction'
 import Players from './players/Players'
 import Chat from './chat/Chat'
+import BottomPart from '../tweet/parts/BottomPart';
 
 const Pusher = require('pusher-js');
 
@@ -194,35 +197,151 @@ export default function Setup() {
     ##################################
     */
 
+    const init_tweets:Tweet[] = []
+    const noMoreTweets = useRef(false)
+    const currentMaxID = useRef('')
+    const tweets = useRef(init_tweets)
     const triggerMatchSetup = async () => {
 
+        let rounds = 3 //how many rounds will timeline be iterated backwards
 
-        let accessToken = localStorage.getItem(LocalStorage.Access_Token)
-        let accessToken_Secret = localStorage.getItem(LocalStorage.Access_Token_Secret)
-        if (accessToken === null) {
-            accessToken = ""
-        }
-        if (accessToken_Secret === null) {
-            accessToken_Secret = ""
+        //loop profiles and fetch tweets in several rounds
+        for(let i=0;i<ref_profiles.current.length;i++) {
+            let profile = ref_profiles.current[i]
+            console.log(profile.id_str + ' - fetching tweets for: ' + profile.name)
+
+            currentMaxID.current = ''
+            noMoreTweets.current = false
+            tweets.current = []
+
+            //loop rounds
+            for(let j=0;j<rounds;j++) {
+
+                if (noMoreTweets.current) {
+                    break
+                }
+                console.log('Round: ' + (j+1))
+
+                await getTweets(profile.id_str, currentMaxID.current)
+                .then(res => {
+                    console.log('\t' + res.length)
+                    if (res.length === 0) {
+                        noMoreTweets.current = true
+                    }
+                    else if (res.length === 1 && res[0].id_str === currentMaxID.current) {
+                        //last tweet (maxid) came back itself
+                        noMoreTweets.current = true
+                    }
+                    else {
+                        currentMaxID.current = res[res.length-1].id_str
+                        if (j >= 1) {
+                            //remove last bc its first in new round
+                            tweets.current.pop()
+                        }
+                        let parsedTweets = parseTweets(res, profile)
+                        tweets.current = tweets.current.concat(parsedTweets)
+                    }
+                })
+                .catch(err => {
+                    console.log('error retrieving tweets: ' + err)
+                    return
+                })
+            }
+            console.log(tweets.current.length + ' total tweets')
+            console.log(tweets.current)
         }
 
-        //passing additional parameters in header
+    }
+
+
+    const getTweets = async (userid:string, maxid:string='') => {
+
         var requestOptions = {
             headers: {
-                'q': 'ID',
-                'token': accessToken,
-                'token_secret': accessToken_Secret
+                'userid': userid,
+                'maxid': maxid
             }
         };
-        let request = new Request('/api/twitter/users', requestOptions)
-
+        let request = new Request('/api/twitter/tweets', requestOptions)
         const response = await fetch(request)
         const body = await response.json()
         if (response.status !== 200) {
-            throw Error(body.message)
+            throw Error(body)
         }
-        
-        console.log(body)
+        //console.log(body.data.length + ' tweets')
+        //console.log(body)
+        return body.data
+    }
+
+    const parseTweets = (data:[], profile:Twitter_Profile):Tweet[] => {
+        let parsed:Tweet[] = []
+
+        for(let i=0;i<data.length;i++) {
+
+            let item:any = data[i]
+
+            //TOP PART
+            //"Absolutely upsetting week. https://t.co/JumIw4XgV3"
+            let text_org:string = item.text
+            let linkIndex = text_org.lastIndexOf('https://')
+            let link = text_org.substring(linkIndex).trim()
+            let topPart:Tweet_TopPart = {
+                userName: profile.name,
+                userTag: profile.screen_name,
+                userVerified: profile.verified,
+                profileURL: 'https://twitter.com/' + profile.screen_name,
+                userPicURL: profile.profile_image_url_https,
+                tweetURL: link
+            }
+
+
+            //CONTENT
+            //"Absolutely upsetting week. https://t.co/JumIw4XgV3"
+            //subtract link from text
+            let index = text_org.lastIndexOf('https://')
+            let text_cut = text_org.substring(0, index).trimEnd()
+            //media
+            let ph1 = ""
+            let ph2 = ""
+            let ph3 = ""
+            let ph4 = ""
+            let media = []
+            if (item.extended_entities.media !== undefined) {
+                media = item.extended_entities.media
+
+
+            }
+
+
+
+            let content:Tweet_Content = {
+                text: text_cut,
+                photo1: ph1,
+                photo2: ph2,
+                photo3: ph3,
+                photo4: ph4,
+            } 
+
+
+
+            //BOTTOM PART
+            let bottomPart:Tweet_BottomPart = {
+                replyCount: '',
+                likeCount: '',
+                retweetCount: '',
+                date: item.created_at
+            }
+
+            let tweet:Tweet = {
+                content: content,
+                topPart: topPart,
+                bottomPart: bottomPart
+            }
+
+            parsed.push(tweet)
+        }
+
+        return parsed
     }
 
 
@@ -479,6 +598,13 @@ export default function Setup() {
         }
         if (readyCount === ref_players.current.length) {
             console.log('everyone ready!')
+
+            //check if profiles selected
+            if (ref_profiles.current.length === 0) {
+                showNotification('You have to select profiles to play before you start', NotificationType.Not_Warning)
+                return
+            }
+
             //let first user trigger management of game content
             if (ref_username.current === ref_players.current[0].name) {
                 triggerMatchSetup()
@@ -694,11 +820,13 @@ export default function Setup() {
 
     //passed to search component
     const onAddProfile = (newUser: Twitter_Profile):void => {
-        //check maximum
-        if (ref_profiles.current.length >= 15) {
-            showNotification('Maximum number of 15 profiles reached', NotificationType.Not_Error)
+
+        //check if user has tweets
+        if (newUser.statuses_count === 0) {
+            showNotification('User should have posted at least one tweet', NotificationType.Not_Error)
             return
         }
+
         //check already added
         for(let i=0;i<ref_profiles.current.length;i++) {
             if (ref_profiles.current[i].screen_name === newUser.screen_name) {
@@ -706,12 +834,24 @@ export default function Setup() {
                 return
             }
         }
+
+        //check maximum
+        if (ref_profiles.current.length >= 10) {
+            showNotification('Maximum number of 10 profiles reached', NotificationType.Not_Error)
+            return
+        }
+        
         //check pusher event size
         let alreadyL = JSON.stringify(ref_profiles.current).length
         let newUserL = JSON.stringify(newUser).length
         if ((alreadyL + newUserL) > 9000) {
             showNotification('Pusher server cannot support more profiles!', NotificationType.Not_Error)
             return
+        }
+
+        //if user did not post a lot, show warning
+        if (newUser.statuses_count < 20) {
+            showNotification('Playing profiles with few tweets might affect the game experience', NotificationType.Not_Warning)
         }
 
         //add

@@ -248,7 +248,7 @@ export class Mockdata {
     private topPartData: Tweet_TopPart = {
         userName: 'Mario Götze',
         userTag: 'MarioGoetze',
-        userVerified: 1,
+        userVerified: true,
         profileURL: 'https://twitter.com/MarioGoetze',
         userPicURL: 'http://pbs.twimg.com/profile_images/1352250255048396801/MdiZUeLH_normal.jpg',
         tweetURL: 'https://twitter.com/MarioGoetze/status/1345396853815312385'

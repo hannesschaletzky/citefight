@@ -130,7 +130,7 @@ export interface Setup_ChatMsg {
     API TWITTER
 */
 export interface Twitter_Profile {
-    id: bigint;
+    id_str: string;
     screen_name: string;
     name: string;
     description: string;
@@ -186,7 +186,7 @@ export interface Tweet_Content {
 export interface Tweet_TopPart {
     userName: string
     userTag: string,
-    userVerified: number,
+    userVerified: boolean,
     profileURL: string,
     userPicURL: string,
     tweetURL: string
