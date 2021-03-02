@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from 'react';
+//import React, { useRef, useEffect } from 'react';
 import st from './Settings.module.scss';
 
 import {didUserExceedLimit} from 'components/Logic'
@@ -13,7 +13,6 @@ import {SettingsProps} from 'components/Functional_Interface'
 enum Type {
     rounds,
     roundtime,
-    roundtimeCustom,
     drinking,
     autoContinue,
     pictures
@@ -24,47 +23,30 @@ let messageTimestamps:string[] = []
 export default function Settings(props:SettingsProps) {
 
     //input field refs to update
+    /*
     const roundsRef = useRef<null | HTMLInputElement>(null)
-    const customSpeedRef = useRef<null | HTMLInputElement>(null)
     useEffect(() => {
         if (roundsRef.current !== null) {
             roundsRef.current.value = '' + props.settings.rounds 
         }
-        if (customSpeedRef.current !== null) {
-            customSpeedRef.current.value = '' + props.settings.roundtimeCustom
-        }
     })
-
-    
+    */
 
 
     const newSettings = (type:Type, value:any) => {
 
         //check actions (excluded: rounds, customgamespeed)
-        if (didUserExceedLimit(messageTimestamps, 60) && 
-            type !== Type.rounds &&
-            type !== Type.roundtimeCustom) {
+        if (didUserExceedLimit(messageTimestamps, 15) ) {
             props.newNotification('Too many actions, small cooldown', NotificationType.Not_Warning)
             return
         }
 
         //determine value to change
         if (type === Type.rounds) {
-            if (value < 10 || value > 100) {
-                props.newNotification('Valid rounds between 10 and 100', NotificationType.Not_Warning)
-                return
-            }
             props.settings.rounds = value
         }
         else if (type === Type.roundtime) {
             props.settings.roundtime = value
-        }
-        else if (type === Type.roundtimeCustom) {
-            if (value <= 4 || value > 180) {
-                props.newNotification('Valid time between 5 and 180', NotificationType.Not_Warning)
-                return
-            }
-            props.settings.roundtimeCustom = value
         }
         else if (type === Type.drinking) {
             props.settings.drinking = value
@@ -89,6 +71,13 @@ export default function Settings(props:SettingsProps) {
     ##################################
     ##################################
     */
+
+    const getRoundsClass = (current:number) => {
+        if (current === props.settings.rounds) {
+            return st.Button_Rounds_Active
+        }
+        return st.Button_Rounds
+    }
 
     const getRoundTimeClass = (btn:Settings_Roundtime) => {
         if (btn === props.settings.roundtime) {
@@ -118,6 +107,9 @@ export default function Settings(props:SettingsProps) {
         return st.Button_Drinking
     }
 
+    //-> cast event!
+    //onMouseOut={(e) => newSettings(Type.rounds, (e.target as HTMLInputElement).value)}
+
     return (
         <div className={props.isAdmin ? st.Con : st.Con_NoAdmin}>
 
@@ -126,11 +118,11 @@ export default function Settings(props:SettingsProps) {
                 Rounds
             </div>
             <div className={st.Rounds_Con}>
-                <input  className={st.Rounds_Input}
-                    ref={roundsRef}
-                    type="number"
-                    onChange={(e) => newSettings(Type.rounds, e.target.value)}
-                />
+                <button className={getRoundsClass(5)} onClick={() => {newSettings(Type.rounds, 5)}}>5</button>
+                <button className={getRoundsClass(10)} onClick={() => {newSettings(Type.rounds, 10)}}>10</button>
+                <button className={getRoundsClass(25)} onClick={() => {newSettings(Type.rounds, 25)}}>25</button>
+                <button className={getRoundsClass(50)} onClick={() => {newSettings(Type.rounds, 50)}}>50</button>
+                <button className={getRoundsClass(100)} onClick={() => {newSettings(Type.rounds, 100)}}>100</button>
             </div>
 
             {/*ROUNDTIME*/}
@@ -141,18 +133,7 @@ export default function Settings(props:SettingsProps) {
                 <button className={getRoundTimeClass(Settings_Roundtime.Little)} onClick={() => {newSettings(Type.roundtime, Settings_Roundtime.Little)}}>Low</button>
                 <button className={getRoundTimeClass(Settings_Roundtime.Normal)} onClick={() => {newSettings(Type.roundtime, Settings_Roundtime.Normal)}}>Normal</button>
                 <button className={getRoundTimeClass(Settings_Roundtime.Much)} onClick={() => {newSettings(Type.roundtime, Settings_Roundtime.Much)}}>High</button>
-                <button className={getRoundTimeClass(Settings_Roundtime.Custom)} onClick={() => {newSettings(Type.roundtime, Settings_Roundtime.Custom)}}>Custom</button>
             </div>
-            {props.settings.roundtime ===  Settings_Roundtime.Custom &&
-                <div className={st.Speed_Custom_Con}>
-                    Seconds: 
-                    <input  className={st.Rounds_Input}
-                        ref={customSpeedRef}
-                        type="number"
-                        onChange={(e) => newSettings(Type.roundtimeCustom, e.target.value)}
-                    />
-                </div>
-            }
             
             {/*AUTO CONTINUE*/}
             <div className={st.ItemHeader}>

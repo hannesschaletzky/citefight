@@ -12,24 +12,6 @@ $sdbg: false; //show debugging background = sdbg
   justify-content: space-evenly;
 }
 
-//BUTTON TEMPLATE
-.Button_Base {
-  height: 40px;
-  cursor: pointer;
-  //border
-  border-color: transparent;
-  border-radius: 8px;
-  //text
-  @extend .HelveticaNeueBoldFont;
-  color: white;
-  //colour, shadow, outline
-  box-shadow: 2px 2px rgba(5, 19, 19, 0.5);
-  outline: none;
-  &:active {
-    box-shadow: 0 0px transparent;
-  }
-}
-
 .Button_Leave {
   @extend .Button_Base;
   background-color: rgba($leave_colour, 0.9);

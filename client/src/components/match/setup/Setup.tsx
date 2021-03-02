@@ -46,7 +46,6 @@ const init_notification:Setup_Notification = {
 const init_settings:Setup_Settings = {
     rounds: 25,
     roundtime: Settings_Roundtime.Normal,
-    roundtimeCustom: 20,
     autoContinue: true,
     pictures: Settings_Pictures.AtHalftime,
     drinking: Settings_DrinkingMode.Off
@@ -341,7 +340,8 @@ export default function Setup() {
         while (tweetsToPlay.length < ref_settings.current.rounds) {
             //add one tweet from each profile each round
             for(let i=0;i<profileTweets.length;i++) {
-                if (tweetsToPlay.length === ref_settings.current.rounds) {
+                //stop if tweetsToPlay filled
+                if (tweetsToPlay.length >= ref_settings.current.rounds) {
                     break
                 }
                 let item = profileTweets[i]
@@ -356,13 +356,12 @@ export default function Setup() {
         }
         console.log(tweetsToPlay.length + ' tweets to play')
 
-
         /*
         ###################
         EXTRACT TWEET IDS
         ###################
         */
-        let tweetIDs:string[] = []
+        //let tweetIDs:string[] = []
 
 
 
@@ -427,9 +426,9 @@ export default function Setup() {
             let ph2 = ""
             let ph3 = ""
             let ph4 = ""
-            let media = []
+            //let media = []
             if (item.extended_entities.media !== undefined) {
-                media = item.extended_entities.media
+                //media = item.extended_entities.media
 
 
             }

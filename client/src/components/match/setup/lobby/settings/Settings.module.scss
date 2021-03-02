@@ -33,45 +33,8 @@ $sdbg: false; //show debugging background = sdbg
   justify-content: space-evenly;
 }
 
-/*
-  ################################
-  ROUNDS
-  ################################
-*/
-.Rounds_Con {
-  @extend .Content_Con_Template;
-}
-
-.Rounds_Input {
-  height: 30px;
-  width: 60px;
-
-  border: 2.5px solid;
-  border-radius: 8px;
-  border-color: $unready_colour;
-  outline: none;
-
-  @extend .HelveticaNeueRegularFont;
-  font-size: 20px;
-  color: rgb(80, 80, 80);
-  text-align: center;
-
-  &:focus {
-    border-color: black !important;
-  }
-}
-
-/*
-  ################################
-  TIME
-  ################################
-*/
-.Speed_Con {
-  @extend .Content_Con_Template;
-}
-
 //BUTTON TEMPLATE
-.Button_Base {
+.Button_Base_Settings {
   height: 25px;
   cursor: pointer;
   //border
@@ -89,14 +52,43 @@ $sdbg: false; //show debugging background = sdbg
   }
 }
 
+/*
+  ################################
+  ROUNDS
+  ################################
+*/
+.Rounds_Con {
+  @extend .Content_Con_Template;
+}
+
+.Button_Rounds {
+  @extend .Button_Base_Settings;
+  color: rgb(80, 80, 80);
+  background-color: rgb(240, 240, 240);
+}
+
+.Button_Rounds_Active {
+  @extend .Button_Base_Settings;
+  background-color: $unready_colour;
+}
+
+/*
+  ################################
+  TIME
+  ################################
+*/
+.Speed_Con {
+  @extend .Content_Con_Template;
+}
+
 .Button_Speed {
-  @extend .Button_Base;
+  @extend .Button_Base_Settings;
   color: rgb(80, 80, 80);
   background-color: rgb(240, 240, 240);
 }
 
 .Button_Speed_Active {
-  @extend .Button_Base;
+  @extend .Button_Base_Settings;
   background-color: $unready_colour;
 }
 
@@ -120,13 +112,13 @@ $sdbg: false; //show debugging background = sdbg
 }
 
 .Button_AutoContinue {
-  @extend .Button_Base;
+  @extend .Button_Base_Settings;
   color: rgb(80, 80, 80);
   background-color: rgb(240, 240, 240);
 }
 
 .Button_AutoContinue_Active {
-  @extend .Button_Base;
+  @extend .Button_Base_Settings;
   background-color: $unready_colour;
 }
 
@@ -141,13 +133,13 @@ $sdbg: false; //show debugging background = sdbg
 }
 
 .Button_Pictures {
-  @extend .Button_Base;
+  @extend .Button_Base_Settings;
   color: rgb(80, 80, 80);
   background-color: rgb(240, 240, 240);
 }
 
 .Button_Pictures_Active {
-  @extend .Button_Base;
+  @extend .Button_Base_Settings;
   background-color: $unready_colour;
 }
 
@@ -162,12 +154,12 @@ $sdbg: false; //show debugging background = sdbg
 }
 
 .Button_Drinking {
-  @extend .Button_Base;
+  @extend .Button_Base_Settings;
   color: rgb(80, 80, 80);
   background-color: rgb(240, 240, 240);
 }
 
 .Button_Drinking_Active {
-  @extend .Button_Base;
+  @extend .Button_Base_Settings;
   background-color: $unready_colour;
 }

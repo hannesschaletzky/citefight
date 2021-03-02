@@ -69,8 +69,7 @@ export enum SetupChatStatus {
 export enum Settings_Roundtime {
     Little,
     Normal,
-    Much,
-    Custom
+    Much
 }
 
 export enum Settings_DrinkingMode {
@@ -93,7 +92,6 @@ export enum Settings_Pictures {
 export interface Setup_Settings {
     rounds: number;
     roundtime: Settings_Roundtime;
-    roundtimeCustom: number;
     drinking: Settings_DrinkingMode;
     autoContinue: boolean;
     pictures: Settings_Pictures;
