@@ -32,7 +32,6 @@ import Search from './search/Search'
 import Interaction from './interaction/Interaction'
 import Players from './players/Players'
 import Chat from './chat/Chat'
-import BottomPart from '../tweet/parts/BottomPart';
 
 const Pusher = require('pusher-js');
 
@@ -135,7 +134,7 @@ export default function Setup() {
 
     
     const setPusherState = (state:PusherState) => {
-        console.log('set state to: ' + state)
+        //console.log('set state to: ' + state)
         ref_pusherState.current = state
         forceUpdate()
     }
@@ -286,12 +285,7 @@ export default function Setup() {
             profileTweets.push(obj)
         }
         //console.log(profileTweets)
-        let totalTweets = 0
-        for(let i = 0;i<profileTweets.length;i++) {
-            totalTweets += profileTweets[i].tweets.length
-        }
-        addStateMsg(`Fetched ${totalTweets} tweets`)
-
+        addStateMsg('Dumping boring tweets')
 
         /*
         ###################
@@ -310,8 +304,8 @@ export default function Setup() {
                 }
             }
         })
-        addStateMsg(`Removed ${count} 'reply to' tweets`)
-        console.log(profileTweets)
+        //addStateMsg(`Removed ${count} 'reply to' tweets`)
+        console.log(`Removed ${count} 'reply to' tweets`)
 
 
 
@@ -320,19 +314,21 @@ export default function Setup() {
         EXTRACT RANDOM TWEETS
         ###################
         */
-        function getDistinctRandomNumbers(max:number, count:number):number[] {
+        function getDistinctRandomNumbers(max:number, count:number, sort:boolean):number[] {
             let numbers:number[] = []
             while (numbers.length < count) {
                 let rnd = getRandomInt(max)
+                let add = true
                 //check already added
                 for(let i=0;i<numbers.length;i++) {
                     if (rnd === numbers[i]) {
-                        continue
+                        add = false
+                        break
                     }
                 }
-                numbers.push(rnd)
+                if (add) {numbers.push(rnd)}
             }
-            numbers.sort((a, b) => b - a) //sort desc
+            if (sort) {numbers.sort((a, b) => b - a)} //sort desc
             return numbers
         }
         function getRandomInt(max:number):number {
@@ -340,8 +336,13 @@ export default function Setup() {
         }
 
         //calc total tweets available -> adjust rounds if necessary
+        let totalTweets = 0
+        for(let i = 0;i<profileTweets.length;i++) {
+            totalTweets += profileTweets[i].tweets.length
+        }
         console.log(`${totalTweets} tweets from ${profileTweets.length} profiles for ${ref_settings.current.rounds} rounds available`)
         if (totalTweets < ref_settings.current.rounds) {
+            addStateMsg(`Set rounds to ${totalTweets}`)
             console.log(`Set rounds to ${totalTweets} because there are not enough tweets to play`)
             ref_settings.current.rounds = totalTweets
         }
@@ -349,7 +350,6 @@ export default function Setup() {
         //calc tweet ratio per profile
         let ratio:number = Math.floor(ref_settings.current.rounds/ref_profiles.current.length)
         console.log('ratio: ' + ratio)
-        addStateMsg(`Extracting ${ref_settings.current.rounds} tweets`)
         //addStateMsg(`Extracting ${ref_settings.current.rounds} tweets out of ${totalTweets} random tweets`)
 
         //choose tweets
@@ -366,7 +366,7 @@ export default function Setup() {
             }
             //profile has more than needed
             else {
-                let indexes = getDistinctRandomNumbers(item.tweets.length, ratio)
+                let indexes = getDistinctRandomNumbers(item.tweets.length, ratio, true)
                 //console.log(indexes.toString())
                 for (let j=0;j<indexes.length;j++) {
                     tweetsToPlay.push(item.tweets[indexes[j]])
@@ -375,9 +375,9 @@ export default function Setup() {
                 console.log(`Added ${ratio} tweets from ${item.profile.screen_name}`)
             }
         }
-        console.log(profileTweets)
-        console.log(tweetsToPlay)
-        console.log(tweetsToPlay.length + ' tweets to play')
+        //console.log(profileTweets)
+        //console.log(tweetsToPlay)
+        //console.log(tweetsToPlay.length + ' tweets to play')
 
         //fill remaining diff (bc of ration rounding bug or profile/s has/have less tweets than ratio)
         while (tweetsToPlay.length < ref_settings.current.rounds) {
@@ -397,7 +397,7 @@ export default function Setup() {
                 }
             }
         }
-        console.log(tweetsToPlay.length + ' tweets to play')
+        //console.log(tweetsToPlay.length + ' tweets to play')
 
         /*
         ###################
@@ -430,16 +430,34 @@ export default function Setup() {
         }
         //console.log(body.data)
         //console.log(body.includes)
-        let finalTweets = parseTweets(body.data, body.includes, ref_profiles.current)
-        console.log(finalTweets)
+        let parsedTweets = parseTweets(body.data, body.includes, ref_profiles.current)
+        //console.log(parsedTweets)
 
         /*
         ###################
         RANDOMIZE 
         ###################
         */
-        addStateMsg('Stiring the pot')
-
+        let indexes = getDistinctRandomNumbers(parsedTweets.length, parsedTweets.length, false)
+        let finalTweets:Tweet[] = []
+        indexes.forEach((val) => {
+            finalTweets.push(parsedTweets[val])
+        })
+        console.log(finalTweets)
+        /*
+        ###################
+        UX-MESSAGES
+        ###################
+        */
+        setTimeout(() => {
+            addStateMsg('Stiring the pot')
+        }, 2000)
+        setTimeout(() => {
+            addStateMsg(`Pulling ${ref_settings.current.rounds} tweets`)
+        }, 4000)
+        setTimeout(() => {
+            addStateMsg('Joining Matchroom')
+        }, 6000)
 
 
         /*
@@ -447,9 +465,11 @@ export default function Setup() {
         REDIRECT TO MATCH
         ###################
         */
+        
         setTimeout(() => {
-            addStateMsg('Joining Matchroom')
-        }, 2000)
+            ref_state.current.state = SetupStateType.redirectToMatch
+            fireEvent_Players()
+        }, 8000)
         
     }
 
@@ -1283,7 +1303,7 @@ export default function Setup() {
         }
 
         //SETUP STATE
-        //retrieve tweets and stuff
+        //retrieve tweets
         if (ref_state.current.state === SetupStateType.getTweets) {
 
             let cards = [<div></div>]
@@ -1309,6 +1329,11 @@ export default function Setup() {
                 <div className={st.State_Con}>
                     {cards}
                 </div>
+        }
+        //redirect to match
+        else if (ref_state.current.state === SetupStateType.redirectToMatch) {
+            let redirectURL = '/match/' + matchID
+            return <Redirect to={redirectURL}/>
         }
 
         return content

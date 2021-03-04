@@ -6,7 +6,12 @@ export enum LocalStorage {
     MatchID = 'MatchID',
     Username = 'Username',
     TwitterLoginSuccess = 'TwitterLoginSuccess',
-    JoinGame = 'JoinGame'
+    JoinGame = 'JoinGame',
+
+    //Redirect Storage Vars
+    Content = 'Content',
+    Players = 'Players',
+    Profiles = 'Profiles'
 }
 
 export enum TwitterStatus {
