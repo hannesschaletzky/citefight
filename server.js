@@ -369,18 +369,51 @@ app.get('/api/twitter/tweets', (req, res) => {
 
 app.get('/api/twitter/tweetdetails', async(req, res) => {
   
-  var params = {
-    ids: '1345396853815312385,1352681729736241158', 
-    'tweet.fields': 'public_metrics,created_at',
+  let idstoplay = req.headers.idstoplay
+
+  //CREATE PARAMS
+  let params = {
+    ids: idstoplay, 
+    'tweet.fields': 'public_metrics,created_at,author_id',
     'expansions': 'attachments.media_keys',
     'media.fields': 'duration_ms,height,media_key,public_metrics,type,url,width'
   }
-  let clientv2 = getTwitterClient(2, token, token_secret) //token and secret missing
-  const { data, includes } = await clientv2.get('tweets', params)
-  console.log(data)
-  console.log(includes.media)
 
-  res.send({ data: data, includes: includes})
+  //GET TOKEN
+  let result = getBotToken()
+  token = result.token
+  token_secret = result.token_secret
+  if (token === "" || token_secret === "") {
+    res.send({
+      status: 999,
+      message: 'could not fetch bot access token or secret'
+    })
+    return
+  }
+
+  //EXECTUE
+  let clientv2 = getTwitterClient(2, token, token_secret) //token and secret missing
+  const response = await clientv2.get('tweets', params)
+    .then(body => {
+      //console.log(body)
+      res.send({
+        status: 200, 
+        data: body.data, 
+        includes: body.includes
+      })
+    })
+    .catch(err  => {
+      console.log('###############ERROR###############')
+      console.log(err)
+        res.send({
+        status: 999,
+        message: err
+      })
+    }) 
+
+
+  //const { data, includes } = await clientv2.get('tweets', params)
+  //res.send({status: 200, data: data, includes: includes})
 });
 
 

@@ -26,6 +26,11 @@ $sdbg: false; //show debugging background = sdbg
   }
 }
 
+.Left_Panel_disabled {
+  @extend .Left_Panel;
+  @extend .disable;
+}
+
 /*
   ################################
   CENTER
@@ -43,6 +48,11 @@ $sdbg: false; //show debugging background = sdbg
   @if $sdbg {
     background-color: rgba(39, 19, 216, 0.5);
   }
+}
+
+.Center_Panel_disabled {
+  @extend .Center_Panel;
+  @extend .disable;
 }
 
 .Lobby_Con {
@@ -75,6 +85,11 @@ $sdbg: false; //show debugging background = sdbg
   @if $sdbg {
     background-color: rgba(216, 19, 19, 0.5);
   }
+}
+
+.Interaction_Con_disabled {
+  @extend .Interaction_Con;
+  @extend .disable;
 }
 
 .Players_Con {
@@ -120,6 +135,31 @@ $sdbg: false; //show debugging background = sdbg
   align-items: center;
   background-color: $root_backgroundcolor;
   z-index: 5; //overlay all icons as well
+}
+
+.State_Line {
+  margin-bottom: 10px;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  @extend .HelveticaNeueRegularFont;
+  font-size: 20px;
+  color: black;
+}
+
+.State_Status {
+  margin-right: 10px;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.State_Icon {
+  width: 30px;
+  height: 30px;
 }
 
 /*

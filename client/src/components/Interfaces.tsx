@@ -85,6 +85,13 @@ export enum Settings_Pictures {
     AtHalftime
 }
 
+export enum SetupStateType {
+    init = 'init',
+    countdown = 'countdown',
+    getTweets = 'getTweets',
+    redirectToMatch = 'redirectToMatch'
+}
+
 /*
     SETUP OBJECTS
 */
@@ -118,7 +125,8 @@ export interface Setup_Event_Players {
 }
 export interface Setup_State {
     gameid: string;
-    state: number; //0 == init, 1 == in countdown, 2 == loading/retrieving tweets
+    state: SetupStateType;
+    stateTexts: string[];
 }
 
 export interface Setup_Player {

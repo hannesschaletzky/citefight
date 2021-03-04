@@ -39,6 +39,12 @@ $HelveticaNeueRegularColor: rgb(136, 153, 166);
   font-size: 13pt;
 }
 
+.disable {
+  opacity: 0.3;
+  pointer-events: none; //disable clicking
+  user-select: none; //disable selecting
+}
+
 .disableUserSelection {
   //disable selection by user, so it cannot be marked by use
   -ms-user-select: none;

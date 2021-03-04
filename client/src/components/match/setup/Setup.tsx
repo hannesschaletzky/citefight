@@ -4,6 +4,7 @@ import  { Redirect } from 'react-router-dom'
 import st from './Setup.module.scss'
 
 import CircularProgress from '@material-ui/core/CircularProgress';
+import ArrowIcon from 'assets/setup/Arrow_Icon.png'
 
 import {Tweet, Tweet_TopPart, Tweet_Content, Tweet_BottomPart} from 'components/Interfaces'
 
@@ -11,6 +12,7 @@ import {LocalStorage} from 'components/Interfaces'
 import {Setup_Event} from 'components/Interfaces'
 import {Setup_Event_Players} from 'components/Interfaces'
 import {Setup_State} from 'components/Interfaces'
+import {SetupStateType} from 'components/Interfaces'
 import {Setup_Player} from 'components/Interfaces'
 import {Setup_ChatMsg} from 'components/Interfaces'
 import {Twitter_Profile} from 'components/Interfaces'
@@ -45,7 +47,8 @@ const init_notification:Setup_Notification = {
 }
 const init_state:Setup_State = {
     gameid: '',
-    state: 0 //init
+    state: SetupStateType.init,
+    stateTexts: []
 }
 
 //inital settings
@@ -203,6 +206,11 @@ export default function Setup() {
     ##################################
     */
 
+    const addStateMsg = (msg:string) => {
+        ref_state.current.stateTexts.push(msg)
+        fireEvent_Players()
+    }
+
     const noMoreTweets = useRef(false)
     const currentMaxID = useRef('')
     const tweets = useRef([])
@@ -224,6 +232,7 @@ export default function Setup() {
         //loop profiles
         for(let i=0;i<ref_profiles.current.length;i++) {
             let profile = ref_profiles.current[i]
+            addStateMsg('Fetching tweets for: ' + profile.screen_name)
             console.log('\n' + profile.id_str + ' - fetching tweets for: ' + profile.screen_name)
 
             currentMaxID.current = ''
@@ -242,6 +251,7 @@ export default function Setup() {
                 .then(res => {
                     
                     if (res.length === 0) {
+                        addStateMsg('Error: No available tweets for: ' + profile.screen_name)
                         console.log('\t NO TWEETS')
                         noMoreTweets.current = true
                     }
@@ -261,6 +271,7 @@ export default function Setup() {
                     }
                 })
                 .catch(err => {
+                    addStateMsg('Error: error retrieving tweets: ' + err)
                     console.log('error retrieving tweets: ' + err)
                     return
                 })
@@ -275,6 +286,34 @@ export default function Setup() {
             profileTweets.push(obj)
         }
         //console.log(profileTweets)
+        let totalTweets = 0
+        for(let i = 0;i<profileTweets.length;i++) {
+            totalTweets += profileTweets[i].tweets.length
+        }
+        addStateMsg(`Fetched ${totalTweets} tweets`)
+
+
+        /*
+        ###################
+        REMOVE TWEETS WITH is_quote_status=true
+        ###################
+        */
+        //each profile
+        let count = 0
+        profileTweets.forEach((item) => {
+            //each tweet (backwards)
+            console.log(item.tweets.length)
+            for(let i=item.tweets.length-1;i>=0;i--) {
+                if (item.tweets[i].is_quote_status) {
+                    item.tweets.splice(i,1)
+                    count++
+                }
+            }
+        })
+        addStateMsg(`Removed ${count} 'reply to' tweets`)
+        console.log(profileTweets)
+
+
 
         /*
         ###################
@@ -300,11 +339,7 @@ export default function Setup() {
             return Math.floor(Math.random() * Math.floor(max))
         }
 
-        //calc total available tweets -> adjust rounds if necessary
-        let totalTweets = 0
-        for(let i = 0;i<profileTweets.length;i++) {
-            totalTweets += profileTweets[i].tweets.length
-        }
+        //calc total tweets available -> adjust rounds if necessary
         console.log(`${totalTweets} tweets from ${profileTweets.length} profiles for ${ref_settings.current.rounds} rounds available`)
         if (totalTweets < ref_settings.current.rounds) {
             console.log(`Set rounds to ${totalTweets} because there are not enough tweets to play`)
@@ -314,10 +349,11 @@ export default function Setup() {
         //calc tweet ratio per profile
         let ratio:number = Math.floor(ref_settings.current.rounds/ref_profiles.current.length)
         console.log('ratio: ' + ratio)
+        addStateMsg(`Extracting ${ref_settings.current.rounds} tweets`)
+        //addStateMsg(`Extracting ${ref_settings.current.rounds} tweets out of ${totalTweets} random tweets`)
 
         //choose tweets
         let tweetsToPlay:any[] = []
-        //add tweets from profileTweetsCopy to tweetsToPlay
         for(let i=0;i<profileTweets.length;i++) {
             let item = profileTweets[i]
             //profile has less than needed or equal
@@ -368,17 +404,53 @@ export default function Setup() {
         EXTRACT TWEET IDS
         ###################
         */
-        //let tweetIDs:string[] = []
-
-
-
-
+        let tweetIDs = ""
+        tweetsToPlay.forEach((value) => {
+            tweetIDs += value.id_str + ","
+        })
+        tweetIDs = tweetIDs.substring(0,tweetIDs.length-1) //cut last ,
+        
         /*
         ###################
         GET TWEET DETAILS
         ###################
         */
+        var requestOptions = {
+            headers: {
+                'idstoplay': tweetIDs
+            }
+        }
+        let request = new Request('/api/twitter/tweetdetails', requestOptions)
+        const response = await fetch(request)
+        const body = await response.json()
+        if (body.status !== 200) {
+            addStateMsg('Error: error retrieving tweets: ' + body.message)
+            console.log('error retrieving tweets: ' + body.message)
+            return
+        }
+        //console.log(body.data)
+        //console.log(body.includes)
+        let finalTweets = parseTweets(body.data, body.includes, ref_profiles.current)
+        console.log(finalTweets)
 
+        /*
+        ###################
+        RANDOMIZE 
+        ###################
+        */
+        addStateMsg('Stiring the pot')
+
+
+
+        /*
+        ###################
+        REDIRECT TO MATCH
+        ###################
+        */
+        setTimeout(() => {
+            addStateMsg('Joining Matchroom')
+        }, 2000)
+        
     }
 
 
@@ -401,47 +473,107 @@ export default function Setup() {
         return body.data
     }
 
-    const parseTweets = (data:[], profile:Twitter_Profile):Tweet[] => {
+    const parseTweets = (data:[], includes:any, profiles:Twitter_Profile[]):Tweet[] => {
+        
+        const getProfileForAuthorID = (id:string):Twitter_Profile => {
+            for (let i=0;i<profiles.length;i++) {
+                if (profiles[i].id_str === id) {
+                    return profiles[i]
+                }
+            }
+            return profiles[99]
+        }
+
+        const getPhotoUrlForKey = (key:string):string => {
+            /*
+            "includes": {
+                "media": [
+                    {
+                        "width": 1600,
+                        "media_key": "3_1336401334170431490",
+                        "url": "https://pbs.twimg.com/media/EovZ7tCWMAIS46l.jpg",
+                        "type": "photo",
+                        "height": 1342
+                    }
+                ]
+            }
+            */
+            let media:any[] = includes.media
+            for(let i=0;i<media.length;i++) {
+                if (media[i].media_key === key) {
+                    return media[i].url
+                }
+            }
+            return ""
+        }   
+
         let parsed:Tweet[] = []
+        data.forEach((item:any,i) => {
 
-        for(let i=0;i<data.length;i++) {
-
-            let item:any = data[i]
-
-            //TOP PART
             //"Absolutely upsetting week. https://t.co/JumIw4XgV3"
             let text_org:string = item.text
-            let linkIndex = text_org.lastIndexOf('https://')
-            let link = text_org.substring(linkIndex).trim()
+
+            //TOP PART
+            //get profile for author_id
+            let profile = getProfileForAuthorID(item.author_id)
+            //get tweetURL
+            let profileLink = `https://twitter.com/${profile.screen_name}`
+            let tweetLink = `https://twitter.com/${profile.screen_name}/status/${item.id}`
             let topPart:Tweet_TopPart = {
                 userName: profile.name,
                 userTag: profile.screen_name,
                 userVerified: profile.verified,
-                profileURL: 'https://twitter.com/' + profile.screen_name,
+                profileURL: profileLink,
                 userPicURL: profile.profile_image_url_https,
-                tweetURL: link
+                tweetURL: tweetLink
             }
 
-
             //CONTENT
-            //"Absolutely upsetting week. https://t.co/JumIw4XgV3"
             //subtract link from text
             let index = text_org.lastIndexOf('https://')
             let text_cut = text_org.substring(0, index).trimEnd()
+
+            //test retweet -> https://twitter.com/matshummels/status/959457608984875013
+            //959457608984875013
+
             //media
             let ph1 = ""
             let ph2 = ""
             let ph3 = ""
             let ph4 = ""
-            //let media = []
-            if (item.extended_entities.media !== undefined) {
-                //media = item.extended_entities.media
-
-
+            if (!("attachments" in item)) {
+                console.log("no photos for this tweet")
             }
-
-
-
+            else {
+                let keys = item.attachments.media_keys
+                switch (keys.length) {
+                    case 1: { 
+                        ph1 = getPhotoUrlForKey(keys[0])
+                        break; 
+                    }
+                    case 2: { 
+                        ph1 = getPhotoUrlForKey(keys[0])
+                        ph2 = getPhotoUrlForKey(keys[1])
+                        break; 
+                    }
+                    case 3: { 
+                        ph1 = getPhotoUrlForKey(keys[0])
+                        ph2 = getPhotoUrlForKey(keys[1])
+                        ph3 = getPhotoUrlForKey(keys[2])
+                        break; 
+                    }
+                    case 4: { 
+                        ph1 = getPhotoUrlForKey(keys[0])
+                        ph2 = getPhotoUrlForKey(keys[1])
+                        ph3 = getPhotoUrlForKey(keys[2])
+                        ph4 = getPhotoUrlForKey(keys[3])
+                        break; 
+                    }
+                    default: { 
+                        break; 
+                    } 
+                }
+            }
             let content:Tweet_Content = {
                 text: text_cut,
                 photo1: ph1,
@@ -451,12 +583,20 @@ export default function Setup() {
             } 
 
 
-
             //BOTTOM PART
+            /*
+            "public_metrics": {
+                "retweet_count": 248,
+                "reply_count": 70,
+                "like_count": 7684,
+                "quote_count": 57
+            }
+            */
+            let met = item.public_metrics
             let bottomPart:Tweet_BottomPart = {
-                replyCount: '',
-                likeCount: '',
-                retweetCount: '',
+                replyCount: met.reply_count,
+                likeCount: met.like_count,
+                retweetCount: met.retweet_count,
                 date: item.created_at
             }
 
@@ -466,9 +606,10 @@ export default function Setup() {
                 bottomPart: bottomPart
             }
 
+            //push
             parsed.push(tweet)
-        }
 
+        })
         return parsed
     }
 
@@ -553,8 +694,8 @@ export default function Setup() {
                 )
                 ref_pusherChannel.current.bind('pusher:member_removed', (member:any) => {
                     //abort countdown
-                    if (ref_state.current.state === 1) {
-                        ref_state.current.state = 0
+                    if (ref_state.current.state === SetupStateType.countdown) {
+                        ref_state.current.state = SetupStateType.init
                     }
                     //remove user
                     let i = getIndexOfUser(member.id)
@@ -730,7 +871,7 @@ export default function Setup() {
         ################
         */
         //let first user trigger management of game content
-        if (ref_state.current.state === 0 && 
+        if (ref_state.current.state === SetupStateType.init && 
             ref_username.current === ref_players.current[0].name) {
             
             //everyone ready?
@@ -740,7 +881,7 @@ export default function Setup() {
             console.log('everyone ready!')
 
             //start countdown for everyone
-            ref_state.current.state = 1
+            ref_state.current.state = SetupStateType.countdown
             fireEvent_Players()
         }
         /*  
@@ -748,24 +889,28 @@ export default function Setup() {
         START COUNTDOWN
         ################
         */
-        else if (ref_state.current.state === 1) {
+        else if (ref_state.current.state === SetupStateType.countdown) {
 
             let timeouts:NodeJS.Timeout[] = [] //store timeout to clear when aborted
-            const addStartInfo = (sec:number) => {
-                //check if countdown stopped for some reason (e.g. user left)
-                if (ref_state.current.state === 0) {
+            const checkCancelled = ():boolean => {
+                if (ref_state.current.state === SetupStateType.init) {
                     //set everyone unready
                     ref_players.current.forEach((value) => {
                         value.ready = false
                     })
-                    //show timeout
+                    //show info
                     showNotification('Someone left, cancelled starting...', NotificationType.Not_Warning)
                     //clear further steps
                     timeouts.forEach((value) => {
                         clearTimeout(value)
                     })
-                    return
+                    return true
                 }
+                return false
+            }
+
+            const addStartInfo = (sec:number) => {
+                if (checkCancelled()) {return}
                 addSysMsg(SysMsgType.startInfo, `${sec}...`)
                 forceUpdate()
             }
@@ -780,10 +925,11 @@ export default function Setup() {
             //first triggers start game for everyone
             if (ref_username.current === ref_players.current[0].name) {
                 const startGame = () => {
-                    ref_state.current.state = 2
+                    if (checkCancelled()) {return}
+                    ref_state.current.state = SetupStateType.getTweets
                     fireEvent_Players()
                 }
-                timeouts.push(setTimeout(() => startGame(), 6000))
+                timeouts.push(setTimeout(() => startGame(), 5200))
             }
         }
         /*  
@@ -791,8 +937,10 @@ export default function Setup() {
         START GETTING TWEETS
         ################
         */
-        else if (ref_state.current.state === 2 &&
-            ref_username.current === ref_players.current[0].name) { 
+        else if (ref_state.current.state === SetupStateType.getTweets &&
+                 ref_username.current === ref_players.current[0].name &&
+                 ref_state.current.stateTexts.length === 0) { 
+            //first user starts and only call when not called already (stateTexts.length === 0)
             triggerMatchSetup()
         }
     }
@@ -1123,7 +1271,6 @@ export default function Setup() {
             ref_pusherState.current === PusherState.connecting) {
             content =  
                 <div className={st.State_Con}>
-                    Loading
                     <CircularProgress/>
                 </div>
         }
@@ -1136,12 +1283,31 @@ export default function Setup() {
         }
 
         //SETUP STATE
-        //trigger match setup -> retrieve tweets and stuff
-        if (ref_state.current.state === 2) {
+        //retrieve tweets and stuff
+        if (ref_state.current.state === SetupStateType.getTweets) {
+
+            let cards = [<div></div>]
+            cards = []
+            let maxI = ref_state.current.stateTexts.length - 1 //max index
+            ref_state.current.stateTexts.forEach((value,i) => {
+                cards.push(
+                    <div className={st.State_Line} key={i}>
+                        <div className={st.State_Status}>
+                            {i < maxI && //prior are done
+                                <img className={st.State_Icon} src={ArrowIcon} alt="Done"/>
+                            }
+                            {i === maxI && //current is processing
+                                <CircularProgress/>
+                            }
+                        </div>
+                        {value}
+                    </div>
+                )
+            })
+
             content =  
                 <div className={st.State_Con}>
-                    Loading
-                    <CircularProgress/>
+                    {cards}
                 </div>
         }
 
@@ -1151,14 +1317,14 @@ export default function Setup() {
     return (
     <div className={st.Content_Con}>
         {getSpecialContent()}
-        <div className={st.Left_Panel}>
+        <div className={ref_state.current.state === SetupStateType.init ? st.Left_Panel : st.Left_Panel_disabled}>
             {Search(
                 ref_profiles.current,
                 onAddProfile,
                 onNewNotification
             )}
         </div>
-        <div className={st.Center_Panel}>
+        <div className={ref_state.current.state === SetupStateType.init ? st.Center_Panel : st.Center_Panel_disabled}>
             <div className={st.Lobby_Con}>
                 {Lobby(
                     getAdmin(),
@@ -1173,16 +1339,14 @@ export default function Setup() {
             }
         </div>
         <div className={st.Right_Panel}>
-            {ref_state.current.state === 0 && 
-                <div className={st.Interaction_Con}>
-                    <Interaction
-                        user={ref_players.current[getIndexOfUser(ref_username.current)]}
-                        onLeaveClick={onLeaveTriggered}
-                        onToogleReadyClick={onToogleReady}
-                        addNotification={onNewNotification}
-                    />
-                </div>
-            }
+            <div className={ref_state.current.state === SetupStateType.init ? st.Interaction_Con : st.Interaction_Con_disabled}>
+                <Interaction
+                    user={ref_players.current[getIndexOfUser(ref_username.current)]}
+                    onLeaveClick={onLeaveTriggered}
+                    onToogleReadyClick={onToogleReady}
+                    addNotification={onNewNotification}
+                />
+            </div>
             <div className={st.Players_Con}>
                 <Players   
                     data={ref_players.current}
