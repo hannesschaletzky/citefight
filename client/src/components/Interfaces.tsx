@@ -33,7 +33,7 @@ export enum SysMsgType {
     userJoined = '2',
     userLeft = '3',
     welcome = '4',
-    info = '5'
+    startInfo = '5',
 }
 
 export enum SetupEventType {
@@ -104,16 +104,27 @@ export interface Setup_Notification {
     scssClass: string;
 }
 
+//normal event for all other tasks
 export interface Setup_Event {
     type: SetupEventType;
     data: any;
+}
+
+//special event for players incl. state 
+export interface Setup_Event_Players {
+    type: SetupEventType;
+    data: any;
+    state: Setup_State;
+}
+export interface Setup_State {
+    gameid: string;
+    state: number; //0 == init, 1 == in countdown, 2 == loading/retrieving tweets
 }
 
 export interface Setup_Player {
     name: string;
     ready: boolean;
 }
-
 
 export interface Setup_ChatMsg {
     n: string;      //name

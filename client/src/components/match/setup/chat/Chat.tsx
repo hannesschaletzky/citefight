@@ -115,7 +115,7 @@ export default function Chat(inputMessages:Setup_ChatMsg[],
                             {item.m}
                         </div>
                     }
-                    {item.t === SysMsgType.info &&
+                    {item.t === SysMsgType.startInfo &&
                         <div className={st.SysMessage_Info}>
                             {item.m}
                         </div>

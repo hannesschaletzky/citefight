@@ -9,6 +9,8 @@ import {Tweet, Tweet_TopPart, Tweet_Content, Tweet_BottomPart} from 'components/
 
 import {LocalStorage} from 'components/Interfaces'
 import {Setup_Event} from 'components/Interfaces'
+import {Setup_Event_Players} from 'components/Interfaces'
+import {Setup_State} from 'components/Interfaces'
 import {Setup_Player} from 'components/Interfaces'
 import {Setup_ChatMsg} from 'components/Interfaces'
 import {Twitter_Profile} from 'components/Interfaces'
@@ -41,8 +43,12 @@ const init_notification:Setup_Notification = {
     type: NotificationType.Not_Success,
     scssClass: ''
 }
+const init_state:Setup_State = {
+    gameid: '',
+    state: 0 //init
+}
 
-//settings to start game with
+//inital settings
 const init_settings:Setup_Settings = {
     rounds: 25,
     roundtime: Settings_Roundtime.Normal,
@@ -58,6 +64,7 @@ export default function Setup() {
     //state
     const [redirectToJoin,setRedirectToJoin] = useState(false)
     //refs
+    const ref_state = useRef(init_state)
     const ref_profiles = useRef(init_profiles)
     const ref_settings = useRef(init_settings)
     const ref_players = useRef(init_players)
@@ -149,7 +156,7 @@ export default function Setup() {
         else if (type === SysMsgType.userLeft) {
             msg.m = inputMsg + ' left 😭'
         }
-        else if (type === SysMsgType.info) {
+        else if (type === SysMsgType.startInfo) {
             msg.m = '📢 ' + inputMsg
         }
         
@@ -305,7 +312,7 @@ export default function Setup() {
         }
 
         //calc tweet ratio per profile
-        let ratio:number = Math.round(ref_settings.current.rounds/ref_profiles.current.length)
+        let ratio:number = Math.floor(ref_settings.current.rounds/ref_profiles.current.length)
         console.log('ratio: ' + ratio)
 
         //choose tweets
@@ -533,7 +540,7 @@ export default function Setup() {
                     (data:Setup_Event) => handleEvent_Join(data)
                 )
                 ref_pusherChannel.current.bind(SetupEventType.Player, 
-                    (data:Setup_Event) => handleEvent_Player(data)
+                    (data:Setup_Event_Players) => handleEvent_Player(data)
                 )
                 ref_pusherChannel.current.bind(SetupEventType.Chat, 
                     (data:Setup_Event) => handleEvent_Chat(data)
@@ -545,6 +552,10 @@ export default function Setup() {
                     (data:Setup_Event) => handleEvent_Settings(data)
                 )
                 ref_pusherChannel.current.bind('pusher:member_removed', (member:any) => {
+                    //abort countdown
+                    if (ref_state.current.state === 1) {
+                        ref_state.current.state = 0
+                    }
                     //remove user
                     let i = getIndexOfUser(member.id)
                     ref_players.current.splice(i,1);
@@ -645,7 +656,7 @@ export default function Setup() {
         //prepare
         let event:Setup_Event = {
             type: SetupEventType.Join,
-            data: ref_username.current 
+            data: ref_username.current
         }
 
         //exectue
@@ -690,7 +701,7 @@ export default function Setup() {
     ##################################
     ##################################
     */
-    const handleEvent_Player = (event:Setup_Event) => {
+    const handleEvent_Player = (event:Setup_Event_Players) => {
 
         //let str = JSON.stringify(event.data, null, 4);
         //console.log(str)
@@ -703,47 +714,100 @@ export default function Setup() {
         }
 
         //set new state
+        let newState:Setup_State = event.state
+        ref_state.current = newState
+
+        //set new players
         let newPlayers:Setup_Player[] = event.data
         console.log('total players: ' + newPlayers.length)
         ref_players.current = newPlayers
         setPusherState(PusherState.connected) //force update incl. here
-
         assignJoinEventAdmin()
 
-        //check if all player are ready
-        let readyCount = 0
-        for(let i=0;i<ref_players.current.length;i++) {
-            if (ref_players.current[i].ready) {
-                readyCount++
+        /*  
+        ################
+        CHECK IF COUNTDOWN CAN BE STARTED
+        ################
+        */
+        //let first user trigger management of game content
+        if (ref_state.current.state === 0 && 
+            ref_username.current === ref_players.current[0].name) {
+            
+            //everyone ready?
+            for(let i=0;i<ref_players.current.length;i++) {
+                if (!ref_players.current[i].ready) return
             }
-        }
-        if (readyCount === ref_players.current.length) {
             console.log('everyone ready!')
 
-            //check if profiles selected
-            if (ref_profiles.current.length === 0) {
-                showNotification('You have to select profiles to play before you start', NotificationType.Not_Warning)
-                return
-            }
+            //start countdown for everyone
+            ref_state.current.state = 1
+            fireEvent_Players()
+        }
+        /*  
+        ################
+        START COUNTDOWN
+        ################
+        */
+        else if (ref_state.current.state === 1) {
 
-            //let first user trigger management of game content
-            if (ref_username.current === ref_players.current[0].name) {
-                triggerMatchSetup()
+            let timeouts:NodeJS.Timeout[] = [] //store timeout to clear when aborted
+            const addStartInfo = (sec:number) => {
+                //check if countdown stopped for some reason (e.g. user left)
+                if (ref_state.current.state === 0) {
+                    //set everyone unready
+                    ref_players.current.forEach((value) => {
+                        value.ready = false
+                    })
+                    //show timeout
+                    showNotification('Someone left, cancelled starting...', NotificationType.Not_Warning)
+                    //clear further steps
+                    timeouts.forEach((value) => {
+                        clearTimeout(value)
+                    })
+                    return
+                }
+                addSysMsg(SysMsgType.startInfo, `${sec}...`)
+                forceUpdate()
             }
-            //SET EVERYONE TO LOADING SCREEN HERE
+            timeouts.push(setTimeout(() => {  addSysMsg(SysMsgType.startInfo, 'Everyone is ready! Starting in...') 
+                                forceUpdate()}, 100))
+            timeouts.push(setTimeout(() => addStartInfo(5), 1000))
+            timeouts.push(setTimeout(() => addStartInfo(4), 2000))
+            timeouts.push(setTimeout(() => addStartInfo(3), 3000))
+            timeouts.push(setTimeout(() => addStartInfo(2), 4000))
+            timeouts.push(setTimeout(() => addStartInfo(1), 5000))
+
+            //first triggers start game for everyone
+            if (ref_username.current === ref_players.current[0].name) {
+                const startGame = () => {
+                    ref_state.current.state = 2
+                    fireEvent_Players()
+                }
+                timeouts.push(setTimeout(() => startGame(), 6000))
+            }
+        }
+        /*  
+        ################
+        START GETTING TWEETS
+        ################
+        */
+        else if (ref_state.current.state === 2 &&
+            ref_username.current === ref_players.current[0].name) { 
+            triggerMatchSetup()
         }
     }
 
     const fireEvent_Players = async () => {
 
         //prepare
-        let event:Setup_Event = {
+        let event:Setup_Event_Players = {
             type: SetupEventType.Player,
-            data: ref_players.current
+            data: ref_players.current,
+            state: ref_state.current 
         }
 
         //execute
-        console.log('broadcast new players')
+        console.log('broadcast new players + state')
         const response = await fetch('/api/pusher/setup/trigger', {
             method: 'POST',
             headers: {
@@ -781,7 +845,7 @@ export default function Setup() {
             return
         }
 
-        //set new state
+        //set new chat
         let newChat:Setup_ChatMsg[] = event.data
         console.log('total msgs: ' + newChat.length)
         ref_chat.current = newChat
@@ -790,13 +854,6 @@ export default function Setup() {
     }
 
     const fireEvent_Chat = async () => {
-
-        //publish without info messages -> remove them
-        for(let i=ref_chat.current.length-1;i>=0;i--) {
-            if (ref_chat.current[i].t === SysMsgType.info) {
-                ref_chat.current.splice(i,1)
-            }
-        }
 
         //remove first message of chat until chat is smaller than 10KB
         let chatString = JSON.stringify(ref_chat.current)
@@ -851,7 +908,7 @@ export default function Setup() {
             return
         }
 
-        //set new state
+        //set new profiles
         let newProfiles:Twitter_Profile[] = event.data
         console.log('total profiles: ' + newProfiles.length)
         ref_profiles.current = newProfiles
@@ -899,7 +956,7 @@ export default function Setup() {
             return
         }
 
-        //set new state
+        //set new settings
         let newSettings:Setup_Settings = event.data
         console.log('new Settings received')
         ref_settings.current = newSettings
@@ -994,6 +1051,10 @@ export default function Setup() {
     }
 
     const onToogleReady = (ready:boolean) => {
+        if (ref_profiles.current.length === 0) {
+            showNotification('You have to select profiles to play before you can start', NotificationType.Not_Warning)
+            return
+        }
         toogleReady(ready)
     } 
 
@@ -1056,7 +1117,7 @@ export default function Setup() {
             return <Redirect to={redirectURL}/>
         }
         
-        //Pusher State
+        //PUSHER STATE
         //loading
         if (ref_pusherState.current === PusherState.init ||
             ref_pusherState.current === PusherState.connecting) {
@@ -1071,6 +1132,16 @@ export default function Setup() {
             content =  
                 <div className={st.State_Con}>
                     Could not connect to match
+                </div>
+        }
+
+        //SETUP STATE
+        //trigger match setup -> retrieve tweets and stuff
+        if (ref_state.current.state === 2) {
+            content =  
+                <div className={st.State_Con}>
+                    Loading
+                    <CircularProgress/>
                 </div>
         }
 
@@ -1102,14 +1173,16 @@ export default function Setup() {
             }
         </div>
         <div className={st.Right_Panel}>
-            <div className={st.Interaction_Con}>
-                <Interaction
-                    user={ref_players.current[getIndexOfUser(ref_username.current)]}
-                    onLeaveClick={onLeaveTriggered}
-                    onToogleReadyClick={onToogleReady}
-                    addNotification={onNewNotification}
-                />
-            </div>
+            {ref_state.current.state === 0 && 
+                <div className={st.Interaction_Con}>
+                    <Interaction
+                        user={ref_players.current[getIndexOfUser(ref_username.current)]}
+                        onLeaveClick={onLeaveTriggered}
+                        onToogleReadyClick={onToogleReady}
+                        addNotification={onNewNotification}
+                    />
+                </div>
+            }
             <div className={st.Players_Con}>
                 <Players   
                     data={ref_players.current}
