@@ -29,6 +29,7 @@ $sdbg: false; //show debugging background = sdbg
 }
 
 .Icon {
+  cursor: pointer;
   margin-left: 10px;
   margin-right: 10px;
 }
@@ -36,6 +37,7 @@ $sdbg: false; //show debugging background = sdbg
 .Link {
   padding-left: 12px;
   padding-right: 12px;
+  cursor: pointer;
 
   //font-family: Courier New;
   font-family: STCaiyun;
