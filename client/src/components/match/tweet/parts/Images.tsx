@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import st from './Images.module.scss'
+import {log} from 'components/Logic'
 
 import {Tweet_Content} from 'components/Interfaces'
 
@@ -14,7 +15,7 @@ class Images extends Component <any, any> {
     tweet: Tweet_Content = this.props.data //assign to object type for safety
 
     test() {
-        console.log("Hovered with mouse over picture")
+        log("Hovered with mouse over picture")
     }
 
     render() { 

@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import st from './TwitterProfileList.module.scss'
+import {log} from 'components/Logic'
 
 import {Profile} from 'components/Interfaces'
 import {TwitterStatus} from 'components/Interfaces'
@@ -62,7 +63,7 @@ class TwitterProfileList extends Component <any, any> {
     }
 
     followUser(user: Profile) {
-        console.log('Trying to follow: ' + user.screen_name)
+        log('Trying to follow: ' + user.screen_name)
     }
 
     removeUser(user: Profile) {

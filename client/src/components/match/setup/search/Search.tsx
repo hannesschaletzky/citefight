@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 //import  { Redirect } from 'react-router-dom'
 import st from './Search.module.scss'
+import {log} from 'components/Logic'
 
 import TwitterProfileList from './TwitterProfileList'
 import CircularProgress from '@material-ui/core/CircularProgress';
@@ -74,7 +75,7 @@ export default function Search(
         let accessToken = localStorage.getItem(LocalStorage.Access_Token)
         let accessToken_Secret = localStorage.getItem(LocalStorage.Access_Token_Secret)
         if (accessToken !== null && accessToken_Secret != null) {
-            console.log('token & secret available -> verify')
+            log('token & secret available -> verify')
             verifyCredentials(accessToken, accessToken_Secret)
                 .then(() => {
                     //success -> enable search
@@ -98,12 +99,12 @@ export default function Search(
 
     //send error notification to setup
     const showErrNot = (msg: string) => {
-        console.log(msg)
+        log(msg)
         newNotification('Error: ' + msg, NotificationType.Not_Error)
     }
 
     const showWarNot = (msg: string) => {
-        console.log(msg)
+        log(msg)
         newNotification('Warning: ' + msg, NotificationType.Not_Warning)
     }
 
@@ -189,7 +190,7 @@ export default function Search(
                 }
                 else {
                     //success
-                    console.log('successfully got data for "' + qString + '" at page ' + newPage)
+                    log('successfully got data for "' + qString + '" at page ' + newPage)
 
                     //if user clicks on more but deleted search string already
                     if (searchInput.length === 0) {
@@ -208,7 +209,7 @@ export default function Search(
             }) 
             .catch(err => {
                 showErrNot('critical system error occured, check console')
-                console.log(err)
+                log(err)
                 setLoading(false)
             });
     }
@@ -259,7 +260,7 @@ export default function Search(
             return
         }
 
-        console.log('trying to sign in')
+        log('trying to sign in')
         setTokenStatus(TokenStatus.requested)
 
         //userAuth
@@ -271,7 +272,7 @@ export default function Search(
             setTokenStatus(TokenStatus.error)
         }
         else {
-            console.log(body)
+            log(body)
             //"oauth_token=i-7ofAAAAAABLx8pAAABd86SI80&
             //oauth_token_secret=IvoJA3G2XzQ41c9IlfgZb8HHQY8Vw6Rq&oauth_callback_confirmed=true"
             let str: string = body.body
@@ -326,7 +327,7 @@ export default function Search(
             throw new Error(body)
         }
         else {
-            console.log('valid token & secret')
+            log('valid token & secret')
             setTokenVerifyStatus(TokenVerify.success)
             return "200";
         }

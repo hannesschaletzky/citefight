@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useReducer } from 'react';
 import  { Redirect } from 'react-router-dom'
+import {log} from 'components/Logic'
 
 import {LocalStorage} from 'components/Interfaces'
 import CircularProgress from '@material-ui/core/CircularProgress';
@@ -62,7 +63,7 @@ export default function TwitterCallback() {
         ref_token_verifier.current = url.substring(start)
 
         if (ref_token.current.length === 0 || ref_token_verifier.current.length === 0) {
-            console.log('either no token or no verifier received')
+            log('either no token or no verifier received')
             setStatus(CallbackStatus.error)
             return
         }
@@ -79,8 +80,8 @@ export default function TwitterCallback() {
 
     //IT WILL ONLY WORK ONE TIME -> all other following requests will be rejected
     const triggerAccessToken = async () => {
-        console.log(ref_token.current)
-        console.log(ref_token_verifier.current)
+        log(ref_token.current)
+        log(ref_token_verifier.current)
         var requestOptions = {
             headers: {
                 'token': ref_token.current,
@@ -91,15 +92,15 @@ export default function TwitterCallback() {
         const response = await fetch(request)
         const body = await response.json()
         if (body.status !== 200) {
-            console.log('ERROR retrieving access token')
-            console.log(body)
+            log('ERROR retrieving access token')
+            log(body)
             setStatus(CallbackStatus.apiReject)
         }
         else {
             //success
             //{status: 200, body: "oauth_token=134...}"
             //-> "oauth_token=1349709202332246017-tunSbdudXTTaqjj9rBYqKeNbBapGpb&oauth_token_secret=z1Sabk1PMugVKpyY7B5ryNvoSKmyDs0f6GmIYdoEv15pi&user_id=1349709202332246017&screen_name=hannesschaletz1"
-            console.log(body)
+            log(body)
             let str:string = body.body
 
             //extract token
@@ -119,7 +120,7 @@ export default function TwitterCallback() {
             //set success
             sessionStorage.setItem(LocalStorage.TwitterLoginSuccess, '1')
 
-            console.log('rerouting back to matchroom')
+            log('rerouting back to matchroom')
             setStatus(CallbackStatus.success)
         }
     }

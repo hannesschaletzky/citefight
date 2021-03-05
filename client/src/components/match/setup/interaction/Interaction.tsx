@@ -57,7 +57,7 @@ class Interaction extends Component <any, any> {
             if (this.actionsExceeded()) {
                 return
             }
-            //console.log('QR Code for: ' + this.currentUrl)
+            //log('QR Code for: ' + this.currentUrl)
         }
         this.setState({showQRCode: show})
     }
@@ -89,7 +89,7 @@ class Interaction extends Component <any, any> {
         //as soon as user has joined, there has to be a user object
         let user:Player = this.props.user
         if (user === undefined) {
-            //console.log('Interaction.tsx ERROR: no user object given')
+            //log('Interaction.tsx ERROR: no user object given')
             return <div> CIRITCAL ERROR: no user object given</div>
         }
 

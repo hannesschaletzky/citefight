@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
 import st from './Landing.module.scss'
+import {log} from 'components/Logic'
 
 
 class LandingPage extends Component {
@@ -33,9 +34,7 @@ class LandingPage extends Component {
     }
 
     findMatchroom() {
-        console.log('find matchroom was clicked.');
-        
-
+        log('find matchroom was clicked.');
     }
 
 }

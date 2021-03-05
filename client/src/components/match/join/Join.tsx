@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import  { Redirect } from 'react-router-dom'
 import st from './Join.module.scss';
+import {log} from 'components/Logic'
 
 import {LocalStorage} from 'components/Interfaces'
 
@@ -25,7 +26,7 @@ export default function Join() {
         }
         //is trying
         if (status === JoinStatus.connecting) {
-            console.log('already trying')
+            log('already trying')
             return
         }
 
@@ -89,7 +90,7 @@ export default function Join() {
         let current = window.location.href
         let matchID = current.substr(current.lastIndexOf('/') + 1);
         if (matchID.length === 0 || !(/^\d+$/.test(matchID))) {
-            console.log('INVALID ID: ' + matchID)
+            log('INVALID ID: ' + matchID)
             return <div>'{matchID}' is an invalid Match ID! Only numbers allowed</div>
         }
         

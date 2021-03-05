@@ -1,5 +1,6 @@
 import { useRef, useEffect } from 'react';
 //import st from './Match.module.scss'
+import {log} from 'components/Logic'
 
 import {LocalStorage} from 'components/Interfaces'
 import {Settings, 
@@ -38,8 +39,8 @@ export default function Match() {
             if (data !== null) {
                 ref.current = JSON.parse(data)
                 sessionStorage.removeItem(type)
-                console.log('set item: ' + type)
-                //console.log(ref.current)
+                log('set item: ' + type)
+                //log(ref.current)
             }
         }
         setValue(ref_tweets, LocalStorage.Trans_Content)
