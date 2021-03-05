@@ -163,12 +163,12 @@ export default function Setup() {
                 return i
             }
         }
-        //console.log('ERROR: could not find user in players array')
+        //log('ERROR: could not find user in players array')
         return -1
     }
 
     const setPusherState = (state:PusherState) => {
-        //console.log('set state to: ' + state)
+        //log('set state to: ' + state)
         ref_pusherState.current = state
         forceUpdate()
     }
@@ -266,7 +266,7 @@ export default function Setup() {
         for(let i=0;i<ref_profiles.current.length;i++) {
             let profile = ref_profiles.current[i]
             addStateMsg('Fetching tweets for: ' + profile.screen_name)
-            console.log('\n' + profile.id_str + ' - fetching tweets for: ' + profile.screen_name)
+            log('\n' + profile.id_str + ' - fetching tweets for: ' + profile.screen_name)
 
             currentMaxID.current = ''
             noMoreTweets.current = false
@@ -278,23 +278,23 @@ export default function Setup() {
                 if (noMoreTweets.current) {
                     break
                 }
-                console.log('Round: ' + (j+1))
+                log('Round: ' + (j+1))
 
                 await getTweets(profile.id_str, currentMaxID.current)
                 .then(res => {
                     
                     if (res.length === 0) {
                         addStateMsg('Error: No available tweets for: ' + profile.screen_name)
-                        console.log('\t NO TWEETS')
+                        log('\t NO TWEETS')
                         noMoreTweets.current = true
                     }
                     else if (res.length === 1 && res[0].id_str === currentMaxID.current) {
                         //last tweet (maxid) came back itself
-                        console.log('\t -> no more tweets')
+                        log('\t -> no more tweets')
                         noMoreTweets.current = true
                     }
                     else {
-                        console.log('\t' + res.length)
+                        log('\t' + res.length)
                         currentMaxID.current = res[res.length-1].id_str
                         if (j >= 1) {
                             //remove last bc its first in new round
@@ -305,12 +305,12 @@ export default function Setup() {
                 })
                 .catch(err => {
                     addStateMsg('Error: error retrieving tweets: ' + err)
-                    console.log('error retrieving tweets: ' + err)
+                    log('error retrieving tweets: ' + err)
                     return
                 })
             }
-            console.log('--> ' + tweets.current.length + ' total tweets')
-            //console.log(tweets.current)
+            log('--> ' + tweets.current.length + ' total tweets')
+            //log(tweets.current)
 
             let obj:ProfileTweets = {
                 profile: profile,
@@ -318,7 +318,7 @@ export default function Setup() {
             }
             profileTweets.push(obj)
         }
-        //console.log(profileTweets)
+        //log(profileTweets)
         addStateMsg('Dumping boring tweets')
 
         /*
@@ -330,7 +330,7 @@ export default function Setup() {
         let count = 0
         profileTweets.forEach((item) => {
             //each tweet (backwards)
-            console.log(item.tweets.length)
+            log(item.tweets.length)
             for(let i=item.tweets.length-1;i>=0;i--) {
                 if (item.tweets[i].is_quote_status) {
                     item.tweets.splice(i,1)
@@ -339,7 +339,7 @@ export default function Setup() {
             }
         })
         //addStateMsg(`Removed ${count} 'reply to' tweets`)
-        console.log(`Removed ${count} 'reply to' tweets`)
+        log(`Removed ${count} 'reply to' tweets`)
 
 
 
@@ -374,16 +374,16 @@ export default function Setup() {
         for(let i = 0;i<profileTweets.length;i++) {
             totalTweets += profileTweets[i].tweets.length
         }
-        console.log(`${totalTweets} tweets from ${profileTweets.length} profiles for ${ref_settings.current.rounds} rounds available`)
+        log(`${totalTweets} tweets from ${profileTweets.length} profiles for ${ref_settings.current.rounds} rounds available`)
         if (totalTweets < ref_settings.current.rounds) {
             addStateMsg(`Set rounds to ${totalTweets}`)
-            console.log(`Set rounds to ${totalTweets} because there are not enough tweets to play`)
+            log(`Set rounds to ${totalTweets} because there are not enough tweets to play`)
             ref_settings.current.rounds = totalTweets
         }
 
         //calc tweet ratio per profile
         let ratio:number = Math.floor(ref_settings.current.rounds/ref_profiles.current.length)
-        console.log('ratio: ' + ratio)
+        log('ratio: ' + ratio)
         //addStateMsg(`Extracting ${ref_settings.current.rounds} tweets out of ${totalTweets} random tweets`)
 
         //choose tweets
@@ -395,23 +395,23 @@ export default function Setup() {
                 item.tweets.length === ratio) {
                 //tweetsToPlay.push(item.tweets)
                 tweetsToPlay = tweetsToPlay.concat(item.tweets)
-                console.log(`Added ${item.tweets.length} tweets from ${item.profile.screen_name}`)
+                log(`Added ${item.tweets.length} tweets from ${item.profile.screen_name}`)
                 profileTweets[i].tweets = []
             }
             //profile has more than needed
             else {
                 let indexes = getDistinctRandomNumbers(item.tweets.length, ratio, true)
-                //console.log(indexes.toString())
+                //log(indexes.toString())
                 for (let j=0;j<indexes.length;j++) {
                     tweetsToPlay.push(item.tweets[indexes[j]])
                     profileTweets[i].tweets.splice(indexes[j], 1)
                 }
-                console.log(`Added ${ratio} tweets from ${item.profile.screen_name}`)
+                log(`Added ${ratio} tweets from ${item.profile.screen_name}`)
             }
         }
-        //console.log(profileTweets)
-        //console.log(tweetsToPlay)
-        //console.log(tweetsToPlay.length + ' tweets to play')
+        //log(profileTweets)
+        //log(tweetsToPlay)
+        //log(tweetsToPlay.length + ' tweets to play')
 
         //fill remaining diff (bc of ration rounding bug or profile/s has/have less tweets than ratio)
         while (tweetsToPlay.length < ref_settings.current.rounds) {
@@ -427,11 +427,11 @@ export default function Setup() {
                     let index = getRandomInt(item.tweets.length)
                     tweetsToPlay.push(item.tweets[index])
                     profileTweets[i].tweets.splice(index, 1)
-                    console.log(`Added 1 tweet from ${item.profile.screen_name}`)
+                    log(`Added 1 tweet from ${item.profile.screen_name}`)
                 }
             }
         }
-        //console.log(tweetsToPlay.length + ' tweets to play')
+        //log(tweetsToPlay.length + ' tweets to play')
 
         /*
         ###################
@@ -459,13 +459,13 @@ export default function Setup() {
         const body = await response.json()
         if (body.status !== 200) {
             addStateMsg('Error: error retrieving tweets: ' + body.message)
-            console.log('error retrieving tweets: ' + body.message)
+            log('error retrieving tweets: ' + body.message)
             return
         }
-        //console.log(body.data)
-        //console.log(body.includes)
+        //log(body.data)
+        //log(body.includes)
         let parsedTweets = parseTweets(body.data, body.includes, ref_profiles.current)
-        //console.log(parsedTweets)
+        //log(parsedTweets)
 
         /*
         ###################
@@ -477,7 +477,7 @@ export default function Setup() {
         indexes.forEach((val) => {
             finalTweets.push(parsedTweets[val])
         })
-        console.log(finalTweets)
+        log(finalTweets)
         /*
         ###################
         BROADCAST TWEETS
@@ -544,8 +544,8 @@ export default function Setup() {
         if (response.status !== 200) {
             throw Error(body)
         }
-        //console.log(body.data.length + ' tweets')
-        //console.log(body)
+        //log(body.data.length + ' tweets')
+        //log(body)
         return body.data
     }
 
@@ -583,7 +583,7 @@ export default function Setup() {
             return ""
         }   
 
-        console.log('parsing tweets')
+        log('parsing tweets')
         let parsed:Tweet[] = []
         data.forEach((item:any,i) => {
 
@@ -614,7 +614,7 @@ export default function Setup() {
             if (!("attachments" in item)) {
                 //no photos -> no link in text
                 text_cut = text_org
-                //console.log("no photos for this tweet")
+                //log("no photos for this tweet")
             }
             else {
                 //remove link from text
@@ -702,7 +702,7 @@ export default function Setup() {
         //has already joined
         if (ref_pusherState.current === PusherState.connected ||
             ref_pusherState.current === PusherState.connecting) {
-            console.log('already connecting or connected')
+            log('already connecting or connected')
             return
         }
         setPusherState(PusherState.connecting)
@@ -720,7 +720,7 @@ export default function Setup() {
         //see: https://pusher.com/docs/channels/using_channels/connection#available-states
         _pusherClient.connection.bind('state_change', (states:any) => {
             //states = {previous: 'oldState', current: 'newState'}
-            console.log('new pusher state from event "state_change": ' + states.current)
+            log('new pusher state from event "state_change": ' + states.current)
             //setPusherConState(states.current) //-> also see enum PusherConState
         });
 
@@ -728,8 +728,8 @@ export default function Setup() {
         _pusherClient.connection.bind('error', (err:any) => {
             setPusherState(PusherState.error)
             let str = JSON.stringify(err, null, 4);
-            console.log('error during pusher connection')
-            console.log(str)
+            log('error during pusher connection')
+            log(str)
         })
 
         //bind connected
@@ -737,16 +737,16 @@ export default function Setup() {
             
             if (ref_pusherClient.current !== null) {
                 //reconnected
-                console.log('reconnected')
+                log('reconnected')
                 return
             }
-            console.log('pusher is connected')
+            log('pusher is connected')
 
             //sub channel
             const channel = _pusherClient.subscribe(channelName)
             // -> success
             channel.bind('pusher:subscription_succeeded', () => {
-                console.log('subscribed to channel: ' + channelName)
+                log('subscribed to channel: ' + channelName)
                 
                 //set vars
                 ref_pusherClient.current = _pusherClient 
@@ -791,14 +791,14 @@ export default function Setup() {
             // -> error
             channel.bind('pusher:subscription_error', (err:any) => {
                 let str = JSON.stringify(err, null, 4);
-                console.log('error during subscribing to channel: ' + channelName)
-                console.log(str)
+                log('error during subscribing to channel: ' + channelName)
+                log(str)
             });
         })
     }
 
     const leaveGame = () => {
-        console.log('leaving')
+        log('leaving')
         setPusherState(PusherState.connecting)
         document.location.reload()
     }
@@ -818,12 +818,12 @@ export default function Setup() {
 
         /*
         let str = JSON.stringify(event.data, null, 4);
-        console.log(str)
+        log(str)
         */
 
         //security
         if (event.type !== SetupEventType.Join) {
-            console.log('EventType mismatch in handleEvent_Admin:\n\n' + event)
+            log('EventType mismatch in handleEvent_Admin:\n\n' + event)
             return
         }
         let triggerUser = event.data
@@ -843,7 +843,7 @@ export default function Setup() {
                 you are the only one in the game
                 -> dont send out event, add youself manually
             */
-            console.log('you are the only person in the room')
+            log('you are the only person in the room')
             //insert welcome first
             let currentUrl = window.location.href
             addSysMsg(SysMsgType.welcome,   '🎉 Welcome to your matchroom!') 
@@ -862,7 +862,7 @@ export default function Setup() {
                 -> attach new user 
                 -> broadcast current state
             */
-            console.log('BROADCAST join for: ' + triggerUser)
+            log('BROADCAST join for: ' + triggerUser)
             joinPlayer(triggerUser)
             fireEvent_Chat()
             fireEvent_Players()
@@ -892,7 +892,7 @@ export default function Setup() {
 
         //read response
         const body = await response.text();
-        console.log(body)
+        log(body)
     }
 
     const assignJoinEventAdmin = () => {
@@ -909,7 +909,7 @@ export default function Setup() {
                 ref_pusherChannel.current.bind(SetupEventType.Join,
                     (data:any) => handleEvent_Join(data)
                 )
-                console.log('Bound join event')
+                log('Bound join event')
             }
         }
     }
@@ -924,12 +924,12 @@ export default function Setup() {
     const handleEvent_Player = (event:Setup_Event_Players) => {
 
         //let str = JSON.stringify(event.data, null, 4);
-        //console.log(str)
+        //log(str)
 
-        //console.log(pusherChannel.members.count)
+        //log(pusherChannel.members.count)
         //security
         if (event.type !== SetupEventType.Player) {
-            console.log('EventType mismatch in handleEvent_Player:\n\n' + event)
+            log('EventType mismatch in handleEvent_Player:\n\n' + event)
             return
         }
 
@@ -939,7 +939,7 @@ export default function Setup() {
 
         //set new players
         let newPlayers:Player[] = event.data
-        console.log('total players: ' + newPlayers.length)
+        log('total players: ' + newPlayers.length)
         ref_players.current = newPlayers
         setPusherState(PusherState.connected) //force update incl. here
         assignJoinEventAdmin()
@@ -957,7 +957,7 @@ export default function Setup() {
             for(let i=0;i<ref_players.current.length;i++) {
                 if (!ref_players.current[i].ready) return
             }
-            console.log('everyone ready!')
+            log('everyone ready!')
 
             //start countdown for everyone
             ref_state.current.state = SetupStateType.countdown
@@ -1034,7 +1034,7 @@ export default function Setup() {
         }
 
         //execute
-        console.log('broadcast new players + state')
+        log('broadcast new players + state')
         const response = await fetch('/api/pusher/setup/trigger', {
             method: 'POST',
             headers: {
@@ -1047,7 +1047,7 @@ export default function Setup() {
         
         //read response
         const body = await response.text();
-        console.log(body)
+        log(body)
     }
 
     const toogleReady = (ready:boolean) => {
@@ -1068,13 +1068,13 @@ export default function Setup() {
 
         //security
         if (event.type !== SetupEventType.Chat) {
-            console.log('EventType mismatch in handleEvent_Chat:\n\n' + event)
+            log('EventType mismatch in handleEvent_Chat:\n\n' + event)
             return
         }
 
         //set new chat
         let newChat:Setup_ChatMsg[] = event.data
-        console.log('total msgs: ' + newChat.length)
+        log('total msgs: ' + newChat.length)
         ref_chat.current = newChat
         forceUpdate()
         
@@ -1085,7 +1085,7 @@ export default function Setup() {
         //remove first message of chat until chat is smaller than 10KB
         let chatString = JSON.stringify(ref_chat.current)
         while (chatString.length > 10000) {
-            console.log('Chat too long\n -> removing first message')
+            log('Chat too long\n -> removing first message')
             //find first non welcome message to remove
             for(let i=0;i<ref_chat.current.length;i++) {
                 if (ref_chat.current[i].t !== SysMsgType.welcome) {
@@ -1103,7 +1103,7 @@ export default function Setup() {
         }
 
         //execute
-        console.log('broadcast new chat ' + chatString.length)
+        log('broadcast new chat ' + chatString.length)
         const response = await fetch('/api/pusher/setup/trigger', {
             method: 'POST',
             headers: {
@@ -1116,7 +1116,7 @@ export default function Setup() {
 
         //read response
         const body = await response.text();
-        console.log(body)
+        log(body)
     }
 
     /*
@@ -1130,13 +1130,13 @@ export default function Setup() {
 
         //security
         if (event.type !== SetupEventType.Profile) {
-            console.log('EventType mismatch in handleEvent_Profile:\n\n' + event)
+            log('EventType mismatch in handleEvent_Profile:\n\n' + event)
             return
         }
 
         //set new profiles
         let newProfiles:Profile[] = event.data
-        console.log('total profiles: ' + newProfiles.length)
+        log('total profiles: ' + newProfiles.length)
         ref_profiles.current = newProfiles
         forceUpdate()
     }
@@ -1150,7 +1150,7 @@ export default function Setup() {
         }
 
         //execute
-        console.log('broadcast new profiles')
+        log('broadcast new profiles')
         const response = await fetch('/api/pusher/setup/trigger', {
             method: 'POST',
             headers: {
@@ -1163,7 +1163,7 @@ export default function Setup() {
         
         //read response
         const body = await response.text();
-        console.log(body)
+        log(body)
     }
 
     /*
@@ -1177,13 +1177,13 @@ export default function Setup() {
 
         //security
         if (event.type !== SetupEventType.Settings) {
-            console.log('EventType mismatch in handleEvent_Settings:\n\n' + event)
+            log('EventType mismatch in handleEvent_Settings:\n\n' + event)
             return
         }
 
         //set new settings
         let newSettings:Settings = event.data
-        console.log('new Settings received')
+        log('new Settings received')
         ref_settings.current = newSettings
         forceUpdate()
 
@@ -1200,7 +1200,7 @@ export default function Setup() {
         }
 
         //execute
-        console.log('broadcast new settings')
+        log('broadcast new settings')
         const response = await fetch('/api/pusher/setup/trigger', {
             method: 'POST',
             headers: {
@@ -1213,7 +1213,7 @@ export default function Setup() {
         
         //read response
         const body = await response.text();
-        console.log(body)
+        log(body)
     }
 
     /*
@@ -1227,7 +1227,7 @@ export default function Setup() {
 
         //security
         if (event.type !== SetupEventType.Tweets) {
-            console.log('EventType mismatch in handleEvent_Settings:\n\n' + event)
+            log('EventType mismatch in handleEvent_Settings:\n\n' + event)
             return
         }
 
@@ -1238,7 +1238,7 @@ export default function Setup() {
             ref_tweets.current[bottomIndex] = item
             bottomIndex++
         })
-        //console.log(ref_tweets.current)
+        //log(ref_tweets.current)
     }
 
     const fireEvent_Tweets = async (_data:Tweet[], _bottomIndex:number) => {
@@ -1251,7 +1251,7 @@ export default function Setup() {
         }
 
         //execute
-        console.log(`broadcast ${_data.length} tweets with ${_bottomIndex} bottomIndex`)
+        log(`broadcast ${_data.length} tweets with ${_bottomIndex} bottomIndex`)
         const response = await fetch('/api/pusher/setup/trigger', {
             method: 'POST',
             headers: {
@@ -1264,7 +1264,7 @@ export default function Setup() {
         
         //read response
         const body = await response.text();
-        console.log(body)
+        log(body)
     }
 
     /*
@@ -1312,14 +1312,14 @@ export default function Setup() {
         }
 
         //add
-        console.log('profile added: ' + newUser.screen_name)
+        log('profile added: ' + newUser.screen_name)
         ref_profiles.current.push(newUser)
         fireEvent_Profiles()
     }
 
     //passed to chat 
     const onNewChatMessage = (newMsg:Setup_ChatMsg) => {
-        //console.log('new chat msg received: ' + newMsg.m)
+        //log('new chat msg received: ' + newMsg.m)
         newMsg.n = ref_username.current //chat component does not know/set user name
         ref_chat.current.push(newMsg)
         fireEvent_Chat()
@@ -1345,7 +1345,7 @@ export default function Setup() {
         for(let i = 0; i<ref_profiles.current.length;i++) {
             if (ref_profiles.current[i].screen_name === deletedUser.screen_name) {
                 ref_profiles.current.splice(i, 1)
-                console.log('user removed: ' + deletedUser.screen_name)
+                log('user removed: ' + deletedUser.screen_name)
                 fireEvent_Profiles()
                 return
             }
@@ -1382,7 +1382,7 @@ export default function Setup() {
         let current = window.location.href
         let matchID = current.substr(current.lastIndexOf('/') + 1);
         if (matchID.length === 0 || !(/^\d+$/.test(matchID))) {
-            console.log('INVALID ID: ' + matchID)
+            log('INVALID ID: ' + matchID)
             content =  
                 <div className={st.State_Con}>
                     '{matchID}' is an invalid Match ID! Only numbers allowed

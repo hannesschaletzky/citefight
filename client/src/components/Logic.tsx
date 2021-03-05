@@ -30,8 +30,8 @@ export const initSettings:Settings = {
 }
 
 
-export function log(str:string):void {
+export function log(value:any):void {
     if (process.env.NODE_ENV === 'development') {
-        console.log(str)
+        console.log(value)
     }
 }
