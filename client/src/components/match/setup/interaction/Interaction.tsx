@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import st from './Interaction.module.scss'
 
-import {Setup_Player} from 'components/Interfaces'
+import {Player} from 'components/Interfaces'
 import {NotificationType} from 'components/Interfaces'
 
 import {didUserExceedLimit} from 'components/Logic'
@@ -87,7 +87,7 @@ class Interaction extends Component <any, any> {
     render() { 
 
         //as soon as user has joined, there has to be a user object
-        let user:Setup_Player = this.props.user
+        let user:Player = this.props.user
         if (user === undefined) {
             //console.log('Interaction.tsx ERROR: no user object given')
             return <div> CIRITCAL ERROR: no user object given</div>

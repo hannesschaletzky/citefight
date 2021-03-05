@@ -1,9 +1,9 @@
-import {Setup_Settings} from 'components/Interfaces'
+import {Settings} from 'components/Interfaces'
 import {NotificationType} from 'components/Interfaces'
 
 export interface SettingsProps {
-    settings: Setup_Settings;
+    settings: Settings;
     isAdmin:boolean;
-    onSettingsChanged:(newSettings:Setup_Settings) => void;
+    onSettingsChanged:(newSettings:Settings) => void;
     newNotification:(msg:string, notType:NotificationType) => void;
 }

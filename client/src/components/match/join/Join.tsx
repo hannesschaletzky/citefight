@@ -2,8 +2,13 @@ import React, { useState } from 'react';
 import  { Redirect } from 'react-router-dom'
 import st from './Join.module.scss';
 
-import {JoinStatus} from 'components/Interfaces'
 import {LocalStorage} from 'components/Interfaces'
+
+enum JoinStatus {
+    init,
+    connecting,
+    error,
+}
 
 export default function Join() {
     const [status, setStatus] = useState(JoinStatus.init);

@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import st from './TwitterProfileList.module.scss'
 
-import {Twitter_Profile} from 'components/Interfaces'
+import {Profile} from 'components/Interfaces'
 import {TwitterStatus} from 'components/Interfaces'
 import {ProfilesUsage} from 'components/Interfaces'
 
@@ -42,10 +42,10 @@ class TwitterProfileList extends Component <any, any> {
         return st.Actions_Con_Hidden
     }
 
-    addUser(user: Twitter_Profile) {
+    addUser(user: Profile) {
         
         //retrieve only information that we need, not entire object
-        let parsedUser:Twitter_Profile = {
+        let parsedUser:Profile = {
             id_str: user.id_str,
             screen_name: user.screen_name,
             name: user.name,
@@ -61,22 +61,22 @@ class TwitterProfileList extends Component <any, any> {
         this.props.onAddUser(parsedUser)
     }
 
-    followUser(user: Twitter_Profile) {
+    followUser(user: Profile) {
         console.log('Trying to follow: ' + user.screen_name)
     }
 
-    removeUser(user: Twitter_Profile) {
+    removeUser(user: Profile) {
         this.props.onRemoveUser(user)
     }
 
     render() { 
 
         //loop array & add each twitter user as card
-        let users:Twitter_Profile[] = this.props.data
+        let users:Profile[] = this.props.data
         let cards=[];
         for(let i=0;i<users.length;i++){
 
-            let user:Twitter_Profile = users[i]
+            let user:Profile = users[i]
 
             //construct twitter user url
             let profileUrl = "https://twitter.com/" + user.screen_name

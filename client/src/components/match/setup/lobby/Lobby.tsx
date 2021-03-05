@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import st from './Lobby.module.scss';
 
-import {Twitter_Profile} from 'components/Interfaces'
-import {Setup_Settings} from 'components/Interfaces'
+import {Profile} from 'components/Interfaces'
+import {Settings} from 'components/Interfaces'
 import {NotificationType} from 'components/Interfaces'
 
 import {SettingsProps} from 'components/Functional_Interface'
@@ -10,14 +10,14 @@ import {SettingsProps} from 'components/Functional_Interface'
 import AddedProfile_Icon from 'assets/setup/AddedProfile_Icon.png'
 import Settings_Icon from 'assets/setup/Settings_Icon.png'
 
-import Settings from './settings/Settings'
+import SettingsComp from './settings/Settings'
 import Profiles from './profiles/Profiles'
 
 export default function Lobby(isAdmin:boolean, //first user is admin
-                              profiles:Twitter_Profile[],
-                              onRemoveProfile:(profile:Twitter_Profile) => void,
-                              settings:Setup_Settings,
-                              onSettingsChanged:(newSettings:Setup_Settings) => void,
+                              profiles:Profile[],
+                              onRemoveProfile:(profile:Profile) => void,
+                              settings:Settings,
+                              onSettingsChanged:(newSettings:Settings) => void,
                               newNotification:(msg:string, notType:NotificationType) => void) {
     const [lobbyIndex, setLobbyIndex] = useState(0) //default to profiles
 
@@ -41,7 +41,7 @@ export default function Lobby(isAdmin:boolean, //first user is admin
                 onSettingsChanged:onSettingsChanged, 
                 newNotification:newNotification
             }
-            const comp = React.createElement(Settings, settingsProps)
+            const comp = React.createElement(SettingsComp, settingsProps)
             content = comp
         }
         return content

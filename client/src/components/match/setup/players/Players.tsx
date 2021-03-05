@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import st from './Players.module.scss'
 
-import {Setup_Player} from 'components/Interfaces'
+import {Player} from 'components/Interfaces'
 
 import ArrowIcon from 'assets/setup/Arrow_Icon.png'
 import PersonIcon from 'assets/setup/Person_Icon.png'
@@ -16,13 +16,13 @@ class Players extends Component <any, any> {
 
     render() { 
 
-        let players:Setup_Player[] = this.props.data
+        let players:Player[] = this.props.data
         let currentUser = this.props.currentUser
 
         let cards = []
         let readyCount = 0
         for(let i=0;i<players.length;i++) {
-            let item:Setup_Player = players[i]
+            let item:Player = players[i]
 
             //calc ready count
             if (item.ready) {

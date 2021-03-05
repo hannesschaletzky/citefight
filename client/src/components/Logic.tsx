@@ -1,7 +1,7 @@
-
-
-
-
+import {Settings} from 'components/Interfaces'
+import {Settings_Roundtime} from 'components/Interfaces'
+import {Settings_DrinkingMode} from 'components/Interfaces'
+import {Settings_Pictures} from 'components/Interfaces'
 
 export function didUserExceedLimit(timestamps:string[],actionCount:number, timeSpan: number = 15000):boolean {
     //if user wants to send more than 5 messages within 15 seconds -> return true
@@ -19,4 +19,19 @@ export function didUserExceedLimit(timestamps:string[],actionCount:number, timeS
         return true
     }
     return false
+}
+
+export const initSettings:Settings = {
+    rounds: 25,
+    roundtime: Settings_Roundtime.Normal,
+    autoContinue: true,
+    pictures: Settings_Pictures.AtHalftime,
+    drinking: Settings_DrinkingMode.Off
+}
+
+
+export function log(str:string):void {
+    if (process.env.NODE_ENV === 'development') {
+        console.log(str)
+    }
 }

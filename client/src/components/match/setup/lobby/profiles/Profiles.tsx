@@ -1,17 +1,17 @@
 import st from './Profiles.module.scss';
 
-import {Twitter_Profile} from 'components/Interfaces'
+import {Profile} from 'components/Interfaces'
 import {ProfilesUsage} from 'components/Interfaces'
 import {TwitterStatus} from 'components/Interfaces'
 
 import TwitterProfileList from '../../search/TwitterProfileList'
 
-export default function Profiles(profiles:Twitter_Profile[],
-                                 onRemoveProfile:(deletedUser: Twitter_Profile) => void) {
+export default function Profiles(profiles:Profile[],
+                                 onRemoveProfile:(deletedUser: Profile) => void) {
     
 
 
-    const onRemoveClick = (deletedUser: Twitter_Profile) => {
+    const onRemoveClick = (deletedUser: Profile) => {
         onRemoveProfile(deletedUser)
     }
 

@@ -2,30 +2,27 @@
 import { useRef, useReducer, useEffect, useState } from 'react';
 import  { Redirect } from 'react-router-dom'
 import st from './Setup.module.scss'
+import {log} from 'components/Logic'
 
+//UI Elements
 import CircularProgress from '@material-ui/core/CircularProgress';
 import ArrowIcon from 'assets/setup/Arrow_Icon.png'
 
+//interfaces
 import {Tweet, Tweet_TopPart, Tweet_Content, Tweet_BottomPart} from 'components/Interfaces'
-
 import {LocalStorage} from 'components/Interfaces'
-import {Setup_Event} from 'components/Interfaces'
-import {Setup_Event_Players} from 'components/Interfaces'
-import {Setup_State} from 'components/Interfaces'
-import {SetupStateType} from 'components/Interfaces'
-import {Setup_Player} from 'components/Interfaces'
+import {Player} from 'components/Interfaces'
 import {Setup_ChatMsg} from 'components/Interfaces'
-import {Twitter_Profile} from 'components/Interfaces'
+import {Profile} from 'components/Interfaces'
 import {SysMsgType} from 'components/Interfaces'
-import {SetupEventType} from 'components/Interfaces'
-import {Setup_Notification} from 'components/Interfaces'
 import {NotificationType} from 'components/Interfaces'
 import {PusherState} from 'components/Interfaces'
-import {Setup_Settings} from 'components/Interfaces'
-import {Settings_Roundtime} from 'components/Interfaces'
-import {Settings_DrinkingMode} from 'components/Interfaces'
-import {Settings_Pictures} from 'components/Interfaces'
+import {Settings} from 'components/Interfaces'
 
+//logic
+import {initSettings} from 'components/Logic'
+
+//components
 import Lobby from './lobby/Lobby'
 import Info from './info/Info'
 import Search from './search/Search'
@@ -35,10 +32,58 @@ import Chat from './chat/Chat'
 
 const Pusher = require('pusher-js');
 
-const init_profiles:Twitter_Profile[] = []
-const init_players:Setup_Player[] = []
+
+//STATE TYPE
+interface Setup_State {
+    gameid: string;
+    state: SetupStateType;
+    stateTexts: string[];
+}
+enum SetupStateType {
+    init = 'init',
+    countdown = 'countdown',
+    getTweets = 'getTweets',
+    redirectToMatch = 'redirectToMatch'
+}
+
+//PUSHER EVENT
+interface Setup_Event {
+    type: SetupEventType;
+    data: any;
+}
+interface Setup_Event_Players {
+    type: SetupEventType;
+    data: any;
+    state: Setup_State;
+}
+interface Setup_Event_Tweets {
+    type: SetupEventType;
+    data: any;
+    bottomIndex: number;
+}
+enum SetupEventType {
+    Join = 'Setup_Join',
+    Chat = 'Setup_Chat',
+    Player = 'Setup_Player',
+    Profile = 'Profile',
+    Settings = 'Settings',
+    Tweets = 'Tweets'
+}
+
+//NOTIFICATION
+interface Notification {
+    display: boolean;
+    msg: string;
+    type: NotificationType;
+    scssClass: string;
+}
+
+//INIT OBJECTS FOR REFS
+const init_profiles:Profile[] = []
+const init_players:Player[] = []
 const init_chat:Setup_ChatMsg[] = []
-const init_notification:Setup_Notification = {
+const init_tweets:Tweet[] = []
+const init_notification:Notification = {
     display: false,
     msg: "",
     type: NotificationType.Not_Success,
@@ -49,16 +94,6 @@ const init_state:Setup_State = {
     state: SetupStateType.init,
     stateTexts: []
 }
-
-//inital settings
-const init_settings:Setup_Settings = {
-    rounds: 25,
-    roundtime: Settings_Roundtime.Normal,
-    autoContinue: true,
-    pictures: Settings_Pictures.AtHalftime,
-    drinking: Settings_DrinkingMode.Off
-}
-
 let init_pusherCient:any = null
 let init_pusherChannel:any = null
 
@@ -66,9 +101,10 @@ export default function Setup() {
     //state
     const [redirectToJoin,setRedirectToJoin] = useState(false)
     //refs
+    const ref_tweets = useRef(init_tweets)
     const ref_state = useRef(init_state)
     const ref_profiles = useRef(init_profiles)
-    const ref_settings = useRef(init_settings)
+    const ref_settings = useRef(initSettings)
     const ref_players = useRef(init_players)
     const ref_chat = useRef(init_chat)
     const ref_pusherState = useRef(PusherState.init)
@@ -87,7 +123,6 @@ export default function Setup() {
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
     useEffect(() => {
-
         //CHECK SESSION STORAGE TO DETERMINE WHERE USER CAME FROM
 
         //twitter login callback && join page
@@ -132,7 +167,6 @@ export default function Setup() {
         return -1
     }
 
-    
     const setPusherState = (state:PusherState) => {
         //console.log('set state to: ' + state)
         ref_pusherState.current = state
@@ -167,7 +201,7 @@ export default function Setup() {
     }
 
     const showNotification = (msg:string, notType:NotificationType)  => {
-        let newNot:Setup_Notification = {
+        let newNot:Notification = {
             display: true,
             msg: msg,
             type: notType,
@@ -217,7 +251,7 @@ export default function Setup() {
     const triggerMatchSetup = async () => {
 
         interface ProfileTweets {
-            profile: Twitter_Profile,
+            profile: Profile,
             tweets: any[]
         }
         let profileTweets:ProfileTweets[] = []
@@ -446,6 +480,32 @@ export default function Setup() {
         console.log(finalTweets)
         /*
         ###################
+        BROADCAST TWEETS
+        ###################
+        */
+        //split tweets in portions of 10
+        let bulk:Tweet[] = []
+        finalTweets.forEach((tweet,i) => {
+            //first and middle bulks
+            if (i % 10 === 0 && i > 0) {
+                fireEvent_Tweets(bulk, i-bulk.length)
+                bulk = []
+                bulk.push(tweet)
+            }
+            //last bulk
+            else if (i === finalTweets.length-1) {
+                bulk.push(tweet)
+                fireEvent_Tweets(bulk, i-(bulk.length-1))
+            }
+            else {
+                bulk.push(tweet)
+            }
+        })
+
+        
+
+        /*
+        ###################
         UX-MESSAGES
         ###################
         */
@@ -458,19 +518,15 @@ export default function Setup() {
         setTimeout(() => {
             addStateMsg('Joining Matchroom')
         }, 6000)
-
-
         /*
         ###################
         REDIRECT TO MATCH
         ###################
         */
-        
         setTimeout(() => {
             ref_state.current.state = SetupStateType.redirectToMatch
             fireEvent_Players()
         }, 8000)
-        
     }
 
 
@@ -493,9 +549,9 @@ export default function Setup() {
         return body.data
     }
 
-    const parseTweets = (data:[], includes:any, profiles:Twitter_Profile[]):Tweet[] => {
+    const parseTweets = (data:[], includes:any, profiles:Profile[]):Tweet[] => {
         
-        const getProfileForAuthorID = (id:string):Twitter_Profile => {
+        const getProfileForAuthorID = (id:string):Profile => {
             for (let i=0;i<profiles.length;i++) {
                 if (profiles[i].id_str === id) {
                     return profiles[i]
@@ -527,6 +583,7 @@ export default function Setup() {
             return ""
         }   
 
+        console.log('parsing tweets')
         let parsed:Tweet[] = []
         data.forEach((item:any,i) => {
 
@@ -549,22 +606,21 @@ export default function Setup() {
             }
 
             //CONTENT
-            //subtract link from text
-            let index = text_org.lastIndexOf('https://')
-            let text_cut = text_org.substring(0, index).trimEnd()
-
-            //test retweet -> https://twitter.com/matshummels/status/959457608984875013
-            //959457608984875013
-
-            //media
+            let text_cut = ""
             let ph1 = ""
             let ph2 = ""
             let ph3 = ""
             let ph4 = ""
             if (!("attachments" in item)) {
-                console.log("no photos for this tweet")
+                //no photos -> no link in text
+                text_cut = text_org
+                //console.log("no photos for this tweet")
             }
             else {
+                //remove link from text
+                let index = text_org.lastIndexOf('https://')
+                text_cut = text_org.substring(0, index).trimEnd()
+                //photos
                 let keys = item.attachments.media_keys
                 switch (keys.length) {
                     case 1: { 
@@ -712,6 +768,9 @@ export default function Setup() {
                 ref_pusherChannel.current.bind(SetupEventType.Settings, 
                     (data:Setup_Event) => handleEvent_Settings(data)
                 )
+                ref_pusherChannel.current.bind(SetupEventType.Tweets, 
+                    (data:Setup_Event_Tweets) => handleEvent_Content(data)
+                )
                 ref_pusherChannel.current.bind('pusher:member_removed', (member:any) => {
                     //abort countdown
                     if (ref_state.current.state === SetupStateType.countdown) {
@@ -771,7 +830,7 @@ export default function Setup() {
             
         //encapsulated join
         const joinPlayer = (name:string) => {
-            let newUser:Setup_Player = {
+            let newUser:Player = {
                 name: name,
                 ready: false
             }
@@ -879,7 +938,7 @@ export default function Setup() {
         ref_state.current = newState
 
         //set new players
-        let newPlayers:Setup_Player[] = event.data
+        let newPlayers:Player[] = event.data
         console.log('total players: ' + newPlayers.length)
         ref_players.current = newPlayers
         setPusherState(PusherState.connected) //force update incl. here
@@ -1069,7 +1128,6 @@ export default function Setup() {
     */
     const handleEvent_Profile = (event:Setup_Event) => {
 
-        //console.log(pusherChannel.members.count)
         //security
         if (event.type !== SetupEventType.Profile) {
             console.log('EventType mismatch in handleEvent_Profile:\n\n' + event)
@@ -1077,7 +1135,7 @@ export default function Setup() {
         }
 
         //set new profiles
-        let newProfiles:Twitter_Profile[] = event.data
+        let newProfiles:Profile[] = event.data
         console.log('total profiles: ' + newProfiles.length)
         ref_profiles.current = newProfiles
         forceUpdate()
@@ -1117,7 +1175,6 @@ export default function Setup() {
     */
     const handleEvent_Settings = (event:Setup_Event) => {
 
-        //console.log(pusherChannel.members.count)
         //security
         if (event.type !== SetupEventType.Settings) {
             console.log('EventType mismatch in handleEvent_Settings:\n\n' + event)
@@ -1125,10 +1182,13 @@ export default function Setup() {
         }
 
         //set new settings
-        let newSettings:Setup_Settings = event.data
+        let newSettings:Settings = event.data
         console.log('new Settings received')
         ref_settings.current = newSettings
         forceUpdate()
+
+        //adjust rounds (space) in ref_tweets
+        ref_tweets.current = new Array<Tweet>(ref_settings.current.rounds)
     }
 
     const fireEvent_Settings = async () => {
@@ -1159,13 +1219,64 @@ export default function Setup() {
     /*
     ##################################
     ##################################
+        EVENT: Tweets
+    ##################################
+    ##################################
+    */
+    const handleEvent_Content = (event:Setup_Event_Tweets) => {
+
+        //security
+        if (event.type !== SetupEventType.Tweets) {
+            console.log('EventType mismatch in handleEvent_Settings:\n\n' + event)
+            return
+        }
+
+        //add new tweets
+        let data:Tweet[] = event.data
+        let bottomIndex = event.bottomIndex
+        data.forEach((item) => {
+            ref_tweets.current[bottomIndex] = item
+            bottomIndex++
+        })
+        //console.log(ref_tweets.current)
+    }
+
+    const fireEvent_Tweets = async (_data:Tweet[], _bottomIndex:number) => {
+
+        //prepare
+        let event:Setup_Event_Tweets = {
+            type: SetupEventType.Tweets,
+            data: _data,
+            bottomIndex: _bottomIndex
+        }
+
+        //execute
+        console.log(`broadcast ${_data.length} tweets with ${_bottomIndex} bottomIndex`)
+        const response = await fetch('/api/pusher/setup/trigger', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'pusherchannel': channelName,
+                'pusherevent': event.type
+            },
+            body: JSON.stringify(event),
+        });
+        
+        //read response
+        const body = await response.text();
+        console.log(body)
+    }
+
+    /*
+    ##################################
+    ##################################
         Functions to child components
     ##################################
     ##################################
     */
 
     //passed to search component
-    const onAddProfile = (newUser: Twitter_Profile):void => {
+    const onAddProfile = (newUser: Profile):void => {
 
         //check if user has tweets
         if (newUser.statuses_count === 0) {
@@ -1219,18 +1330,18 @@ export default function Setup() {
     }
 
     const onToogleReady = (ready:boolean) => {
-        if (ref_profiles.current.length === 0) {
-            showNotification('You have to select profiles to play before you can start', NotificationType.Not_Warning)
+        if (ref_profiles.current.length < 2) {
+            showNotification('You have to select at least two profiles to play', NotificationType.Not_Warning)
             return
         }
         toogleReady(ready)
-    } 
+    }
 
     const onNewNotification = (msg:string, notType:NotificationType) => {
         showNotification(msg, notType)
     }
 
-    const onRemoveProfile = (deletedUser: Twitter_Profile):void => {
+    const onRemoveProfile = (deletedUser: Profile):void => {
         for(let i = 0; i<ref_profiles.current.length;i++) {
             if (ref_profiles.current[i].screen_name === deletedUser.screen_name) {
                 ref_profiles.current.splice(i, 1)
@@ -1241,7 +1352,7 @@ export default function Setup() {
         }
     }
 
-    const onSettingsChanged = (newSettings:Setup_Settings) => {
+    const onSettingsChanged = (newSettings:Settings) => {
         ref_settings.current = newSettings
         fireEvent_Settings()
     } 
@@ -1332,6 +1443,13 @@ export default function Setup() {
         }
         //redirect to match
         else if (ref_state.current.state === SetupStateType.redirectToMatch) {
+
+            //store data to pass to new route in session storage
+            sessionStorage.setItem(LocalStorage.Trans_Content, JSON.stringify(ref_tweets.current))
+            sessionStorage.setItem(LocalStorage.Trans_Players, JSON.stringify(ref_players.current))
+            sessionStorage.setItem(LocalStorage.Trans_Profiles, JSON.stringify(ref_profiles.current))
+            sessionStorage.setItem(LocalStorage.Trans_Settings, JSON.stringify(ref_settings.current))
+
             let redirectURL = '/match/' + matchID
             return <Redirect to={redirectURL}/>
         }

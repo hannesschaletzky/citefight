@@ -1,10 +1,9 @@
 /* eslint-disable react/jsx-pascal-case */
-
 import React, { Component } from 'react';
 import st from './App.module.scss';
-
 import { BrowserRouter, Route, Switch } from 'react-router-dom'
 
+//components
 import Root_Header from 'components/root/Header'
 import Landing from 'components/pages/Landing'
 
@@ -23,6 +22,7 @@ import TwitterCallback from 'components/match/setup/TwitterCallback'
 
 
 import NotFound from 'components/pages/errorpages/NotFound'
+
 
 class App extends Component {
   state = {

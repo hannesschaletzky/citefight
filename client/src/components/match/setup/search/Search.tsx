@@ -8,13 +8,13 @@ import TwitterIcon from 'assets/footer/Twitter_Icon.png'
 
 import {didUserExceedLimit} from 'components/Logic'
 
-import {Twitter_Profile} from 'components/Interfaces'
+import {Profile} from 'components/Interfaces'
 import {LocalStorage} from 'components/Interfaces'
 import {NotificationType} from 'components/Interfaces'
 import {TwitterStatus} from 'components/Interfaces'
 import {ProfilesUsage} from 'components/Interfaces'
 
-const stateInitArray:Twitter_Profile[] = []
+const stateInitArray:Profile[] = []
 
 /*
 //status for step 1
@@ -43,8 +43,8 @@ enum RequestType {
 let actionTimestamps:string[] = []
 
 export default function Search(
-                                addedUsers:Twitter_Profile[],
-                                addUserFunc:(par1: Twitter_Profile) => void,
+                                addedUsers:Profile[],
+                                addUserFunc:(par1: Profile) => void,
                                 newNotification:(msg:string, notType:NotificationType) => void) 
                                 {
     const [page, setPage] = useState(1);

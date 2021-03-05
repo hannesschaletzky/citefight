@@ -1,17 +1,19 @@
 export enum LocalStorage {
+    //used for getting user access token OAuth Process
     Token = 'Token',
     Token_Secret = 'Token_Secret',
     Access_Token = 'Access_Token',
     Access_Token_Secret = 'Access_Token_Secret',
     MatchID = 'MatchID',
-    Username = 'Username',
     TwitterLoginSuccess = 'TwitterLoginSuccess',
+    Username = 'Username',
+    //used to enter game
     JoinGame = 'JoinGame',
-
-    //Redirect Storage Vars
-    Content = 'Content',
-    Players = 'Players',
-    Profiles = 'Profiles'
+    //Redirect Storage Vars from setup to match
+    Trans_Content = 'Content',
+    Trans_Players = 'Players',
+    Trans_Profiles = 'Profiles',
+    Trans_Settings = 'Settings'
 }
 
 export enum TwitterStatus {
@@ -20,12 +22,6 @@ export enum TwitterStatus {
     tokenReceived,
     signedIn,
     error
-}
-
-export enum NotificationType {
-    Not_Success = 'Not_Success',
-    Not_Warning = 'Not_Warning',
-    Not_Error = 'Not_Error'
 }
 
 export enum ProfilesUsage {
@@ -41,20 +37,6 @@ export enum SysMsgType {
     startInfo = '5',
 }
 
-export enum SetupEventType {
-    Join = 'Setup_Join',
-    Chat = 'Setup_Chat',
-    Player = 'Setup_Player',
-    Profile = 'Profile',
-    Settings = 'Settings'
-}
-
-export enum JoinStatus {
-    init,
-    connecting,
-    error,
-}
-
 export enum PusherState {
     init = 'init',
     connecting = 'connecting',
@@ -64,13 +46,16 @@ export enum PusherState {
     error = 'error'
 }
 
-export enum SetupChatStatus {
-    enabled = 'enabled',
-    disabled = 'disabled',
-    inputTooLong = 'inputTooLong',
-    sentTooMuch = 'sentTooMuch',
+export enum NotificationType {
+    Not_Success = 'Not_Success',
+    Not_Warning = 'Not_Warning',
+    Not_Error = 'Not_Error'
 }
 
+
+/*
+    SETTINGS
+*/
 export enum Settings_Roundtime {
     Little,
     Normal,
@@ -90,18 +75,11 @@ export enum Settings_Pictures {
     AtHalftime
 }
 
-export enum SetupStateType {
-    init = 'init',
-    countdown = 'countdown',
-    getTweets = 'getTweets',
-    redirectToMatch = 'redirectToMatch'
-}
 
 /*
-    SETUP OBJECTS
+    OBJECTS
 */
-
-export interface Setup_Settings {
+export interface Settings {
     rounds: number;
     roundtime: Settings_Roundtime;
     drinking: Settings_DrinkingMode;
@@ -109,49 +87,12 @@ export interface Setup_Settings {
     pictures: Settings_Pictures;
 }
 
-export interface Setup_Notification {
-    display: boolean;
-    msg: string;
-    type: NotificationType;
-    scssClass: string;
-}
-
-//normal event for all other tasks
-export interface Setup_Event {
-    type: SetupEventType;
-    data: any;
-}
-
-//special event for players incl. state 
-export interface Setup_Event_Players {
-    type: SetupEventType;
-    data: any;
-    state: Setup_State;
-}
-export interface Setup_State {
-    gameid: string;
-    state: SetupStateType;
-    stateTexts: string[];
-}
-
-export interface Setup_Player {
+export interface Player {
     name: string;
     ready: boolean;
 }
 
-export interface Setup_ChatMsg {
-    n: string;      //name
-    m: string;      //message
-    t: SysMsgType;  //type
-}
-
-
-
-
-/*
-    API TWITTER
-*/
-export interface Twitter_Profile {
+export interface Profile {
     id_str: string;
     screen_name: string;
     name: string;
@@ -165,31 +106,16 @@ export interface Twitter_Profile {
     profile_image_url_https: string;
 }
 
-
-
-/*
-    MATCH
-*/
-/*
-    RIGHT PANEL
-*/
-export interface Ranking_User {
-    name: string;
-    points: number;
-    totalTime: number;
-}
-
-export interface Answer {
-    name: string,
-    tag: string,
-    isVerified: number,
-    picURL: string
+export interface Setup_ChatMsg {
+    n: string;      //name
+    m: string;      //message
+    t: SysMsgType;  //type
 }
 
 
 
 /*
-    CENTER 
+    TWEET 
 */
 export interface Tweet {
     content: Tweet_Content,
@@ -220,3 +146,24 @@ export interface Tweet_BottomPart {
     retweetCount: string,
     date: string
 }
+
+
+/*
+    MATCH
+*/
+/*
+    RIGHT PANEL
+*/
+export interface Ranking_User {
+    name: string;
+    points: number;
+    totalTime: number;
+}
+
+export interface Answer {
+    name: string,
+    tag: string,
+    isVerified: number,
+    picURL: string
+}
+

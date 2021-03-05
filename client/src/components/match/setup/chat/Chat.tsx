@@ -3,13 +3,18 @@ import st from './Chat.module.scss';
 
 import {Setup_ChatMsg} from 'components/Interfaces'
 import {SysMsgType} from 'components/Interfaces'
-import {SetupChatStatus} from 'components/Interfaces'
 
 import {didUserExceedLimit} from 'components/Logic'
 
 import WarningIcon from 'assets/setup/Warning_Icon.png'
 import SendIcon from 'assets/setup/Send_Icon.png'
 
+enum SetupChatStatus {
+    enabled = 'enabled',
+    disabled = 'disabled',
+    inputTooLong = 'inputTooLong',
+    sentTooMuch = 'sentTooMuch',
+}
 let messageTimestamps:string[] = []
 let inputSizeMax = 100
 
