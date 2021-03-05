@@ -29,6 +29,16 @@ export const initSettings:Settings = {
     drinking: Settings_DrinkingMode.Off
 }
 
+//return the matchID if valid, invalid -> empty string
+export function isValidMatchID(url:string):string | null {
+    let matchID = url.substr(url.lastIndexOf('/') + 1);
+    if (matchID.length === 0 || !(/^\d+$/.test(matchID))) {
+        log('INVALID ID: ' + matchID)
+        return null
+    }
+    return matchID
+}
+
 
 export function log(item:any):void {
     if (process.env.NODE_ENV === 'development') {

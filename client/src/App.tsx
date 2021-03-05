@@ -57,13 +57,13 @@ class App extends Component {
               <Route exact path="/donate" component={Donate}/>
               <Route exact path="/credits" component={Credits}/>
 
-                
               <Route exact path="/match/mockup" component={Mockup}/> 
               <Route exact path="/match/setup/twittercallback" component={TwitterCallback}/> 
-              <Route path="/match/join/:id" component={Join}/>
-              <Route path="/match/setup/:id" component={Setup}/>
-              <Route path="/match/:id" component={Match}/>
 
+              <Route path="/join/:id" component={Join}/>
+              <Route path="/setup/:id" component={Setup}/>
+              <Route path="/match/:id" component={Match}/>
+                
               <Route component={NotFound} /* final route for 404 not found *//>
             </Switch>
           </BrowserRouter>

@@ -21,6 +21,7 @@ import {Settings} from 'components/Interfaces'
 
 //logic
 import {initSettings} from 'components/Logic'
+import {isValidMatchID} from 'components/Logic'
 
 //components
 import Lobby from './lobby/Lobby'
@@ -29,13 +30,13 @@ import Search from './search/Search'
 import Interaction from './interaction/Interaction'
 import Players from './players/Players'
 import Chat from './chat/Chat'
+import { match } from 'assert';
 
 const Pusher = require('pusher-js');
 
-
 //STATE TYPE
 interface Setup_State {
-    gameid: string;
+    matchID: string;
     state: SetupStateType;
     stateTexts: string[];
 }
@@ -90,7 +91,7 @@ const init_notification:Notification = {
     scssClass: ''
 }
 const init_state:Setup_State = {
-    gameid: '',
+    matchID: '',
     state: SetupStateType.init,
     stateTexts: []
 }
@@ -100,6 +101,7 @@ let init_pusherChannel:any = null
 export default function Setup() {
     //state
     const [redirectToJoin,setRedirectToJoin] = useState(false)
+    const [validMatchID,setValidMatchID] = useState(true)
     //refs
     const ref_tweets = useRef(init_tweets)
     const ref_state = useRef(init_state)
@@ -109,23 +111,26 @@ export default function Setup() {
     const ref_chat = useRef(init_chat)
     const ref_pusherState = useRef(PusherState.init)
     const ref_notification = useRef(init_notification)
-
     //control flow refs
     const ref_username = useRef("")
     const ref_pusherClient = useRef(init_pusherCient)
     const ref_pusherChannel = useRef(init_pusherChannel)
 
+    //important ui update
     const [,forceUpdate] = useReducer(x => x + 1, 0);
-    
-    let notTimeout = setTimeout(() => {}, 1) //store notification-timeout 
-
-    const channelName = 'presence-Game2'
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
     useEffect(() => {
-        //CHECK SESSION STORAGE TO DETERMINE WHERE USER CAME FROM
-
-        //twitter login callback && join page
+        
+        //check if given MatchID is invalid
+        let matchID = isValidMatchID(window.location.href)
+        if (!matchID) {
+            setValidMatchID(false)
+            return
+        }
+        ref_state.current.matchID = matchID
+        
+        //coming from "twitter login callback" OR "join page"
         let twitterLoginSucces = sessionStorage.getItem(LocalStorage.TwitterLoginSuccess)
         let join = sessionStorage.getItem(LocalStorage.JoinGame)
         if (twitterLoginSucces !== null || join != null) {
@@ -135,9 +140,12 @@ export default function Setup() {
                 ref_username.current = savedUsername
                 //remove session storage tokens -> prevent infinite loop
                 sessionStorage.removeItem(LocalStorage.JoinGame)
-                sessionStorage.removeItem(LocalStorage.TwitterLoginSuccess) 
+                sessionStorage.removeItem(LocalStorage.TwitterLoginSuccess)
                 joinGame()
                 return
+            }
+            else {
+                log('error joining -> no username')
             }
         }
         
@@ -145,7 +153,6 @@ export default function Setup() {
         if (ref_pusherState.current === PusherState.init) {
             setRedirectToJoin(true)
         }
-
     })
 
     /*
@@ -200,6 +207,7 @@ export default function Setup() {
         ref_chat.current.push(msg)
     }
 
+    let notTimeout = setTimeout(() => {}, 1) //store notification-timeout 
     const showNotification = (msg:string, notType:NotificationType)  => {
         let newNot:Notification = {
             display: true,
@@ -229,6 +237,586 @@ export default function Setup() {
     const hideNotification = () => {
         ref_notification.current.display = false
         forceUpdate()
+    }
+
+    /*
+    ##################################
+    ##################################
+            JOIN && LEAVE 
+    ##################################
+    ##################################
+    */
+    const joinGame = () => {
+
+        //has already joined
+        if (ref_pusherState.current === PusherState.connected ||
+            ref_pusherState.current === PusherState.connecting) {
+            log('already connecting or connected')
+            return
+        }
+        setPusherState(PusherState.connecting)
+
+        //init pusher client
+        let appKey = process.env.REACT_APP_PUSHER_KEY
+        let cluster = process.env.REACT_APP_PUSHER_CLUSTER
+        let _pusherClient = new Pusher(appKey, {
+          cluster: cluster,
+          encrypted: true,
+          authEndpoint: '/api/pusher/auth?id=' + ref_username.current 
+        })
+
+        //bind to all events
+        //see: https://pusher.com/docs/channels/using_channels/connection#available-states
+        _pusherClient.connection.bind('state_change', (states:any) => {
+            //states = {previous: 'oldState', current: 'newState'}
+            log('new pusher state from event "state_change": ' + states.current)
+            //setPusherConState(states.current) //-> also see enum PusherConState
+        });
+
+        //bind error event
+        _pusherClient.connection.bind('error', (err:any) => {
+            setPusherState(PusherState.error)
+            let str = JSON.stringify(err, null, 4);
+            log('error during pusher connection')
+            log(str)
+        })
+
+        //bind connected
+        _pusherClient.connection.bind('connected', async () => {
+            
+            if (ref_pusherClient.current !== null) {
+                //reconnected
+                log('reconnected')
+                return
+            }
+            log('pusher is connected')
+
+            //sub channel
+            const channel = _pusherClient.subscribe("presence-" + ref_state.current.matchID)
+            // -> success
+            channel.bind('pusher:subscription_succeeded', () => {
+                log('subscribed to channel: ' + ref_state.current.matchID)
+                
+                //set vars
+                ref_pusherClient.current = _pusherClient 
+                ref_pusherChannel.current = channel
+
+                //bind to events
+                ref_pusherChannel.current.bind(SetupEventType.Join, 
+                    (data:Setup_Event) => handleEvent_Join(data)
+                )
+                ref_pusherChannel.current.bind(SetupEventType.Player, 
+                    (data:Setup_Event_Players) => handleEvent_Player(data)
+                )
+                ref_pusherChannel.current.bind(SetupEventType.Chat, 
+                    (data:Setup_Event) => handleEvent_Chat(data)
+                )
+                ref_pusherChannel.current.bind(SetupEventType.Profile, 
+                    (data:Setup_Event) => handleEvent_Profile(data)
+                )
+                ref_pusherChannel.current.bind(SetupEventType.Settings, 
+                    (data:Setup_Event) => handleEvent_Settings(data)
+                )
+                ref_pusherChannel.current.bind(SetupEventType.Tweets, 
+                    (data:Setup_Event_Tweets) => handleEvent_Content(data)
+                )
+                ref_pusherChannel.current.bind('pusher:member_removed', (member:any) => {
+                    //abort countdown
+                    if (ref_state.current.state === SetupStateType.countdown) {
+                        ref_state.current.state = SetupStateType.init
+                    }
+                    //remove user
+                    let i = getIndexOfUser(member.id)
+                    ref_players.current.splice(i,1);
+                    addSysMsg(SysMsgType.userLeft, member.id)
+                    forceUpdate()
+                    assignJoinEventAdmin()
+                })
+
+
+                log(ref_pusherChannel.current.members)
+                log(ref_pusherChannel.current)
+                //request current state from lobby
+                fireEvent_Join()
+            });
+
+            // -> error
+            channel.bind('pusher:subscription_error', (err:any) => {
+                let str = JSON.stringify(err, null, 4);
+                log('error during subscribing to channel: ' + ref_state.current.matchID)
+                log(str)
+            });
+        })
+    }
+
+    const leaveGame = () => {
+        log('leaving')
+        setPusherState(PusherState.connecting)
+        window.location.reload()
+    }
+
+    /*
+    ##################################
+    ##################################
+        EVENT: Join
+    ##################################
+    ##################################
+    */
+    const handleEvent_Join = (event:Setup_Event) => {
+
+        /*
+            ONLY FIRST USER HANDLES THIS
+        */
+
+        /*
+        let str = JSON.stringify(event.data, null, 4);
+        log(str)
+        */
+
+        //security
+        if (event.type !== SetupEventType.Join) {
+            log('EventType mismatch in handleEvent_Admin:\n\n' + event)
+            return
+        }
+        let triggerUser = event.data
+            
+        //encapsulated join
+        const joinPlayer = (name:string) => {
+            let newUser:Player = {
+                name: name,
+                ready: false
+            }
+            ref_players.current.push(newUser)
+            addSysMsg(SysMsgType.userJoined, name)
+        }
+
+        if (ref_players.current.length === 0 && triggerUser === ref_username.current ) {
+            /*
+                you are the only one in the game
+                -> dont send out event, add youself manually
+            */
+            log('you are the only person in the room')
+            //insert welcome first
+            let currentUrl = window.location.href
+            addSysMsg(SysMsgType.welcome,   '🎉 Welcome to your matchroom!') 
+            addSysMsg(SysMsgType.welcome,   '🎉 Invite the people you wanna play by sending them the match-link (Browser-URL).' +
+                                            ' You can also let others scan the QR Code.' +
+                                            ' The game will start when everyone is ready.') 
+            addSysMsg(SysMsgType.welcome,   currentUrl) 
+            joinPlayer(triggerUser)
+            setPusherState(PusherState.connected) //force update is incl. here
+            return
+        }
+
+        if (ref_players.current[0].name === ref_username.current ) {
+            /*
+                you are admin
+                -> attach new user 
+                -> broadcast current state
+            */
+            log('BROADCAST join for: ' + triggerUser)
+            joinPlayer(triggerUser)
+            fireEvent_Chat()
+            fireEvent_Players()
+            fireEvent_Profiles()
+            fireEvent_Settings()
+        }
+    }
+
+    const fireEvent_Join = async () => {
+
+        //prepare
+        let event:Setup_Event = {
+            type: SetupEventType.Join,
+            data: ref_username.current
+        }
+
+        //exectue
+        const response = await fetch('/api/pusher/setup/trigger', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'pusherchannel': ref_pusherChannel.current.name,
+                'pusherevent': event.type
+            },
+            body: JSON.stringify(event), 
+        });
+
+        //read response
+        const body = await response.text();
+        log(body)
+    }
+
+    const assignJoinEventAdmin = () => {
+        /*
+            This has to be called when a new user joins or one leaves
+            -> assign new answer player for join event
+            -> only first player handles join event
+            (unbind to avoid double calling!)
+        */
+        if (ref_players.current.length > 0) {
+            ref_pusherChannel.current.unbind(SetupEventType.Join)
+            if (ref_players.current[0].name === ref_username.current ) {
+                //bind
+                ref_pusherChannel.current.bind(SetupEventType.Join,
+                    (data:any) => handleEvent_Join(data)
+                )
+                log('Bound join event')
+            }
+        }
+    }
+
+    /*
+    ##################################
+    ##################################
+        EVENT: Player
+    ##################################
+    ##################################
+    */
+    const handleEvent_Player = (event:Setup_Event_Players) => {
+
+        //let str = JSON.stringify(event.data, null, 4);
+        //log(str)
+
+        //log(pusherChannel.members.count)
+        //security
+        if (event.type !== SetupEventType.Player) {
+            log('EventType mismatch in handleEvent_Player:\n\n' + event)
+            return
+        }
+
+        //set new state
+        let newState:Setup_State = event.state
+        ref_state.current = newState
+
+        //set new players
+        let newPlayers:Player[] = event.data
+        log('total players: ' + newPlayers.length)
+        ref_players.current = newPlayers
+        setPusherState(PusherState.connected) //force update incl. here
+        assignJoinEventAdmin()
+
+        /*  
+        ################
+        CHECK IF COUNTDOWN CAN BE STARTED
+        ################
+        */
+        //let first user trigger management of game content
+        if (ref_state.current.state === SetupStateType.init && 
+            ref_username.current === ref_players.current[0].name) {
+            
+            //everyone ready?
+            for(let i=0;i<ref_players.current.length;i++) {
+                if (!ref_players.current[i].ready) return
+            }
+            log('everyone ready!')
+
+            //start countdown for everyone
+            ref_state.current.state = SetupStateType.countdown
+            fireEvent_Players()
+        }
+        /*  
+        ################
+        START COUNTDOWN
+        ################
+        */
+        else if (ref_state.current.state === SetupStateType.countdown) {
+
+            let timeouts:NodeJS.Timeout[] = [] //store timeout to clear when aborted
+            const checkCancelled = ():boolean => {
+                if (ref_state.current.state === SetupStateType.init) {
+                    //set everyone unready
+                    ref_players.current.forEach((value) => {
+                        value.ready = false
+                    })
+                    //show info
+                    showNotification('Someone left, cancelled starting...', NotificationType.Not_Warning)
+                    //clear further steps
+                    timeouts.forEach((value) => {
+                        clearTimeout(value)
+                    })
+                    return true
+                }
+                return false
+            }
+
+            const addStartInfo = (sec:number) => {
+                if (checkCancelled()) {return}
+                addSysMsg(SysMsgType.startInfo, `${sec}...`)
+                forceUpdate()
+            }
+            timeouts.push(setTimeout(() => {  addSysMsg(SysMsgType.startInfo, 'Everyone is ready! Starting in...') 
+                                forceUpdate()}, 100))
+            timeouts.push(setTimeout(() => addStartInfo(5), 1000))
+            timeouts.push(setTimeout(() => addStartInfo(4), 2000))
+            timeouts.push(setTimeout(() => addStartInfo(3), 3000))
+            timeouts.push(setTimeout(() => addStartInfo(2), 4000))
+            timeouts.push(setTimeout(() => addStartInfo(1), 5000))
+
+            //first triggers start game for everyone
+            if (ref_username.current === ref_players.current[0].name) {
+                const startGame = () => {
+                    if (checkCancelled()) {return}
+                    ref_state.current.state = SetupStateType.getTweets
+                    fireEvent_Players()
+                }
+                timeouts.push(setTimeout(() => startGame(), 5200))
+            }
+        }
+        /*  
+        ################
+        START GETTING TWEETS
+        ################
+        */
+        else if (ref_state.current.state === SetupStateType.getTweets &&
+                 ref_username.current === ref_players.current[0].name &&
+                 ref_state.current.stateTexts.length === 0) { 
+            //first user starts and only call when not called already (stateTexts.length === 0)
+            triggerMatchSetup()
+        }
+    }
+
+    const fireEvent_Players = async () => {
+
+        //prepare
+        let event:Setup_Event_Players = {
+            type: SetupEventType.Player,
+            data: ref_players.current,
+            state: ref_state.current 
+        }
+
+        //execute
+        log('broadcast new players + state')
+        const response = await fetch('/api/pusher/setup/trigger', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'pusherchannel': ref_pusherChannel.current.name,
+                'pusherevent': event.type
+            },
+            body: JSON.stringify(event),
+        });
+        
+        //read response
+        const body = await response.text();
+        log(body)
+    }
+
+    const toogleReady = (ready:boolean) => {
+        //set yourself ready
+        let i = getIndexOfUser(ref_username.current)
+        ref_players.current[i].ready = ready
+        fireEvent_Players()
+    }
+
+    /*
+    ##################################
+    ##################################
+        EVENT: Chat
+    ##################################
+    ##################################
+    */
+    const handleEvent_Chat = (event:Setup_Event) => {
+
+        //security
+        if (event.type !== SetupEventType.Chat) {
+            log('EventType mismatch in handleEvent_Chat:\n\n' + event)
+            return
+        }
+
+        //set new chat
+        let newChat:Setup_ChatMsg[] = event.data
+        log('total msgs: ' + newChat.length)
+        ref_chat.current = newChat
+        forceUpdate()
+        
+    }
+
+    const fireEvent_Chat = async () => {
+
+        //remove first message of chat until chat is smaller than 10KB
+        let chatString = JSON.stringify(ref_chat.current)
+        while (chatString.length > 10000) {
+            log('Chat too long\n -> removing first message')
+            //find first non welcome message to remove
+            for(let i=0;i<ref_chat.current.length;i++) {
+                if (ref_chat.current[i].t !== SysMsgType.welcome) {
+                    ref_chat.current.splice(i,1)
+                    break
+                }
+            }
+            chatString = JSON.stringify(ref_chat.current)
+        }
+
+        //prepare
+        let event:Setup_Event = {
+            type: SetupEventType.Chat,
+            data: ref_chat.current
+        }
+
+        //execute
+        log('broadcast new chat ' + chatString.length)
+        const response = await fetch('/api/pusher/setup/trigger', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'pusherchannel': ref_pusherChannel.current.name,
+                'pusherevent': event.type
+            },
+            body: JSON.stringify(event),
+        });
+
+        //read response
+        const body = await response.text();
+        log(body)
+    }
+
+    /*
+    ##################################
+    ##################################
+        EVENT: Profiles
+    ##################################
+    ##################################
+    */
+    const handleEvent_Profile = (event:Setup_Event) => {
+
+        //security
+        if (event.type !== SetupEventType.Profile) {
+            log('EventType mismatch in handleEvent_Profile:\n\n' + event)
+            return
+        }
+
+        //set new profiles
+        let newProfiles:Profile[] = event.data
+        log('total profiles: ' + newProfiles.length)
+        ref_profiles.current = newProfiles
+        forceUpdate()
+    }
+
+    const fireEvent_Profiles = async () => {
+
+        //prepare
+        let event:Setup_Event = {
+            type: SetupEventType.Profile,
+            data: ref_profiles.current
+        }
+
+        //execute
+        log('broadcast new profiles')
+        const response = await fetch('/api/pusher/setup/trigger', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'pusherchannel': ref_pusherChannel.current.name,
+                'pusherevent': event.type
+            },
+            body: JSON.stringify(event),
+        });
+        
+        //read response
+        const body = await response.text();
+        log(body)
+    }
+
+    /*
+    ##################################
+    ##################################
+        EVENT: Settings
+    ##################################
+    ##################################
+    */
+    const handleEvent_Settings = (event:Setup_Event) => {
+
+        //security
+        if (event.type !== SetupEventType.Settings) {
+            log('EventType mismatch in handleEvent_Settings:\n\n' + event)
+            return
+        }
+
+        //set new settings
+        let newSettings:Settings = event.data
+        log('new Settings received')
+        ref_settings.current = newSettings
+        forceUpdate()
+
+        //adjust rounds (space) in ref_tweets
+        ref_tweets.current = new Array<Tweet>(ref_settings.current.rounds)
+    }
+
+    const fireEvent_Settings = async () => {
+
+        //prepare
+        let event:Setup_Event = {
+            type: SetupEventType.Settings,
+            data: ref_settings.current
+        }
+
+        //execute
+        log('broadcast new settings')
+        const response = await fetch('/api/pusher/setup/trigger', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'pusherchannel': ref_pusherChannel.current.name,
+                'pusherevent': event.type
+            },
+            body: JSON.stringify(event),
+        });
+        
+        //read response
+        const body = await response.text();
+        log(body)
+    }
+
+    /*
+    ##################################
+    ##################################
+        EVENT: Tweets
+    ##################################
+    ##################################
+    */
+    const handleEvent_Content = (event:Setup_Event_Tweets) => {
+
+        //security
+        if (event.type !== SetupEventType.Tweets) {
+            log('EventType mismatch in handleEvent_Settings:\n\n' + event)
+            return
+        }
+
+        //add new tweets
+        let data:Tweet[] = event.data
+        let bottomIndex = event.bottomIndex
+        data.forEach((item) => {
+            ref_tweets.current[bottomIndex] = item
+            bottomIndex++
+        })
+        //log(ref_tweets.current)
+    }
+
+    const fireEvent_Tweets = async (_data:Tweet[], _bottomIndex:number) => {
+
+        //prepare
+        let event:Setup_Event_Tweets = {
+            type: SetupEventType.Tweets,
+            data: _data,
+            bottomIndex: _bottomIndex
+        }
+
+        //execute
+        log(`broadcast ${_data.length} tweets with ${_bottomIndex} bottomIndex`)
+        const response = await fetch('/api/pusher/setup/trigger', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'pusherchannel': ref_pusherChannel.current.name,
+                'pusherevent': event.type
+            },
+            body: JSON.stringify(event),
+        });
+        
+        //read response
+        const body = await response.text();
+        log(body)
     }
 
     /*
@@ -693,583 +1281,6 @@ export default function Setup() {
     /*
     ##################################
     ##################################
-            JOIN && LEAVE 
-    ##################################
-    ##################################
-    */
-    const joinGame = () => {
-
-        //has already joined
-        if (ref_pusherState.current === PusherState.connected ||
-            ref_pusherState.current === PusherState.connecting) {
-            log('already connecting or connected')
-            return
-        }
-        setPusherState(PusherState.connecting)
-
-        //init pusher client
-        let appKey = process.env.REACT_APP_PUSHER_KEY
-        let cluster = process.env.REACT_APP_PUSHER_CLUSTER
-        let _pusherClient = new Pusher(appKey, {
-          cluster: cluster,
-          encrypted: true,
-          authEndpoint: '/api/pusher/auth?id=' + ref_username.current 
-        })
-
-        //bind to all events
-        //see: https://pusher.com/docs/channels/using_channels/connection#available-states
-        _pusherClient.connection.bind('state_change', (states:any) => {
-            //states = {previous: 'oldState', current: 'newState'}
-            log('new pusher state from event "state_change": ' + states.current)
-            //setPusherConState(states.current) //-> also see enum PusherConState
-        });
-
-        //bind error event
-        _pusherClient.connection.bind('error', (err:any) => {
-            setPusherState(PusherState.error)
-            let str = JSON.stringify(err, null, 4);
-            log('error during pusher connection')
-            log(str)
-        })
-
-        //bind connected
-        _pusherClient.connection.bind('connected', async () => {
-            
-            if (ref_pusherClient.current !== null) {
-                //reconnected
-                log('reconnected')
-                return
-            }
-            log('pusher is connected')
-
-            //sub channel
-            const channel = _pusherClient.subscribe(channelName)
-            // -> success
-            channel.bind('pusher:subscription_succeeded', () => {
-                log('subscribed to channel: ' + channelName)
-                
-                //set vars
-                ref_pusherClient.current = _pusherClient 
-                ref_pusherChannel.current = channel
-
-                //bind to events
-                ref_pusherChannel.current.bind(SetupEventType.Join, 
-                    (data:Setup_Event) => handleEvent_Join(data)
-                )
-                ref_pusherChannel.current.bind(SetupEventType.Player, 
-                    (data:Setup_Event_Players) => handleEvent_Player(data)
-                )
-                ref_pusherChannel.current.bind(SetupEventType.Chat, 
-                    (data:Setup_Event) => handleEvent_Chat(data)
-                )
-                ref_pusherChannel.current.bind(SetupEventType.Profile, 
-                    (data:Setup_Event) => handleEvent_Profile(data)
-                )
-                ref_pusherChannel.current.bind(SetupEventType.Settings, 
-                    (data:Setup_Event) => handleEvent_Settings(data)
-                )
-                ref_pusherChannel.current.bind(SetupEventType.Tweets, 
-                    (data:Setup_Event_Tweets) => handleEvent_Content(data)
-                )
-                ref_pusherChannel.current.bind('pusher:member_removed', (member:any) => {
-                    //abort countdown
-                    if (ref_state.current.state === SetupStateType.countdown) {
-                        ref_state.current.state = SetupStateType.init
-                    }
-                    //remove user
-                    let i = getIndexOfUser(member.id)
-                    ref_players.current.splice(i,1);
-                    addSysMsg(SysMsgType.userLeft, member.id)
-                    forceUpdate()
-                    assignJoinEventAdmin()
-                });
-
-                //request current state from lobby
-                fireEvent_Join()
-            });
-
-            // -> error
-            channel.bind('pusher:subscription_error', (err:any) => {
-                let str = JSON.stringify(err, null, 4);
-                log('error during subscribing to channel: ' + channelName)
-                log(str)
-            });
-        })
-    }
-
-    const leaveGame = () => {
-        log('leaving')
-        setPusherState(PusherState.connecting)
-        document.location.reload()
-    }
-
-    /*
-    ##################################
-    ##################################
-        EVENT: Join
-    ##################################
-    ##################################
-    */
-    const handleEvent_Join = (event:Setup_Event) => {
-
-        /*
-            ONLY FIRST USER HANDLES THIS
-        */
-
-        /*
-        let str = JSON.stringify(event.data, null, 4);
-        log(str)
-        */
-
-        //security
-        if (event.type !== SetupEventType.Join) {
-            log('EventType mismatch in handleEvent_Admin:\n\n' + event)
-            return
-        }
-        let triggerUser = event.data
-            
-        //encapsulated join
-        const joinPlayer = (name:string) => {
-            let newUser:Player = {
-                name: name,
-                ready: false
-            }
-            ref_players.current.push(newUser)
-            addSysMsg(SysMsgType.userJoined, name)
-        }
-
-        if (ref_players.current.length === 0 && triggerUser === ref_username.current ) {
-            /*
-                you are the only one in the game
-                -> dont send out event, add youself manually
-            */
-            log('you are the only person in the room')
-            //insert welcome first
-            let currentUrl = window.location.href
-            addSysMsg(SysMsgType.welcome,   '🎉 Welcome to your matchroom!') 
-            addSysMsg(SysMsgType.welcome,   '🎉 Invite the people you wanna play by sending them the match-link (Browser-URL).' +
-                                            ' You can also let others scan the QR Code.' +
-                                            ' The game will start when everyone is ready.') 
-            addSysMsg(SysMsgType.welcome,   currentUrl) 
-            joinPlayer(triggerUser)
-            setPusherState(PusherState.connected) //force update is incl. here
-            return
-        }
-
-        if (ref_players.current[0].name === ref_username.current ) {
-            /*
-                you are admin
-                -> attach new user 
-                -> broadcast current state
-            */
-            log('BROADCAST join for: ' + triggerUser)
-            joinPlayer(triggerUser)
-            fireEvent_Chat()
-            fireEvent_Players()
-            fireEvent_Profiles()
-            fireEvent_Settings()
-        }
-    }
-
-    const fireEvent_Join = async () => {
-
-        //prepare
-        let event:Setup_Event = {
-            type: SetupEventType.Join,
-            data: ref_username.current
-        }
-
-        //exectue
-        const response = await fetch('/api/pusher/setup/trigger', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'pusherchannel': channelName,
-                'pusherevent': event.type
-            },
-            body: JSON.stringify(event), 
-        });
-
-        //read response
-        const body = await response.text();
-        log(body)
-    }
-
-    const assignJoinEventAdmin = () => {
-        /*
-            This has to be called when a new user joins or one leaves
-            -> assign new answer player for join event
-            -> only first player handles join event
-            (unbind to avoid double calling!)
-        */
-        if (ref_players.current.length > 0) {
-            ref_pusherChannel.current.unbind(SetupEventType.Join)
-            if (ref_players.current[0].name === ref_username.current ) {
-                //bind
-                ref_pusherChannel.current.bind(SetupEventType.Join,
-                    (data:any) => handleEvent_Join(data)
-                )
-                log('Bound join event')
-            }
-        }
-    }
-
-    /*
-    ##################################
-    ##################################
-        EVENT: Player
-    ##################################
-    ##################################
-    */
-    const handleEvent_Player = (event:Setup_Event_Players) => {
-
-        //let str = JSON.stringify(event.data, null, 4);
-        //log(str)
-
-        //log(pusherChannel.members.count)
-        //security
-        if (event.type !== SetupEventType.Player) {
-            log('EventType mismatch in handleEvent_Player:\n\n' + event)
-            return
-        }
-
-        //set new state
-        let newState:Setup_State = event.state
-        ref_state.current = newState
-
-        //set new players
-        let newPlayers:Player[] = event.data
-        log('total players: ' + newPlayers.length)
-        ref_players.current = newPlayers
-        setPusherState(PusherState.connected) //force update incl. here
-        assignJoinEventAdmin()
-
-        /*  
-        ################
-        CHECK IF COUNTDOWN CAN BE STARTED
-        ################
-        */
-        //let first user trigger management of game content
-        if (ref_state.current.state === SetupStateType.init && 
-            ref_username.current === ref_players.current[0].name) {
-            
-            //everyone ready?
-            for(let i=0;i<ref_players.current.length;i++) {
-                if (!ref_players.current[i].ready) return
-            }
-            log('everyone ready!')
-
-            //start countdown for everyone
-            ref_state.current.state = SetupStateType.countdown
-            fireEvent_Players()
-        }
-        /*  
-        ################
-        START COUNTDOWN
-        ################
-        */
-        else if (ref_state.current.state === SetupStateType.countdown) {
-
-            let timeouts:NodeJS.Timeout[] = [] //store timeout to clear when aborted
-            const checkCancelled = ():boolean => {
-                if (ref_state.current.state === SetupStateType.init) {
-                    //set everyone unready
-                    ref_players.current.forEach((value) => {
-                        value.ready = false
-                    })
-                    //show info
-                    showNotification('Someone left, cancelled starting...', NotificationType.Not_Warning)
-                    //clear further steps
-                    timeouts.forEach((value) => {
-                        clearTimeout(value)
-                    })
-                    return true
-                }
-                return false
-            }
-
-            const addStartInfo = (sec:number) => {
-                if (checkCancelled()) {return}
-                addSysMsg(SysMsgType.startInfo, `${sec}...`)
-                forceUpdate()
-            }
-            timeouts.push(setTimeout(() => {  addSysMsg(SysMsgType.startInfo, 'Everyone is ready! Starting in...') 
-                                forceUpdate()}, 100))
-            timeouts.push(setTimeout(() => addStartInfo(5), 1000))
-            timeouts.push(setTimeout(() => addStartInfo(4), 2000))
-            timeouts.push(setTimeout(() => addStartInfo(3), 3000))
-            timeouts.push(setTimeout(() => addStartInfo(2), 4000))
-            timeouts.push(setTimeout(() => addStartInfo(1), 5000))
-
-            //first triggers start game for everyone
-            if (ref_username.current === ref_players.current[0].name) {
-                const startGame = () => {
-                    if (checkCancelled()) {return}
-                    ref_state.current.state = SetupStateType.getTweets
-                    fireEvent_Players()
-                }
-                timeouts.push(setTimeout(() => startGame(), 5200))
-            }
-        }
-        /*  
-        ################
-        START GETTING TWEETS
-        ################
-        */
-        else if (ref_state.current.state === SetupStateType.getTweets &&
-                 ref_username.current === ref_players.current[0].name &&
-                 ref_state.current.stateTexts.length === 0) { 
-            //first user starts and only call when not called already (stateTexts.length === 0)
-            triggerMatchSetup()
-        }
-    }
-
-    const fireEvent_Players = async () => {
-
-        //prepare
-        let event:Setup_Event_Players = {
-            type: SetupEventType.Player,
-            data: ref_players.current,
-            state: ref_state.current 
-        }
-
-        //execute
-        log('broadcast new players + state')
-        const response = await fetch('/api/pusher/setup/trigger', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'pusherchannel': channelName,
-                'pusherevent': event.type
-            },
-            body: JSON.stringify(event),
-        });
-        
-        //read response
-        const body = await response.text();
-        log(body)
-    }
-
-    const toogleReady = (ready:boolean) => {
-        //set yourself ready
-        let i = getIndexOfUser(ref_username.current)
-        ref_players.current[i].ready = ready
-        fireEvent_Players()
-    }
-
-    /*
-    ##################################
-    ##################################
-        EVENT: Chat
-    ##################################
-    ##################################
-    */
-    const handleEvent_Chat = (event:Setup_Event) => {
-
-        //security
-        if (event.type !== SetupEventType.Chat) {
-            log('EventType mismatch in handleEvent_Chat:\n\n' + event)
-            return
-        }
-
-        //set new chat
-        let newChat:Setup_ChatMsg[] = event.data
-        log('total msgs: ' + newChat.length)
-        ref_chat.current = newChat
-        forceUpdate()
-        
-    }
-
-    const fireEvent_Chat = async () => {
-
-        //remove first message of chat until chat is smaller than 10KB
-        let chatString = JSON.stringify(ref_chat.current)
-        while (chatString.length > 10000) {
-            log('Chat too long\n -> removing first message')
-            //find first non welcome message to remove
-            for(let i=0;i<ref_chat.current.length;i++) {
-                if (ref_chat.current[i].t !== SysMsgType.welcome) {
-                    ref_chat.current.splice(i,1)
-                    break
-                }
-            }
-            chatString = JSON.stringify(ref_chat.current)
-        }
-
-        //prepare
-        let event:Setup_Event = {
-            type: SetupEventType.Chat,
-            data: ref_chat.current
-        }
-
-        //execute
-        log('broadcast new chat ' + chatString.length)
-        const response = await fetch('/api/pusher/setup/trigger', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'pusherchannel': channelName,
-                'pusherevent': event.type
-            },
-            body: JSON.stringify(event),
-        });
-
-        //read response
-        const body = await response.text();
-        log(body)
-    }
-
-    /*
-    ##################################
-    ##################################
-        EVENT: Profiles
-    ##################################
-    ##################################
-    */
-    const handleEvent_Profile = (event:Setup_Event) => {
-
-        //security
-        if (event.type !== SetupEventType.Profile) {
-            log('EventType mismatch in handleEvent_Profile:\n\n' + event)
-            return
-        }
-
-        //set new profiles
-        let newProfiles:Profile[] = event.data
-        log('total profiles: ' + newProfiles.length)
-        ref_profiles.current = newProfiles
-        forceUpdate()
-    }
-
-    const fireEvent_Profiles = async () => {
-
-        //prepare
-        let event:Setup_Event = {
-            type: SetupEventType.Profile,
-            data: ref_profiles.current
-        }
-
-        //execute
-        log('broadcast new profiles')
-        const response = await fetch('/api/pusher/setup/trigger', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'pusherchannel': channelName,
-                'pusherevent': event.type
-            },
-            body: JSON.stringify(event),
-        });
-        
-        //read response
-        const body = await response.text();
-        log(body)
-    }
-
-    /*
-    ##################################
-    ##################################
-        EVENT: Settings
-    ##################################
-    ##################################
-    */
-    const handleEvent_Settings = (event:Setup_Event) => {
-
-        //security
-        if (event.type !== SetupEventType.Settings) {
-            log('EventType mismatch in handleEvent_Settings:\n\n' + event)
-            return
-        }
-
-        //set new settings
-        let newSettings:Settings = event.data
-        log('new Settings received')
-        ref_settings.current = newSettings
-        forceUpdate()
-
-        //adjust rounds (space) in ref_tweets
-        ref_tweets.current = new Array<Tweet>(ref_settings.current.rounds)
-    }
-
-    const fireEvent_Settings = async () => {
-
-        //prepare
-        let event:Setup_Event = {
-            type: SetupEventType.Settings,
-            data: ref_settings.current
-        }
-
-        //execute
-        log('broadcast new settings')
-        const response = await fetch('/api/pusher/setup/trigger', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'pusherchannel': channelName,
-                'pusherevent': event.type
-            },
-            body: JSON.stringify(event),
-        });
-        
-        //read response
-        const body = await response.text();
-        log(body)
-    }
-
-    /*
-    ##################################
-    ##################################
-        EVENT: Tweets
-    ##################################
-    ##################################
-    */
-    const handleEvent_Content = (event:Setup_Event_Tweets) => {
-
-        //security
-        if (event.type !== SetupEventType.Tweets) {
-            log('EventType mismatch in handleEvent_Settings:\n\n' + event)
-            return
-        }
-
-        //add new tweets
-        let data:Tweet[] = event.data
-        let bottomIndex = event.bottomIndex
-        data.forEach((item) => {
-            ref_tweets.current[bottomIndex] = item
-            bottomIndex++
-        })
-        //log(ref_tweets.current)
-    }
-
-    const fireEvent_Tweets = async (_data:Tweet[], _bottomIndex:number) => {
-
-        //prepare
-        let event:Setup_Event_Tweets = {
-            type: SetupEventType.Tweets,
-            data: _data,
-            bottomIndex: _bottomIndex
-        }
-
-        //execute
-        log(`broadcast ${_data.length} tweets with ${_bottomIndex} bottomIndex`)
-        const response = await fetch('/api/pusher/setup/trigger', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'pusherchannel': channelName,
-                'pusherevent': event.type
-            },
-            body: JSON.stringify(event),
-        });
-        
-        //read response
-        const body = await response.text();
-        log(body)
-    }
-
-    /*
-    ##################################
-    ##################################
         Functions to child components
     ##################################
     ##################################
@@ -1378,21 +1389,17 @@ export default function Setup() {
 
         let content = <div></div>
 
-        //check if given MatchID is invalid
-        let current = window.location.href
-        let matchID = current.substr(current.lastIndexOf('/') + 1);
-        if (matchID.length === 0 || !(/^\d+$/.test(matchID))) {
-            log('INVALID ID: ' + matchID)
+        if (!validMatchID) {
             content =  
                 <div className={st.State_Con}>
-                    '{matchID}' is an invalid Match ID! Only numbers allowed
+                    Invalid Match ID! Double check the URL, only numbers allowed
                 </div>
             return content
         }
 
         //redirect back to join page
         if (redirectToJoin) {
-            let redirectURL = '/match/join/' + matchID
+            let redirectURL = '/join/' + ref_state.current.matchID
             return <Redirect to={redirectURL}/>
         }
         
@@ -1450,7 +1457,7 @@ export default function Setup() {
             sessionStorage.setItem(LocalStorage.Trans_Profiles, JSON.stringify(ref_profiles.current))
             sessionStorage.setItem(LocalStorage.Trans_Settings, JSON.stringify(ref_settings.current))
 
-            let redirectURL = '/match/' + matchID
+            let redirectURL = '/match/' + ref_state.current.matchID
             return <Redirect to={redirectURL}/>
         }
 

@@ -87,3 +87,45 @@ $sdbg: false; //show debugging background = sdbg
   @extend .borderWithRoundedCorners;
   background-color: rgba(239, 243, 12, 0.5);
 }
+
+/*
+  ################################
+  MEMBER INFO
+  ################################
+*/
+.MemberInfo_Caption {
+  margin-top: 15px;
+  text-align: center;
+  //@extend .HelveticaNeueBoldFont;
+  @extend .HelveticaNeueRegularFont;
+}
+
+.MemberInfo_Item {
+  margin-top: 5px;
+  padding: 5px;
+  @extend .borderWithRoundedCorners;
+  @extend .HelveticaNeueRegularFont;
+  font-size: 12px;
+}
+
+/*
+  ################################
+  STATE
+  ################################
+*/
+
+.State_Con {
+  //this will take the entire screen
+  position: absolute;
+  top: $header_height + 1;
+  bottom: $footer_height + 1;
+  right: 0;
+  left: 0;
+  //center QR Code
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background-color: $root_backgroundcolor;
+  z-index: 5; //overlay all icons as well
+}
