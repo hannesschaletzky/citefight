@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable no-lone-blocks */
 import React, { useState, useEffect, useRef, useReducer } from 'react';
 import  { Redirect } from 'react-router-dom'
@@ -35,7 +36,6 @@ export default function Join(props:JoinProps) {
     //other
     const maxNameChars = 25
 
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     useEffect(() => {
 
         //check if given MatchID is invalid
@@ -46,7 +46,6 @@ export default function Join(props:JoinProps) {
         }
         ref_matchID.current = matchID
 
-        log('props.pusherClient: ' + props.pusherClient)
         if (props.pusherClient === null) {
             getPusherClient()
             .then(res => {
