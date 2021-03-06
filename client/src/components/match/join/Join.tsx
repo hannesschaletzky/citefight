@@ -4,19 +4,20 @@ import React, { useState, useEffect, useRef, useReducer } from 'react';
 import  { Redirect } from 'react-router-dom'
 import st from './Join.module.scss';
 import {log} from 'components/Logic'
-
-import {getPusherClient} from './PusherClient' 
-
+//ui 
+import CircularProgress from '@material-ui/core/CircularProgress'
 //interfaces
 import {LocalStorage} from 'components/Interfaces'
 import {JoinProps} from 'components/Functional_Interface'
-
 //logic
 import {isValidMatchID} from 'components/Logic'
+import {getNewPusherClient} from './PusherClient' 
 
 //determine status of join
 enum JoinStatus {
     init,
+    pusherConnected,
+    pusherError,
     connecting //-> redirect to lobby/match
 }
 
@@ -46,16 +47,24 @@ export default function Join(props:JoinProps) {
         }
         ref_matchID.current = matchID
 
-        if (props.pusherClient === null) {
-            getPusherClient()
+        //fetch pusher client at very first call
+        if (props.pusherClient === null && ref_status.current === JoinStatus.init) {
+            getNewPusherClient()
             .then(res => {
                 props.onNewClient(res)
+                setStatus(JoinStatus.pusherConnected)
             })
             .catch(err => {
-                //CIRITAL ERROR COULD NOT CONNECT TO PUSHER!
+                log(err)
+                setStatus(JoinStatus.pusherError)
             })
         }
     })
+
+    const setStatus = (newStatus:JoinStatus) => {
+        ref_status.current = newStatus
+        forceUpdate()
+    }
 
     /*
     ##################################
@@ -87,8 +96,7 @@ export default function Join(props:JoinProps) {
     const executeJoin = (userName:string) => {
         sessionStorage.setItem(LocalStorage.JoinGame, '1')
         localStorage.setItem(LocalStorage.Username, userName)
-        ref_status.current = JoinStatus.connecting
-        forceUpdate()
+        setStatus(JoinStatus.connecting)
     }
 
 
@@ -135,7 +143,13 @@ export default function Join(props:JoinProps) {
 
     
 
-    //specify content to return
+    /*
+    ##################################
+    ##################################
+            UI
+    ##################################
+    ##################################
+    */
     const getContent = () => {
 
         let content = <div></div>
@@ -149,9 +163,27 @@ export default function Join(props:JoinProps) {
             return content
         }
         
-        //BEFORE JOIN
+        //CONNECT TO PUSHER
         if (ref_status.current === JoinStatus.init) {
-
+            content  = 
+            <div className={st.State_Con}>
+                <div className={st.Caption}>
+                    Setting things up
+                </div>
+                <CircularProgress/>
+            </div>
+        }
+        //PUSHER -> ERROR
+        if (ref_status.current === JoinStatus.pusherError) {
+            content  = 
+            <div className={st.State_Con}>
+                <div className={st.Caption}>
+                    Could not connect to service. Please try another time.
+                </div>
+            </div>
+        }
+        //PUSHER -> SUCCESS -> USER CAN JOIN
+        else if (ref_status.current === JoinStatus.pusherConnected) {
             content = 
             <div className={st.Join_Con}>
                 <div className={st.Caption}>

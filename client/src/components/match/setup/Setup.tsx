@@ -1,11 +1,11 @@
 /* eslint-disable react/jsx-pascal-case */
-import { useRef, useReducer, useEffect, useState } from 'react';
+import { useRef, useReducer, useEffect, useState } from 'react'
 import  { Redirect } from 'react-router-dom'
 import st from './Setup.module.scss'
 import {log} from 'components/Logic'
 
 //UI Elements
-import CircularProgress from '@material-ui/core/CircularProgress';
+import CircularProgress from '@material-ui/core/CircularProgress'
 import ArrowIcon from 'assets/setup/Arrow_Icon.png'
 
 //interfaces
@@ -18,6 +18,8 @@ import {SysMsgType} from 'components/Interfaces'
 import {NotificationType} from 'components/Interfaces'
 import {PusherState} from 'components/Interfaces'
 import {Settings} from 'components/Interfaces'
+//functional interfaces
+import {SetupProps} from 'components/Functional_Interface'
 
 //logic
 import {initSettings} from 'components/Logic'
@@ -97,7 +99,7 @@ const init_state:Setup_State = {
 let init_pusherCient:any = null
 let init_pusherChannel:any = null
 
-export default function Setup() {
+export default function Setup(props:SetupProps) {
     //state
     const [redirectToJoin,setRedirectToJoin] = useState(false)
     const [validMatchID,setValidMatchID] = useState(true)
@@ -120,6 +122,8 @@ export default function Setup() {
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
     useEffect(() => {
+
+        console.log(props.pusherClient)
         
         //check if given MatchID is invalid
         let matchID = isValidMatchID(window.location.href)
@@ -140,7 +144,7 @@ export default function Setup() {
                 //remove session storage tokens -> prevent infinite loop
                 sessionStorage.removeItem(LocalStorage.JoinGame)
                 sessionStorage.removeItem(LocalStorage.TwitterLoginSuccess)
-                joinGame()
+                //joinGame()
                 return
             }
             else {

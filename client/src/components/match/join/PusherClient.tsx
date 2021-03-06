@@ -3,7 +3,7 @@ import {log} from 'components/Logic'
 const Pusher = require('pusher-js');
 
 //export const getPusherClient = (channelName:string) => { -> with input parameters
-export const getPusherClient = () => {
+export const getNewPusherClient = () => {
     return new Promise((resolve, reject) => {
 
         //create random userid

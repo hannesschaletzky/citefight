@@ -7,6 +7,7 @@ import {log} from 'components/Logic'
 
 //interfaces
 import {JoinProps} from 'components/Functional_Interface'
+import {SetupProps} from 'components/Functional_Interface'
 
 //components
 import Root_Header from 'components/root/Header'
@@ -46,18 +47,27 @@ export default function App() {
     /*
     ##################################
     ##################################
-            Handlers
+            GET FUNC. COMPONENTS
     ##################################
     ##################################
     */
 
     const getJoinComp = () => {
         //create react component from functional 
-        let joinprops:JoinProps = {
+        let props:JoinProps = {
                 pusherClient: pusherClient,
                 onNewClient: onNewPusherClient
         }
-        const comp = React.createElement(Join, joinprops)
+        const comp = React.createElement(Join, props)
+        return comp
+    }
+
+    const getSetupComp = () => {
+        //create react component from functional 
+        let props:SetupProps = {
+                pusherClient: pusherClient
+        }
+        const comp = React.createElement(Setup, props)
         return comp
     }
 
@@ -87,7 +97,7 @@ export default function App() {
                     <Route exact path="/match/setup/twittercallback" component={TwitterCallback}/> 
                         
                     <Route path="/join/:id" render={() => getJoinComp()}/>
-                    <Route path="/setup/:id" component={Setup}/>
+                    <Route path="/setup/:id" render={() => getSetupComp()}/>
                     <Route path="/match/:id" component={Match}/>
                         
                     <Route component={NotFound} /* final route for 404 not found *//>
