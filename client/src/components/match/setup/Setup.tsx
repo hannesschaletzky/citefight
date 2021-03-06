@@ -30,7 +30,6 @@ import Search from './search/Search'
 import Interaction from './interaction/Interaction'
 import Players from './players/Players'
 import Chat from './chat/Chat'
-import { match } from 'assert';
 
 const Pusher = require('pusher-js');
 
@@ -129,7 +128,7 @@ export default function Setup() {
             return
         }
         ref_state.current.matchID = matchID
-        
+
         //coming from "twitter login callback" OR "join page"
         let twitterLoginSucces = sessionStorage.getItem(LocalStorage.TwitterLoginSuccess)
         let join = sessionStorage.getItem(LocalStorage.JoinGame)
@@ -292,7 +291,7 @@ export default function Setup() {
             log('pusher is connected')
 
             //sub channel
-            const channel = _pusherClient.subscribe("presence-" + ref_state.current.matchID)
+            const channel = _pusherClient.subscribe("presence-lobby-" + ref_state.current.matchID)
             // -> success
             channel.bind('pusher:subscription_succeeded', () => {
                 log('subscribed to channel: ' + ref_state.current.matchID)
@@ -333,9 +332,7 @@ export default function Setup() {
                     assignJoinEventAdmin()
                 })
 
-
                 log(ref_pusherChannel.current.members)
-                log(ref_pusherChannel.current)
                 //request current state from lobby
                 fireEvent_Join()
             });
