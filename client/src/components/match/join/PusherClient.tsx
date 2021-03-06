@@ -2,7 +2,8 @@ import {log} from 'components/Logic'
 
 const Pusher = require('pusher-js');
 
-export const getMembersOfChannel = (channelName:string) => {
+//export const getPusherClient = (channelName:string) => { -> with input parameters
+export const getPusherClient = () => {
     return new Promise((resolve, reject) => {
 
         //create random userid
@@ -26,14 +27,16 @@ export const getMembersOfChannel = (channelName:string) => {
 
         //bind connected
         _pusherClient.connection.bind('connected', async () => {
-            log('pusher connected')
-
+            log('pusher is connected')
+            resolve(_pusherClient)
+            return
+            /*
             //sub channel
             const channel = _pusherClient.subscribe(channelName)
             // -> success
             channel.bind('pusher:subscription_succeeded', () => {
                 log('subbed to: ' + channelName)
-                resolve(channel.members)
+                resolve(_pusherClient)
                 return
             })
             // -> error
@@ -49,6 +52,7 @@ export const getMembersOfChannel = (channelName:string) => {
                 log('member_added')
                 reject(Error("It broke"))
             })
+            */
         })
     })
 }

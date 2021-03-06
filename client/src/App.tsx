@@ -2,6 +2,10 @@
 import React, { Component } from 'react';
 import st from './App.module.scss';
 import { BrowserRouter, Route, Switch } from 'react-router-dom'
+import {log} from 'components/Logic'
+
+//interfaces
+import {JoinProps} from 'components/Functional_Interface'
 
 //components
 import Root_Header from 'components/root/Header'
@@ -20,13 +24,31 @@ import Credits from 'components/pages/Credits'
 import TwitterRedirect from 'components/pages/TwitterRedirect'
 import TwitterCallback from 'components/match/setup/TwitterCallback'
 
-
 import NotFound from 'components/pages/errorpages/NotFound'
 
+class App extends Component <any, any> {
 
-class App extends Component {
-  state = {
-  };
+  constructor(props: any) {
+      super(props)
+      this.state = {
+        pusherClient: null
+      }
+  }
+
+  componentDidMount() {
+    log('componentDidMount')
+  }
+
+  componentDidUpdate(prevProps:any) {
+    log('componentDidUpdate: ' + prevProps)
+  }
+  
+  setPusherClient(newClient:any) {
+    log('set pusher client in app!')
+    log(newClient)
+    this.setState({pusherClient: newClient})
+    this.forceUpdate() //THIS IS NOT GETTING CALLED 
+  }
 
   //redirect user to twitter login page
   redirectToTwitterLogin(token:string="") {
@@ -34,6 +56,13 @@ class App extends Component {
   }
   
   render() {
+
+    //create react component from functional 
+    let joinprops:JoinProps = {
+        pusherClient: this.state.pusherClient,
+        onNewClient: this.setPusherClient
+    }
+    const JoinComp = React.createElement(Join, joinprops)
 
     return (
       
@@ -60,7 +89,7 @@ class App extends Component {
               <Route exact path="/match/mockup" component={Mockup}/> 
               <Route exact path="/match/setup/twittercallback" component={TwitterCallback}/> 
 
-              <Route path="/join/:id" component={Join}/>
+              <Route path="/join/:id" render={() => JoinComp}/>
               <Route path="/setup/:id" component={Setup}/>
               <Route path="/match/:id" component={Match}/>
                 
@@ -72,12 +101,27 @@ class App extends Component {
           <Root_Footer/>
         </div>
       </div>
-
     );
   }
 }
 
-export default App;
+export default App
+
+
+/*
+  <Route path="/join/:id" component={Join}/>
+  <Route path="/setup/:id" component={Setup}/>
+  <Route path="/match/:id" component={Match}/>
+
+
+  tried:
+  <Route path="/join/:id" render={() => 
+    Join(this.state.pusherClient, this.setPusherClient)}
+  />
+
+
+
+*/
 
 
 

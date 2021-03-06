@@ -4,10 +4,11 @@ import  { Redirect } from 'react-router-dom'
 import st from './Join.module.scss';
 import {log} from 'components/Logic'
 
-//import {getMembersOfChannel} from './PusherClient' //promise to test
+import {getPusherClient} from './PusherClient' 
 
 //interfaces
 import {LocalStorage} from 'components/Interfaces'
+import {JoinProps} from 'components/Functional_Interface'
 
 //logic
 import {isValidMatchID} from 'components/Logic'
@@ -18,7 +19,8 @@ enum JoinStatus {
     connecting //-> redirect to lobby/match
 }
 
-export default function Join() {
+//export default function Join(pusherClient:any, onNewClient:(newClient:any) => void) {
+export default function Join(props:JoinProps) {
     //state
     const [validMatchID,setValidMatchID] = useState(true)
     const [joinEnabled, setJoinEnabled] = useState(false);
@@ -36,16 +38,6 @@ export default function Join() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     useEffect(() => {
 
-        /*
-        getMembersOfChannel("presence-123")
-            .then(res => {
-                log(res)
-            })
-            .catch(err => {
-
-            })
-        */
-
         //check if given MatchID is invalid
         let matchID = isValidMatchID(window.location.href)
         if (!matchID) {
@@ -54,6 +46,16 @@ export default function Join() {
         }
         ref_matchID.current = matchID
 
+        log('props.pusherClient: ' + props.pusherClient)
+        if (props.pusherClient === null) {
+            getPusherClient()
+            .then(res => {
+                props.onNewClient(res)
+            })
+            .catch(err => {
+                //CIRITAL ERROR COULD NOT CONNECT TO PUSHER!
+            })
+        }
     })
 
     /*

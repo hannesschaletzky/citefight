@@ -7,3 +7,8 @@ export interface SettingsProps {
     onSettingsChanged:(newSettings:Settings) => void;
     newNotification:(msg:string, notType:NotificationType) => void;
 }
+
+export interface JoinProps {
+    pusherClient:any;
+    onNewClient:(newClient:any) => void;
+}
