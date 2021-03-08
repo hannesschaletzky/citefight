@@ -37,13 +37,14 @@ export enum SysMsgType {
     startInfo = '5',
 }
 
+//according to: https://pusher.com/docs/channels/using_channels/connection#available-states
 export enum PusherState {
     init = 'init',
     connecting = 'connecting',
     connected = 'connected',
     unavailable = 'unavailable',
     disconnected = 'disconnected',
-    error = 'error'
+    failed = 'failed'
 }
 
 export enum NotificationType {

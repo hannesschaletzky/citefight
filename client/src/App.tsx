@@ -5,9 +5,10 @@ import { BrowserRouter, Route, Switch } from 'react-router-dom'
 import st from './App.module.scss';
 import {log} from 'components/Logic'
 
-//interfaces
+//functional-interfaces
 import {JoinProps} from 'components/Functional_Interface'
 import {SetupProps} from 'components/Functional_Interface'
+import {MatchProps} from 'components/Functional_Interface'
 
 //components
 import Root_Header from 'components/root/Header'
@@ -34,7 +35,7 @@ export default function App() {
     const [pusherClient,setPusherClient] = useState(null)
 
     const onNewPusherClient = (newClient:any) => {
-        log('set pusher client in app!')
+        log('set pusher client in app:')
         log(newClient)
         setPusherClient(newClient)
     }
@@ -71,6 +72,15 @@ export default function App() {
         return comp
     }
 
+    const getMatchComp = () => {
+        //create react component from functional 
+        let props:MatchProps = {
+                pusherClient: pusherClient
+        }
+        const comp = React.createElement(Match, props)
+        return comp
+    }
+
     return (
 
         <div className={st.Root_Body}>
@@ -98,7 +108,7 @@ export default function App() {
                         
                     <Route path="/join/:id" render={() => getJoinComp()}/>
                     <Route path="/setup/:id" render={() => getSetupComp()}/>
-                    <Route path="/match/:id" component={Match}/>
+                    <Route path="/match/:id" render={() => getMatchComp()}/>
                         
                     <Route component={NotFound} /* final route for 404 not found *//>
                 </Switch>

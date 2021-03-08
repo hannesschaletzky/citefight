@@ -14,3 +14,6 @@ export interface JoinProps {
 export interface SetupProps {
     pusherClient:any;
 }
+export interface MatchProps {
+    pusherClient:any;
+}

@@ -47,7 +47,7 @@ export default function Join(props:JoinProps) {
         }
         ref_matchID.current = matchID
 
-        //fetch pusher client at very first call
+        //connect and get pusher client at very first call
         if (props.pusherClient === null && ref_status.current === JoinStatus.init) {
             getNewPusherClient()
             .then(res => {
@@ -60,6 +60,14 @@ export default function Join(props:JoinProps) {
             })
         }
     })
+
+    /*
+    ##################################
+    ##################################
+                GENERAL 
+    ##################################
+    ##################################
+    */
 
     const setStatus = (newStatus:JoinStatus) => {
         ref_status.current = newStatus
@@ -94,11 +102,9 @@ export default function Join(props:JoinProps) {
     }
 
     const executeJoin = (userName:string) => {
-        sessionStorage.setItem(LocalStorage.JoinGame, '1')
         localStorage.setItem(LocalStorage.Username, userName)
         setStatus(JoinStatus.connecting)
     }
-
 
     /*
     ##################################
@@ -138,10 +144,6 @@ export default function Join(props:JoinProps) {
     const checkUserNameContent = (name:string):boolean => {
         return (/^[a-zA-Z0-9_]+$/.test(name))
     }
-
-    
-
-    
 
     /*
     ##################################

@@ -2,7 +2,7 @@
 import { useRef, useReducer, useEffect, useState } from 'react'
 import  { Redirect } from 'react-router-dom'
 import st from './Setup.module.scss'
-import {log} from 'components/Logic'
+import {log, logObjectPretty} from 'components/Logic'
 
 //UI Elements
 import CircularProgress from '@material-ui/core/CircularProgress'
@@ -38,10 +38,10 @@ const Pusher = require('pusher-js');
 //STATE TYPE
 interface Setup_State {
     matchID: string;
-    state: SetupStateType;
+    state: SetupStatus;
     stateTexts: string[];
 }
-enum SetupStateType {
+enum SetupStatus {
     init = 'init',
     countdown = 'countdown',
     getTweets = 'getTweets',
@@ -93,7 +93,7 @@ const init_notification:Notification = {
 }
 const init_state:Setup_State = {
     matchID: '',
-    state: SetupStateType.init,
+    state: SetupStatus.init,
     stateTexts: []
 }
 let init_pusherCient:any = null
@@ -122,8 +122,6 @@ export default function Setup(props:SetupProps) {
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
     useEffect(() => {
-
-        console.log(props.pusherClient)
         
         //check if given MatchID is invalid
         let matchID = isValidMatchID(window.location.href)
@@ -133,28 +131,26 @@ export default function Setup(props:SetupProps) {
         }
         ref_state.current.matchID = matchID
 
-        //coming from "twitter login callback" OR "join page"
-        let twitterLoginSucces = sessionStorage.getItem(LocalStorage.TwitterLoginSuccess)
-        let join = sessionStorage.getItem(LocalStorage.JoinGame)
-        if (twitterLoginSucces !== null || join != null) {
+        //get pusherclient (only at first loading -> .init)
+        if (props.pusherClient === null && ref_pusherState.current === PusherState.init) {
+            log('no pusher client -> redirect to join')
+            setRedirectToJoin(true)
+            return
+        }
+
+        //retrieve & set pusherclient (once)
+        if (ref_pusherClient.current === null) {
+            ref_pusherClient.current = props.pusherClient
+            log('retrieved pusher client')
             //get username
             let savedUsername = localStorage.getItem(LocalStorage.Username)
             if (savedUsername !== null) {
                 ref_username.current = savedUsername
-                //remove session storage tokens -> prevent infinite loop
-                sessionStorage.removeItem(LocalStorage.JoinGame)
-                sessionStorage.removeItem(LocalStorage.TwitterLoginSuccess)
-                //joinGame()
-                return
+                joinGame()
             }
             else {
                 log('error joining -> no username')
             }
-        }
-        
-        //only check for redirect back to join page when user not already in state
-        if (ref_pusherState.current === PusherState.init) {
-            setRedirectToJoin(true)
         }
     })
 
@@ -251,57 +247,36 @@ export default function Setup(props:SetupProps) {
     */
     const joinGame = () => {
 
-        //has already joined
-        if (ref_pusherState.current === PusherState.connected ||
-            ref_pusherState.current === PusherState.connecting) {
-            log('already connecting or connected')
-            return
-        }
-        setPusherState(PusherState.connecting)
-
-        //init pusher client
-        let appKey = process.env.REACT_APP_PUSHER_KEY
-        let cluster = process.env.REACT_APP_PUSHER_CLUSTER
-        let _pusherClient = new Pusher(appKey, {
-          cluster: cluster,
-          encrypted: true,
-          authEndpoint: '/api/pusher/auth?id=' + ref_username.current 
-        })
-
-        //bind to all events
-        //see: https://pusher.com/docs/channels/using_channels/connection#available-states
-        _pusherClient.connection.bind('state_change', (states:any) => {
+        //bind to connection state change events
+        ref_pusherClient.current.connection.bind('state_change', (states:any) => {
             //states = {previous: 'oldState', current: 'newState'}
             log('new pusher state from event "state_change": ' + states.current)
-            //setPusherConState(states.current) //-> also see enum PusherConState
-        });
-
-        //bind error event
-        _pusherClient.connection.bind('error', (err:any) => {
-            setPusherState(PusherState.error)
-            let str = JSON.stringify(err, null, 4);
-            log('error during pusher connection')
-            log(str)
+            setPusherState(states.current) 
         })
 
-        //bind connected
-        _pusherClient.connection.bind('connected', async () => {
-            
-            if (ref_pusherClient.current !== null) {
-                //reconnected
-                log('reconnected')
-                return
-            }
-            log('pusher is connected')
+        //bind error event
+        ref_pusherClient.current.connection.bind('error', (err:any) => {
+            setPusherState(PusherState.failed)
+            logObjectPretty(err)
+        })
 
-            //sub channel
-            const channel = _pusherClient.subscribe("presence-lobby-" + ref_state.current.matchID)
+        //sub to channel if connected
+        if (ref_pusherClient.current.connection.state === PusherState.connected) {
+
+            //unsubscribe from all events first
+            //DO WE NEED TO UNSUBSCRIBE FROM ANY JOIN CHANNELS??? -> I guess no
+
+            //sub to lobby channel
+            const channel = ref_pusherClient.current.subscribe("presence-lobby-" + ref_state.current.matchID)
+            // -> error
+            channel.bind('pusher:subscription_error', (err:any) => {
+                logObjectPretty(err)
+                showNotification('error subscribing to lobby-channel, please try again', NotificationType.Not_Error)
+            })
             // -> success
             channel.bind('pusher:subscription_succeeded', () => {
-                log('subscribed to channel: ' + ref_state.current.matchID)
+                log('subscribed to channel: ' + channel.name)
                 
-                //set vars
-                ref_pusherClient.current = _pusherClient 
                 ref_pusherChannel.current = channel
 
                 //bind to events
@@ -325,29 +300,21 @@ export default function Setup(props:SetupProps) {
                 )
                 ref_pusherChannel.current.bind('pusher:member_removed', (member:any) => {
                     //abort countdown
-                    if (ref_state.current.state === SetupStateType.countdown) {
-                        ref_state.current.state = SetupStateType.init
+                    if (ref_state.current.state === SetupStatus.countdown) {
+                        ref_state.current.state = SetupStatus.init
                     }
                     //remove user
                     let i = getIndexOfUser(member.id)
-                    ref_players.current.splice(i,1);
+                    ref_players.current.splice(i,1)
                     addSysMsg(SysMsgType.userLeft, member.id)
                     forceUpdate()
                     assignJoinEventAdmin()
                 })
 
-                log(ref_pusherChannel.current.members)
                 //request current state from lobby
                 fireEvent_Join()
-            });
-
-            // -> error
-            channel.bind('pusher:subscription_error', (err:any) => {
-                let str = JSON.stringify(err, null, 4);
-                log('error during subscribing to channel: ' + ref_state.current.matchID)
-                log(str)
-            });
-        })
+            })
+        }
     }
 
     const leaveGame = () => {
@@ -503,7 +470,7 @@ export default function Setup(props:SetupProps) {
         ################
         */
         //let first user trigger management of game content
-        if (ref_state.current.state === SetupStateType.init && 
+        if (ref_state.current.state === SetupStatus.init && 
             ref_username.current === ref_players.current[0].name) {
             
             //everyone ready?
@@ -513,7 +480,7 @@ export default function Setup(props:SetupProps) {
             log('everyone ready!')
 
             //start countdown for everyone
-            ref_state.current.state = SetupStateType.countdown
+            ref_state.current.state = SetupStatus.countdown
             fireEvent_Players()
         }
         /*  
@@ -521,11 +488,11 @@ export default function Setup(props:SetupProps) {
         START COUNTDOWN
         ################
         */
-        else if (ref_state.current.state === SetupStateType.countdown) {
+        else if (ref_state.current.state === SetupStatus.countdown) {
 
             let timeouts:NodeJS.Timeout[] = [] //store timeout to clear when aborted
             const checkCancelled = ():boolean => {
-                if (ref_state.current.state === SetupStateType.init) {
+                if (ref_state.current.state === SetupStatus.init) {
                     //set everyone unready
                     ref_players.current.forEach((value) => {
                         value.ready = false
@@ -558,7 +525,7 @@ export default function Setup(props:SetupProps) {
             if (ref_username.current === ref_players.current[0].name) {
                 const startGame = () => {
                     if (checkCancelled()) {return}
-                    ref_state.current.state = SetupStateType.getTweets
+                    ref_state.current.state = SetupStatus.getTweets
                     fireEvent_Players()
                 }
                 timeouts.push(setTimeout(() => startGame(), 5200))
@@ -569,7 +536,7 @@ export default function Setup(props:SetupProps) {
         START GETTING TWEETS
         ################
         */
-        else if (ref_state.current.state === SetupStateType.getTweets &&
+        else if (ref_state.current.state === SetupStatus.getTweets &&
                  ref_username.current === ref_players.current[0].name &&
                  ref_state.current.stateTexts.length === 0) { 
             //first user starts and only call when not called already (stateTexts.length === 0)
@@ -1099,7 +1066,7 @@ export default function Setup(props:SetupProps) {
         ###################
         */
         setTimeout(() => {
-            addStateMsg('Stiring the pot')
+            addStateMsg('Stirring the pot')
         }, 2000)
         setTimeout(() => {
             addStateMsg(`Pulling ${ref_settings.current.rounds} tweets`)
@@ -1113,7 +1080,7 @@ export default function Setup(props:SetupProps) {
         ###################
         */
         setTimeout(() => {
-            ref_state.current.state = SetupStateType.redirectToMatch
+            ref_state.current.state = SetupStatus.redirectToMatch
             fireEvent_Players()
         }, 8000)
     }
@@ -1245,8 +1212,7 @@ export default function Setup(props:SetupProps) {
                 photo2: ph2,
                 photo3: ph3,
                 photo4: ph4,
-            } 
-
+            }
 
             //BOTTOM PART
             /*
@@ -1405,6 +1371,15 @@ export default function Setup(props:SetupProps) {
         }
         
         //PUSHER STATE
+        /*
+            init = 'init',
+            connecting = 'connecting',
+            connected = 'connected',
+            unavailable = 'unavailable',
+            disconnected = 'disconnected',
+            error = 'error'
+        */
+
         //loading
         if (ref_pusherState.current === PusherState.init ||
             ref_pusherState.current === PusherState.connecting) {
@@ -1413,17 +1388,21 @@ export default function Setup(props:SetupProps) {
                     <CircularProgress/>
                 </div>
         }
-        //connected
+        //error
         else if (ref_pusherState.current !== PusherState.connected) {
             content =  
                 <div className={st.State_Con}>
-                    Could not connect to match
+                    Could not connect to lobby, pusher service status is: {ref_pusherState.current}. 
+                    Please try again later!
                 </div>
         }
 
-        //SETUP STATE
+        /*
+            SETUP STATE
+            -> if all good with pusher, look at actual state of setup
+        */
         //retrieve tweets
-        if (ref_state.current.state === SetupStateType.getTweets) {
+        if (ref_state.current.state === SetupStatus.getTweets) {
 
             let cards = [<div></div>]
             cards = []
@@ -1450,7 +1429,7 @@ export default function Setup(props:SetupProps) {
                 </div>
         }
         //redirect to match
-        else if (ref_state.current.state === SetupStateType.redirectToMatch) {
+        else if (ref_state.current.state === SetupStatus.redirectToMatch) {
 
             //store data to pass to new route in session storage
             sessionStorage.setItem(LocalStorage.Trans_Content, JSON.stringify(ref_tweets.current))
@@ -1466,61 +1445,61 @@ export default function Setup(props:SetupProps) {
     }
     
     return (
-    <div className={st.Content_Con}>
-        {getSpecialContent()}
-        <div className={ref_state.current.state === SetupStateType.init ? st.Left_Panel : st.Left_Panel_disabled}>
-            {Search(
-                ref_profiles.current,
-                onAddProfile,
-                onNewNotification
-            )}
-        </div>
-        <div className={ref_state.current.state === SetupStateType.init ? st.Center_Panel : st.Center_Panel_disabled}>
-            <div className={st.Lobby_Con}>
-                {Lobby(
-                    getAdmin(),
+        <div className={st.Content_Con}>
+            {getSpecialContent()}
+            <div className={ref_state.current.state === SetupStatus.init ? st.Left_Panel : st.Left_Panel_disabled}>
+                {Search(
                     ref_profiles.current,
-                    onRemoveProfile,
-                    ref_settings.current,
-                    onSettingsChanged,
+                    onAddProfile,
                     onNewNotification
                 )}
             </div>
-            {Info()
+            <div className={ref_state.current.state === SetupStatus.init ? st.Center_Panel : st.Center_Panel_disabled}>
+                <div className={st.Lobby_Con}>
+                    {Lobby(
+                        getAdmin(),
+                        ref_profiles.current,
+                        onRemoveProfile,
+                        ref_settings.current,
+                        onSettingsChanged,
+                        onNewNotification
+                    )}
+                </div>
+                {Info()
+                }
+            </div>
+            <div className={st.Right_Panel}>
+                <div className={ref_state.current.state === SetupStatus.init ? st.Interaction_Con : st.Interaction_Con_disabled}>
+                    <Interaction
+                        user={ref_players.current[getIndexOfUser(ref_username.current)]}
+                        onLeaveClick={onLeaveTriggered}
+                        onToogleReadyClick={onToogleReady}
+                        addNotification={onNewNotification}
+                    />
+                </div>
+                <div className={st.Players_Con}>
+                    <Players   
+                        data={ref_players.current}
+                        currentUser={ref_username.current}
+                    />
+                </div>
+                <div className={st.Chat_Con}>
+                    {Chat(
+                        ref_chat.current,
+                        onNewChatMessage
+                    )}
+                </div>
+            </div>
+            {ref_notification.current.display && 
+                <div className={ref_notification.current.scssClass} onClick={() => hideNotification()}>
+                    <div className={st.Not_Text}>
+                        {ref_notification.current.msg}
+                    </div>
+                    <div className={st.Not_Close}>
+                        x
+                    </div>
+                </div>
             }
         </div>
-        <div className={st.Right_Panel}>
-            <div className={ref_state.current.state === SetupStateType.init ? st.Interaction_Con : st.Interaction_Con_disabled}>
-                <Interaction
-                    user={ref_players.current[getIndexOfUser(ref_username.current)]}
-                    onLeaveClick={onLeaveTriggered}
-                    onToogleReadyClick={onToogleReady}
-                    addNotification={onNewNotification}
-                />
-            </div>
-            <div className={st.Players_Con}>
-                <Players   
-                    data={ref_players.current}
-                    currentUser={ref_username.current}
-                />
-            </div>
-            <div className={st.Chat_Con}>
-                {Chat(
-                    ref_chat.current,
-                    onNewChatMessage
-                )}
-            </div>
-        </div>
-        {ref_notification.current.display && 
-            <div className={ref_notification.current.scssClass} onClick={() => hideNotification()}>
-                <div className={st.Not_Text}>
-                    {ref_notification.current.msg}
-                </div>
-                <div className={st.Not_Close}>
-                    x
-                </div>
-            </div>
-        }
-    </div>
     );
 }

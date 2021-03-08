@@ -45,3 +45,10 @@ export function log(item:any):void {
         console.log(item)
     }
 }
+
+export function logObjectPretty(item:any):void {
+    let str = JSON.stringify(item, null, 4);
+    console.log(str)
+}
+
+
