@@ -23,6 +23,7 @@ yarn-debug.log*
 yarn-error.log*
 
 #added
+/client/build
 /client/node_modules
 .env
 /client/.env
