@@ -1,10 +1,20 @@
 import {Settings} from 'components/Interfaces'
 import {NotType} from 'components/Interfaces'
+import {Profile} from 'components/Interfaces'
 
 export interface SettingsProps {
     settings: Settings;
     isAdmin:boolean;
     onSettingsChanged:(newSettings:Settings) => void;
+    newNotification:(msg:string, notType:NotType) => void;
+}
+export interface PopularProfilesProps {
+    popularProfiles:Profile[];
+    addProfile:(profile:Profile) => void;
+}
+export interface SearchProps {
+    profiles:Profile[];
+    addProfile:(profile:Profile) => void;
     newNotification:(msg:string, notType:NotType) => void;
 }
 export interface JoinProps {

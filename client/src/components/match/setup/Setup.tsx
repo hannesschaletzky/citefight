@@ -33,7 +33,7 @@ import {popProfilesMock} from 'components/Mockdata'
 
 //components
 import Lobby from './lobby/Lobby'
-import Info from './info/Info'
+import Add from './add/Add'
 import Search from './search/Search'
 import Interaction from './interaction/Interaction'
 import Players from './players/Players'
@@ -1404,11 +1404,14 @@ export default function Setup(props:SetupProps) {
         <div className={st.Content_Con}>
             {getSpecialContent()}
             <div className={ref_state.current.state === Status.init ? st.Left_Panel : st.Left_Panel_disabled}>
-                {Search(
-                    ref_profiles.current,
-                    onAddProfile,
-                    onNewNotification
-                )}
+                <div className={st.Add_Con}>
+                    {Add(
+                        ref_profiles.current,
+                        popProfilesMock,
+                        onAddProfile,
+                        onNewNotification
+                    )}
+                </div>
             </div>
             <div className={ref_state.current.state === Status.init ? st.Center_Panel : st.Center_Panel_disabled}>
                 <div className={st.Lobby_Con}>
@@ -1419,12 +1422,6 @@ export default function Setup(props:SetupProps) {
                         ref_settings.current,
                         onSettingsChanged,
                         onNewNotification
-                    )}
-                </div>
-                <div className={st.Info_Con}>
-                    {Info(
-                        popProfilesMock,
-                        onAddProfile
                     )}
                 </div>
             </div>

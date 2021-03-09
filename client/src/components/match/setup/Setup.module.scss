@@ -31,6 +31,12 @@ $sdbg: false; //show debugging background = sdbg
   @extend .disable;
 }
 
+.Add_Con {
+  flex: 1;
+  height: 100%;
+  @extend .borderWithRoundedCorners;
+}
+
 /*
   ################################
   CENTER
@@ -57,16 +63,7 @@ $sdbg: false; //show debugging background = sdbg
 
 .Lobby_Con {
   flex: 1;
-  height: 48%;
-
-  @extend .borderWithRoundedCorners;
-}
-
-.Info_Con {
-  flex: 1;
-  height: 48%;
-  margin-top: 10px;
-
+  height: 100%;
   @extend .borderWithRoundedCorners;
 }
 

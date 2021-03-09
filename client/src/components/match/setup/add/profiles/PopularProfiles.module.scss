@@ -10,13 +10,6 @@ $sdbg: false; //show debugging background = sdbg
   }
 }
 
-.Caption {
-  text-align: center;
-  margin-top: 5px;
-  @extend .HelveticaNeueRegularFont;
-  color: rgb(20, 20, 20);
-}
-
 .Empty_Con {
   height: 100%;
   display: flex;

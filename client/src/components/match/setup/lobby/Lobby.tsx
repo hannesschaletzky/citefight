@@ -35,13 +35,13 @@ export default function Lobby(isAdmin:boolean, //first user is admin
         else if (lobbyIndex === 1) {
 
             //create react component from functional 
-            let settingsProps:SettingsProps = {
+            let props:SettingsProps = {
                 settings: settings,
                 isAdmin: isAdmin,
                 onSettingsChanged:onSettingsChanged, 
                 newNotification:newNotification
             }
-            const comp = React.createElement(SettingsComp, settingsProps)
+            const comp = React.createElement(SettingsComp, props)
             content = comp
         }
         return content

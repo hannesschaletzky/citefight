@@ -17,7 +17,7 @@ export default function Profiles(profiles:Profile[],
     const getContent = () => {
         if (profiles.length === 0) {
             return  <div className={st.Empty_Con}>
-                        Add profiles to play from the search or the popular profiles section
+                        Add profiles to play from the search or the popular profiles section on the left
                     </div>
         }
         return <TwitterProfileList

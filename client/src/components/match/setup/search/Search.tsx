@@ -2,18 +2,20 @@ import React, { useState } from 'react';
 //import  { Redirect } from 'react-router-dom'
 import st from './Search.module.scss'
 import {log} from 'components/Logic'
-
+//ui-elements
 import TwitterProfileList from './TwitterProfileList'
 import CircularProgress from '@material-ui/core/CircularProgress';
 import TwitterIcon from 'assets/footer/Twitter_Icon.png'
-
+//logic
 import {didUserExceedLimit} from 'components/Logic'
-
+//interfaces
 import {Profile} from 'components/Interfaces'
 import {LocalStorage} from 'components/Interfaces'
 import {NotType} from 'components/Interfaces'
 import {TwitterStatus} from 'components/Interfaces'
 import {ProfilesUsage} from 'components/Interfaces'
+//functional-interfaces
+import {SearchProps} from 'components/Functional_Interface'
 
 const stateInitArray:Profile[] = []
 
@@ -43,11 +45,7 @@ enum RequestType {
 
 let actionTimestamps:string[] = []
 
-export default function Search(
-                                addedUsers:Profile[],
-                                addUserFunc:(par1: Profile) => void,
-                                newNotification:(msg:string, notType:NotType) => void) 
-                                {
+export default function Search(props:SearchProps) {
     const [page, setPage] = useState(1);
     const [userObjects, setUserObjects] = useState(stateInitArray);
     const [searchInput, setSearchInput] = useState("");
@@ -100,19 +98,19 @@ export default function Search(
     //send error notification to setup
     const showErrNot = (msg: string) => {
         log(msg)
-        newNotification('Error: ' + msg, NotType.Error)
+        props.newNotification('Error: ' + msg, NotType.Error)
     }
 
     const showWarNot = (msg: string) => {
         log(msg)
-        newNotification('Warning: ' + msg, NotType.Warning)
+        props.newNotification('Warning: ' + msg, NotType.Warning)
     }
 
     //ACTIONS EXCEEDED
     const actionsExceeded = () => {
         if (didUserExceedLimit(actionTimestamps, 20, 30000)) {
             //actions exceeded
-            newNotification('easy boy... small cooldown - too many actions', NotType.Warning)
+            props.newNotification('easy boy... small cooldown - too many actions', NotType.Warning)
             return true
         }
         //not exceeded -> add timestamp
@@ -431,7 +429,7 @@ export default function Search(
 
     const getInputClass = () => {
         if (searchEnabled ||
-            addedUsers.length > 0) {
+            props.profiles.length > 0) {
             return st.Input
         }
         return st.Input_Blinking
@@ -471,8 +469,8 @@ export default function Search(
                         <TwitterProfileList
                             parentType={ProfilesUsage.Search}
                             data={userObjects}
-                            addedUsers={addedUsers}
-                            onAddUser={addUserFunc}
+                            addedUsers={props.profiles}
+                            onAddUser={props.addProfile}
                             onRemoveUser={() => {}}
                             twitterStatus = {twitterStatus}
                         />

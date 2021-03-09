@@ -45,11 +45,6 @@ $sdbg: false; //show debugging background = sdbg
   display: flex;
   flex-direction: column;
 
-  //border
-  border: 1.7px solid;
-  border-color: rgba(194, 192, 192, 0.75);
-  border-radius: 8px;
-
   @if $sdbg {
     background-color: rgba(43, 226, 43, 0.233);
   }
