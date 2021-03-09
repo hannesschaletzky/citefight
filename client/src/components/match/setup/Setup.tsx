@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable react/jsx-pascal-case */
 import { useRef, useReducer, useEffect, useState } from 'react'
 import  { Redirect } from 'react-router-dom'
@@ -124,11 +125,8 @@ export default function Setup(props:SetupProps) {
     const ref_pusherState = useRef(Pu.PusherState.init)
     const ref_pusherClient = useRef(init_pusherCient)
     const ref_pusherChannel = useRef(init_pusherChannel)
-
-    //important ui update
     const [,forceUpdate] = useReducer(x => x + 1, 0);
 
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     useEffect(() => {
         
         //check if given MatchID is invalid
@@ -288,9 +286,6 @@ export default function Setup(props:SetupProps) {
                 channel.bind(EventType.Join, 
                     (data:Event_Join) => handleEvent_Join(data)
                 )
-                channel.bind(Pu.Event_Ping_Name, 
-                    () => handleEvent_Ping()
-                )
                 //above two will be handled by admin when more players in lobby
                 channel.bind(EventType.Player, 
                     (data:Event_Players) => handleEvent_Player(data)
@@ -350,32 +345,6 @@ export default function Setup(props:SetupProps) {
     /*
     ##################################
     ##################################
-        EVENT: Ping/Pong
-    ##################################
-    ##################################
-    */
-    const handleEvent_Ping = () => {
-        //parse all player-names to array
-        let players:Event_Join_Data[] = []
-        ref_players.current.forEach((player:Player) => {
-            players.push({
-                username: player.name,
-                userid: player.pusherID
-            })
-        })
-        //create event
-        let event:Pu.Event_Pong = {
-            players: players,
-            isLobby: true
-        }
-        //trigger event
-        log('trigger PONG!')
-        Pu.triggerEvent(Pu.Channel_Lobby + ref_state.current.matchID, Pu.Event_Pong_Name, event)
-    }
-
-    /*
-    ##################################
-    ##################################
         EVENT: Join
     ##################################
     ##################################
@@ -383,11 +352,7 @@ export default function Setup(props:SetupProps) {
     const handleEvent_Join = (event:Event_Join) => {
 
         /*
-            ONLY FIRST USER HANDLES THIS
-        */
-
-        /*
-        let str = JSON.stringify(event.data, null, 4);
+        let str = JSON.stringify(event.data, null, 4)
         log(str)
         */
 
@@ -404,6 +369,13 @@ export default function Setup(props:SetupProps) {
                 name: event.data.username,
                 pusherID: event.data.userid,
                 ready: false
+            }
+            //avoid double names
+            for (let i=0;i<ref_players.current.length;i++) {
+                if (ref_players.current[i].name === newUser.name) {
+                    newUser.name += '1'
+                    i = 0 //restart loop
+                }
             }
             ref_players.current.push(newUser)
             addSysMsg(SysMsgType.userJoined, newUser.name)
@@ -423,7 +395,6 @@ export default function Setup(props:SetupProps) {
                                             ' The game will start when everyone is ready.') 
             addSysMsg(SysMsgType.welcome,   currentUrl) 
             joinPlayer()
-            handleEvent_Ping()
             setPusherState(Pu.PusherState.connected) //force update is incl. here
         }
         else if (ref_players.current[0].name === ref_username.current) {
@@ -434,7 +405,6 @@ export default function Setup(props:SetupProps) {
             */
             log('BROADCAST join for: ' + triggerUser)
             joinPlayer()
-            handleEvent_Ping()
             fireEvent_Chat()
             fireEvent_Players()
             fireEvent_Profiles()
@@ -473,14 +443,10 @@ export default function Setup(props:SetupProps) {
         */
         if (ref_players.current.length > 0) {
             ref_pusherChannel.current.unbind(EventType.Join)
-            ref_pusherChannel.current.unbind(Pu.Event_Ping_Name)
             if (ref_players.current[0].name === ref_username.current) {
                 //bind
                 ref_pusherChannel.current.bind(EventType.Join,
                     (data:any) => handleEvent_Join(data)
-                )
-                ref_pusherChannel.current.bind(Pu.Event_Ping_Name, 
-                    () => handleEvent_Ping()
                 )
                 log('Bound admin events')
             }
@@ -509,6 +475,13 @@ export default function Setup(props:SetupProps) {
         ref_players.current = newPlayers
         setPusherState(Pu.PusherState.connected) //force update incl. here
         assignJoinEventAdmin()
+
+        //set every name when new player joined, bc. admin can edit name to avoid duplicates
+        ref_players.current.forEach((item:Player) => {
+            if (item.pusherID === ref_pusherChannel.current.members.me.id) {
+                ref_username.current = item.name
+            }
+        }) 
 
         /*  
         ################

@@ -10,10 +10,6 @@ export enum PusherState {
     disconnected = 'disconnected',
     failed = 'failed'
 }
-export interface Event_Pong {
-    players: Event_Join_Data[];
-    isLobby: boolean;
-}
 export interface Event_Join_Data {
     username: string;
     userid: string;
