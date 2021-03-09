@@ -17,7 +17,7 @@ import {Player} from 'components/Interfaces'
 import {Profile} from 'components/Interfaces'
 import {Tweet} from 'components/Interfaces'
 //functional interfaces
-import {MatchProps} from 'components/Functional_Interface'
+import {MatchProps} from 'components/Functional_Interfaces'
 
 //puhser
 import * as Pu from 'components/pusher/Pusher'

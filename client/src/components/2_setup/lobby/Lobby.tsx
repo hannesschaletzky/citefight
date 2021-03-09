@@ -5,7 +5,7 @@ import {Profile} from 'components/Interfaces'
 import {Settings} from 'components/Interfaces'
 import {NotType} from 'components/Interfaces'
 
-import {SettingsProps} from 'components/Functional_Interface'
+import {SettingsProps} from 'components/Functional_Interfaces'
 
 import AddedProfile_Icon from 'assets/setup/AddedProfile_Icon.png'
 import Settings_Icon from 'assets/setup/Settings_Icon.png'

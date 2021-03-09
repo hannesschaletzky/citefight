@@ -6,26 +6,26 @@ import st from './App.module.scss';
 import {log} from 'components/Logic'
 
 //functional-interfaces
-import {JoinProps} from 'components/Functional_Interface'
-import {SetupProps} from 'components/Functional_Interface'
-import {MatchProps} from 'components/Functional_Interface'
+import {JoinProps} from 'components/Functional_Interfaces'
+import {SetupProps} from 'components/Functional_Interfaces'
+import {MatchProps} from 'components/Functional_Interfaces'
 
 //components
-import Root_Header from 'components/root/Header'
+import Root_Header from 'components/0_root/Header'
 import Landing from 'components/pages/Landing'
 
-import Join from 'components/match/join/Join'
-import Match from 'components/match/Match'
-import Setup from 'components/match/setup/Setup'
-import Mockup from 'components/match/Mockup'
+import Join from 'components/1_join/Join'
+import Setup from 'components/2_setup/Setup'
+import Match from 'components/3_match/Match'
+import Mockup from 'components/3_match/Mockup'
 
-import Root_Footer from 'components/root/Footer'
+import Root_Footer from 'components/0_root/Footer'
 import Legal from 'components/pages/Legal'
 import About from 'components/pages/About'
 import Donate from 'components/pages/Donate'
 import Credits from 'components/pages/Credits'
 import TwitterRedirect from 'components/pages/TwitterRedirect'
-import TwitterCallback from 'components/match/setup/TwitterCallback'
+import TwitterCallback from 'components/2_setup/TwitterCallback'
 
 import NotFound from 'components/pages/errorpages/NotFound'
 

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import st from './Add.module.scss';
+//import {log} from 'components/Logic'
 //ui-elements
 import Search_Icon from 'assets/setup/Search_Icon.png'
 import Ranking_Icon from 'assets/setup/Ranking_Icon.png'
@@ -7,8 +8,8 @@ import Ranking_Icon from 'assets/setup/Ranking_Icon.png'
 import {Profile} from 'components/Interfaces'
 import {NotType} from 'components/Interfaces'
 //functional-interfaces
-import {PopularProfilesProps} from 'components/Functional_Interface'
-import {SearchProps} from 'components/Functional_Interface'
+import {PopularProfilesProps} from 'components/Functional_Interfaces'
+import {SearchProps} from 'components/Functional_Interfaces'
 //components
 import Search from '../search/Search'
 import PopularProfiles from './profiles/PopularProfiles'
@@ -18,7 +19,7 @@ export default function Add(  profiles:Profile[],
                               addProfile:(profile:Profile) => void,
                               newNotification:(msg:string, notType:NotType) => void) {
     const [lobbyIndex, setLobbyIndex] = useState(0) //default to search
-
+    
     const getLobbyContent = () => {
         
         let content = <div></div>
@@ -30,7 +31,7 @@ export default function Add(  profiles:Profile[],
                 newNotification: newNotification
             }
             const comp = React.createElement(Search, props)
-            content = comp  
+            content = comp
         }
         //POPULAR PROFILES
         else if (lobbyIndex === 1) {

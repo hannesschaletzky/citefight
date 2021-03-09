@@ -8,7 +8,7 @@ import {Settings_Roundtime} from 'components/Interfaces'
 import {Settings_DrinkingMode} from 'components/Interfaces'
 import {Settings_Pictures} from 'components/Interfaces'
 
-import {SettingsProps} from 'components/Functional_Interface'
+import {SettingsProps} from 'components/Functional_Interfaces'
 
 enum Type {
     rounds,

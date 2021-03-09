@@ -15,7 +15,7 @@ import {NotType} from 'components/Interfaces'
 import {TwitterStatus} from 'components/Interfaces'
 import {ProfilesUsage} from 'components/Interfaces'
 //functional-interfaces
-import {SearchProps} from 'components/Functional_Interface'
+import {SearchProps} from 'components/Functional_Interfaces'
 
 const stateInitArray:Profile[] = []
 
@@ -427,20 +427,12 @@ export default function Search(props:SearchProps) {
         */
     }
 
-    const getInputClass = () => {
-        if (searchEnabled ||
-            props.profiles.length > 0) {
-            return st.Input
-        }
-        return st.Input_Blinking
-    }
-
     return (
         <div className={st.Con}>
             {getLoginComponent()}
             <div className={st.Search_Con}>
                 <div className={st.Top_Con}>
-                    <input  className={getInputClass()} 
+                    <input  className={st.Input} 
                             type="search" 
                             autoComplete="off" 
                             placeholder="Search for Twitter username..."

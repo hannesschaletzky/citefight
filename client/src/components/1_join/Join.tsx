@@ -8,7 +8,7 @@ import {log, logObjectPretty} from 'components/Logic'
 import CircularProgress from '@material-ui/core/CircularProgress'
 //interfaces
 import {LocalStorage} from 'components/Interfaces'
-import {JoinProps} from 'components/Functional_Interface'
+import {JoinProps} from 'components/Functional_Interfaces'
 //logic
 import {isValidMatchID} from 'components/Logic'
 //pusher

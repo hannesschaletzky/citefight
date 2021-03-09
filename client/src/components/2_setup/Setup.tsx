@@ -19,7 +19,7 @@ import {SysMsgType} from 'components/Interfaces'
 import {NotType} from 'components/Interfaces'
 import {Settings} from 'components/Interfaces'
 //functional interfaces
-import {SetupProps} from 'components/Functional_Interface'
+import {SetupProps} from 'components/Functional_Interfaces'
 
 //logic
 import {initSettings} from 'components/Logic'
