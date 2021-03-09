@@ -12,10 +12,10 @@ import ArrowIcon from 'assets/setup/Arrow_Icon.png'
 import {Tweet, Tweet_TopPart, Tweet_Content, Tweet_BottomPart} from 'components/Interfaces'
 import {LocalStorage} from 'components/Interfaces'
 import {Player} from 'components/Interfaces'
-import {Setup_ChatMsg} from 'components/Interfaces'
+import {ChatMsg} from 'components/Interfaces'
 import {Profile} from 'components/Interfaces'
 import {SysMsgType} from 'components/Interfaces'
-import {NotificationType} from 'components/Interfaces'
+import {NotType} from 'components/Interfaces'
 import {Settings} from 'components/Interfaces'
 //functional interfaces
 import {SetupProps} from 'components/Functional_Interface'
@@ -35,15 +35,13 @@ import Interaction from './interaction/Interaction'
 import Players from './players/Players'
 import Chat from './chat/Chat'
 
-const Pusher = require('pusher-js');
-
-//STATE TYPE
-interface Setup_State {
+//STATE & STATUS
+interface State {
     matchID: string;
-    state: SetupStatus;
+    state: Status;
     stateTexts: string[];
 }
-enum SetupStatus {
+enum Status {
     init = 'init',
     countdown = 'countdown',
     getTweets = 'getTweets',
@@ -51,25 +49,25 @@ enum SetupStatus {
 }
 
 //PUSHER EVENT
-interface Setup_Event {
-    type: SetupEventType;
+interface Event {
+    type: EventType;
     data: any;
 }
-interface Setup_Event_Join {
-    type: SetupEventType;
+interface Event_Join {
+    type: EventType;
     data: Event_Join_Data;
 }
-interface Setup_Event_Players {
-    type: SetupEventType;
+interface Event_Players {
+    type: EventType;
     data: any;
-    state: Setup_State;
+    state: State;
 }
-interface Setup_Event_Tweets {
-    type: SetupEventType;
+interface Event_Tweets {
+    type: EventType;
     data: any;
     bottomIndex: number;
 }
-enum SetupEventType {
+enum EventType {
     Join = 'Setup_Join',
     Chat = 'Setup_Chat',
     Player = 'Setup_Player',
@@ -86,24 +84,24 @@ interface Event_Join_Data {
 interface Notification {
     display: boolean;
     msg: string;
-    type: NotificationType;
+    type: NotType;
     scssClass: string;
 }
 
 //INIT OBJECTS FOR REFS
 const init_profiles:Profile[] = []
 const init_players:Player[] = []
-const init_chat:Setup_ChatMsg[] = []
+const init_chat:ChatMsg[] = []
 const init_tweets:Tweet[] = []
 const init_notification:Notification = {
     display: false,
     msg: "",
-    type: NotificationType.Not_Success,
+    type: NotType.Success,
     scssClass: ''
 }
-const init_state:Setup_State = {
+const init_state:State = {
     matchID: '',
-    state: SetupStatus.init,
+    state: Status.init,
     stateTexts: []
 }
 let init_pusherCient:any = null
@@ -114,17 +112,17 @@ export default function Setup(props:SetupProps) {
     const [redirectToJoin,setRedirectToJoin] = useState(false)
     const [validMatchID,setValidMatchID] = useState(true)
     //refs
+    const ref_username = useRef("")
     const ref_tweets = useRef(init_tweets)
     const ref_state = useRef(init_state)
     const ref_profiles = useRef(init_profiles)
     const ref_settings = useRef(initSettings)
     const ref_players = useRef(init_players)
     const ref_chat = useRef(init_chat)
-    const ref_pusherState = useRef(Pu.PusherState.init)
     const ref_notification = useRef(init_notification)
     //control flow refs
-    const ref_username = useRef("")
-    const ref_pusherClient = useRef(init_pusherCient) //CHANGE TO PROPS.pusherclient
+    const ref_pusherState = useRef(Pu.PusherState.init)
+    const ref_pusherClient = useRef(init_pusherCient)
     const ref_pusherChannel = useRef(init_pusherChannel)
 
     //important ui update
@@ -172,6 +170,10 @@ export default function Setup(props:SetupProps) {
     ##################################
     */
 
+    const getLobbyName = ():string => {
+        return Pu.Channel_Lobby + ref_state.current.matchID
+    }
+
     const getIndexOfUser = (name:string):number => {
         for (let i=0; i<ref_players.current.length;i++) {
             let user = ref_players.current[i]
@@ -192,7 +194,7 @@ export default function Setup(props:SetupProps) {
     const addSysMsg = (type:SysMsgType, inputMsg:string) => {
 
         //create msg
-        let msg:Setup_ChatMsg = {
+        let msg:ChatMsg = {
             n: '',
             m: '',
             t: type
@@ -217,7 +219,7 @@ export default function Setup(props:SetupProps) {
     }
 
     let notTimeout = setTimeout(() => {}, 1) //store notification-timeout 
-    const showNotification = (msg:string, notType:NotificationType)  => {
+    const showNotification = (msg:string, notType:NotType)  => {
         let newNot:Notification = {
             display: true,
             msg: msg,
@@ -225,13 +227,13 @@ export default function Setup(props:SetupProps) {
             scssClass: ''
         }
         //set scss class
-        if (notType === NotificationType.Not_Success) {
+        if (notType === NotType.Success) {
             newNot.scssClass = st.Not_Success
         }
-        else if (notType === NotificationType.Not_Warning) {
+        else if (notType === NotType.Warning) {
             newNot.scssClass = st.Not_Warning
         }
-        else if (notType === NotificationType.Not_Error) {
+        else if (notType === NotType.Error) {
             newNot.scssClass = st.Not_Error
         }
         //update UI
@@ -267,57 +269,51 @@ export default function Setup(props:SetupProps) {
         //sub to events of lobby if connected
         if (ref_pusherClient.current.connection.state === Pu.PusherState.connected) {
 
-            /*
-            //get lobby channel
-            let name:string = Pu.Channel_Lobby + ref_state.current.matchID
-            ref_pusherChannel.current = ref_pusherClient.current.channels.channels[name]
-            if (ref_pusherChannel.current === null) {
-                log('could not get lobby channel!')
-                setPusherState(Pu.PusherState.failed)
-                return
-            }*/
-
-            //UNBIND ALL EVENTS FIRST
+            //unsubscribe from lobby channel first
             let name:string = Pu.Channel_Lobby + ref_state.current.matchID
             ref_pusherClient.current.unsubscribe(name)
 
             //sub to lobby channel
-            const channel_Lobby = props.pusherClient.subscribe(name)
-            channel_Lobby.bind(Pu.Channel_Sub_Fail, (err:any) => {
+            const channel = props.pusherClient.subscribe(name)
+            channel.unbind(Pu.Channel_Member_Added)
+            channel.unbind(Pu.Channel_Member_Removed)
+            channel.bind(Pu.Channel_Sub_Fail, (err:any) => {
                 logObjectPretty(err)
                 setPusherState(Pu.PusherState.failed) 
             })
-            channel_Lobby.bind(Pu.Channel_Sub_Success, () => {
-                log('subscribed to channel: ' + channel_Lobby.name)
-                ref_pusherChannel.current = channel_Lobby
+            channel.bind(Pu.Channel_Sub_Success, () => {
+                log('SETUP: sub to: ' + channel.name)
 
                 //bind to events
-                ref_pusherChannel.current.bind(SetupEventType.Join, 
-                    (data:Setup_Event_Join) => handleEvent_Join(data)
+                channel.bind(EventType.Join, 
+                    (data:Event_Join) => handleEvent_Join(data)
                 )
-                ref_pusherChannel.current.bind(Pu.Event_Ping_Name, 
-                    (data:any) => handleEvent_Ping(data)
+                channel.bind(Pu.Event_Ping_Name, 
+                    () => handleEvent_Ping()
                 )
                 //above two will be handled by admin when more players in lobby
-                ref_pusherChannel.current.bind(SetupEventType.Player, 
-                    (data:Setup_Event_Players) => handleEvent_Player(data)
+                channel.bind(EventType.Player, 
+                    (data:Event_Players) => handleEvent_Player(data)
                 )
-                ref_pusherChannel.current.bind(SetupEventType.Chat, 
-                    (data:Setup_Event) => handleEvent_Chat(data)
+                channel.bind(EventType.Chat, 
+                    (data:Event) => handleEvent_Chat(data)
                 )
-                ref_pusherChannel.current.bind(SetupEventType.Profile, 
-                    (data:Setup_Event) => handleEvent_Profile(data)
+                channel.bind(EventType.Profile, 
+                    (data:Event) => handleEvent_Profile(data)
                 )
-                ref_pusherChannel.current.bind(SetupEventType.Settings, 
-                    (data:Setup_Event) => handleEvent_Settings(data)
+                channel.bind(EventType.Settings, 
+                    (data:Event) => handleEvent_Settings(data)
                 )
-                ref_pusherChannel.current.bind(SetupEventType.Tweets, 
-                    (data:Setup_Event_Tweets) => handleEvent_Content(data)
+                channel.bind(EventType.Tweets, 
+                    (data:Event_Tweets) => handleEvent_Tweets(data)
                 )
                 //user left pusher-event 
-                ref_pusherChannel.current.bind(Pu.Channel_Member_Removed, 
+                channel.bind(Pu.Channel_Member_Removed, 
                     (member:any) => userLeft(member.id)
                 )
+
+                //set channel
+                ref_pusherChannel.current = channel
                 //request current state from lobby
                 fireEvent_Join()
             })
@@ -326,8 +322,8 @@ export default function Setup(props:SetupProps) {
 
     const userLeft = (memberID:string) => {
         //abort countdown
-        if (ref_state.current.state === SetupStatus.countdown) {
-            ref_state.current.state = SetupStatus.init
+        if (ref_state.current.state === Status.countdown) {
+            ref_state.current.state = Status.init
         }
         //member id -> e.g. 2021-03-09T01:38:42.941Z7
         ref_players.current.forEach((item:Player, i) => {
@@ -344,6 +340,10 @@ export default function Setup(props:SetupProps) {
     const leaveGame = () => {
         log('leaving')
         setPusherState(Pu.PusherState.connecting)
+        //unsubscribe from lobby channel
+        let name:string = Pu.Channel_Lobby + ref_state.current.matchID
+        ref_pusherClient.current.unsubscribe(name)
+        //refresh window -> closes websocket connection
         window.location.reload()
     }
 
@@ -354,8 +354,7 @@ export default function Setup(props:SetupProps) {
     ##################################
     ##################################
     */
-    const handleEvent_Ping = (data:any) => {
-        log('retrieved event ping')
+    const handleEvent_Ping = () => {
         //parse all player-names to array
         let players:Event_Join_Data[] = []
         ref_players.current.forEach((player:Player) => {
@@ -370,6 +369,7 @@ export default function Setup(props:SetupProps) {
             isLobby: true
         }
         //trigger event
+        log('trigger PONG!')
         Pu.triggerEvent(Pu.Channel_Lobby + ref_state.current.matchID, Pu.Event_Pong_Name, event)
     }
 
@@ -380,7 +380,7 @@ export default function Setup(props:SetupProps) {
     ##################################
     ##################################
     */
-    const handleEvent_Join = (event:Setup_Event_Join) => {
+    const handleEvent_Join = (event:Event_Join) => {
 
         /*
             ONLY FIRST USER HANDLES THIS
@@ -392,7 +392,7 @@ export default function Setup(props:SetupProps) {
         */
 
         //security
-        if (event.type !== SetupEventType.Join) {
+        if (event.type !== EventType.Join) {
             log('EventType mismatch in handleEvent_Admin:\n\n' + event)
             return
         }
@@ -409,7 +409,7 @@ export default function Setup(props:SetupProps) {
             addSysMsg(SysMsgType.userJoined, newUser.name)
         }
 
-        if (ref_players.current.length === 0 && triggerUser === ref_username.current ) {
+        if (ref_players.current.length === 0 && triggerUser === ref_username.current) {
             /*
                 you are the only one in the game
                 -> dont send out event, add youself manually
@@ -423,11 +423,10 @@ export default function Setup(props:SetupProps) {
                                             ' The game will start when everyone is ready.') 
             addSysMsg(SysMsgType.welcome,   currentUrl) 
             joinPlayer()
+            handleEvent_Ping()
             setPusherState(Pu.PusherState.connected) //force update is incl. here
-            return
         }
-
-        if (ref_players.current[0].name === ref_username.current) {
+        else if (ref_players.current[0].name === ref_username.current) {
             /*
                 you are admin
                 -> attach new user 
@@ -435,6 +434,7 @@ export default function Setup(props:SetupProps) {
             */
             log('BROADCAST join for: ' + triggerUser)
             joinPlayer()
+            handleEvent_Ping()
             fireEvent_Chat()
             fireEvent_Players()
             fireEvent_Profiles()
@@ -449,48 +449,12 @@ export default function Setup(props:SetupProps) {
             username: ref_username.current,
             userid: ref_pusherChannel.current.members.me.id
         }
-        let event:Setup_Event_Join = {
-            type: SetupEventType.Join,
+        let event:Event_Join = {
+            type: EventType.Join,
             data: event_data
         }
-
-        //exectue
-        const response = await fetch('/api/pusher/setup/trigger', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'pusherchannel': ref_pusherChannel.current.name,
-                'pusherevent': event.type
-            },
-            body: JSON.stringify(event), 
-        });
-
-        //read response
-        const body = await response.text();
-        log(body)
-    }
-
-    const assignJoinEventAdmin = () => {
-        /*
-            This has to be called when a new user joins or one leaves
-            -> assign new answer player for join event
-            -> only first player handles join and ping event
-            (unbind to avoid double calling!)
-        */
-        if (ref_players.current.length > 0) {
-            ref_pusherChannel.current.unbind(SetupEventType.Join)
-            ref_pusherChannel.current.unbind(Pu.Event_Ping_Name)
-            if (ref_players.current[0].name === ref_username.current) {
-                //bind
-                ref_pusherChannel.current.bind(SetupEventType.Join,
-                    (data:any) => handleEvent_Join(data)
-                )
-                ref_pusherChannel.current.bind(Pu.Event_Ping_Name, 
-                    (data:any) => handleEvent_Ping(data)
-                )
-                log('Bound admin events')
-            }
-        }
+        //trigger
+        Pu.triggerEvent(getLobbyName(), EventType.Join, event)
     }
 
     /*
@@ -500,20 +464,43 @@ export default function Setup(props:SetupProps) {
     ##################################
     ##################################
     */
-    const handleEvent_Player = (event:Setup_Event_Players) => {
+    const assignJoinEventAdmin = () => {
+        /*
+            This has to be called when a new user joins or one leaves
+            -> assign admin to answer join event
+            -> only first player handles join and ping event
+            (unbind first to avoid double calling!)
+        */
+        if (ref_players.current.length > 0) {
+            ref_pusherChannel.current.unbind(EventType.Join)
+            ref_pusherChannel.current.unbind(Pu.Event_Ping_Name)
+            if (ref_players.current[0].name === ref_username.current) {
+                //bind
+                ref_pusherChannel.current.bind(EventType.Join,
+                    (data:any) => handleEvent_Join(data)
+                )
+                ref_pusherChannel.current.bind(Pu.Event_Ping_Name, 
+                    () => handleEvent_Ping()
+                )
+                log('Bound admin events')
+            }
+        }
+    }
+
+    const handleEvent_Player = (event:Event_Players) => {
 
         //let str = JSON.stringify(event.data, null, 4);
         //log(str)
 
         //log(pusherChannel.members.count)
         //security
-        if (event.type !== SetupEventType.Player) {
+        if (event.type !== EventType.Player) {
             log('EventType mismatch in handleEvent_Player:\n\n' + event)
             return
         }
 
         //set new state
-        let newState:Setup_State = event.state
+        let newState:State = event.state
         ref_state.current = newState
 
         //set new players
@@ -529,7 +516,7 @@ export default function Setup(props:SetupProps) {
         ################
         */
         //let first user trigger management of game content
-        if (ref_state.current.state === SetupStatus.init && 
+        if (ref_state.current.state === Status.init && 
             ref_username.current === ref_players.current[0].name) {
             
             //everyone ready?
@@ -539,7 +526,7 @@ export default function Setup(props:SetupProps) {
             log('everyone ready!')
 
             //start countdown for everyone
-            ref_state.current.state = SetupStatus.countdown
+            ref_state.current.state = Status.countdown
             fireEvent_Players()
         }
         /*  
@@ -547,17 +534,17 @@ export default function Setup(props:SetupProps) {
         START COUNTDOWN
         ################
         */
-        else if (ref_state.current.state === SetupStatus.countdown) {
+        else if (ref_state.current.state === Status.countdown) {
 
             let timeouts:NodeJS.Timeout[] = [] //store timeout to clear when aborted
             const checkCancelled = ():boolean => {
-                if (ref_state.current.state === SetupStatus.init) {
+                if (ref_state.current.state === Status.init) {
                     //set everyone unready
                     ref_players.current.forEach((value) => {
                         value.ready = false
                     })
                     //show info
-                    showNotification('Someone left, cancelled starting...', NotificationType.Not_Warning)
+                    showNotification('Someone left, cancelled starting...', NotType.Warning)
                     //clear further steps
                     timeouts.forEach((value) => {
                         clearTimeout(value)
@@ -584,7 +571,7 @@ export default function Setup(props:SetupProps) {
             if (ref_username.current === ref_players.current[0].name) {
                 const startGame = () => {
                     if (checkCancelled()) {return}
-                    ref_state.current.state = SetupStatus.getTweets
+                    ref_state.current.state = Status.getTweets
                     fireEvent_Players()
                 }
                 timeouts.push(setTimeout(() => startGame(), 5200))
@@ -595,7 +582,7 @@ export default function Setup(props:SetupProps) {
         START GETTING TWEETS
         ################
         */
-        else if (ref_state.current.state === SetupStatus.getTweets &&
+        else if (ref_state.current.state === Status.getTweets &&
                  ref_username.current === ref_players.current[0].name &&
                  ref_state.current.stateTexts.length === 0) { 
             //first user starts and only call when not called already (stateTexts.length === 0)
@@ -604,29 +591,14 @@ export default function Setup(props:SetupProps) {
     }
 
     const fireEvent_Players = async () => {
-
         //prepare
-        let event:Setup_Event_Players = {
-            type: SetupEventType.Player,
+        let event:Event_Players = {
+            type: EventType.Player,
             data: ref_players.current,
             state: ref_state.current 
         }
-
-        //execute
-        log('broadcast new players + state')
-        const response = await fetch('/api/pusher/setup/trigger', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'pusherchannel': ref_pusherChannel.current.name,
-                'pusherevent': event.type
-            },
-            body: JSON.stringify(event),
-        });
-        
-        //read response
-        const body = await response.text();
-        log(body)
+        //trigger
+        Pu.triggerEvent(getLobbyName(), EventType.Player, event)
     }
 
     const toogleReady = (ready:boolean) => {
@@ -643,16 +615,16 @@ export default function Setup(props:SetupProps) {
     ##################################
     ##################################
     */
-    const handleEvent_Chat = (event:Setup_Event) => {
+    const handleEvent_Chat = (event:Event) => {
 
         //security
-        if (event.type !== SetupEventType.Chat) {
+        if (event.type !== EventType.Chat) {
             log('EventType mismatch in handleEvent_Chat:\n\n' + event)
             return
         }
 
         //set new chat
-        let newChat:Setup_ChatMsg[] = event.data
+        let newChat:ChatMsg[] = event.data
         log('total msgs: ' + newChat.length)
         ref_chat.current = newChat
         forceUpdate()
@@ -676,26 +648,12 @@ export default function Setup(props:SetupProps) {
         }
 
         //prepare
-        let event:Setup_Event = {
-            type: SetupEventType.Chat,
+        let event:Event = {
+            type: EventType.Chat,
             data: ref_chat.current
         }
-
-        //execute
-        log('broadcast new chat ' + chatString.length)
-        const response = await fetch('/api/pusher/setup/trigger', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'pusherchannel': ref_pusherChannel.current.name,
-                'pusherevent': event.type
-            },
-            body: JSON.stringify(event),
-        });
-
-        //read response
-        const body = await response.text();
-        log(body)
+        //trigger
+        Pu.triggerEvent(getLobbyName(), EventType.Chat, event)
     }
 
     /*
@@ -705,10 +663,10 @@ export default function Setup(props:SetupProps) {
     ##################################
     ##################################
     */
-    const handleEvent_Profile = (event:Setup_Event) => {
+    const handleEvent_Profile = (event:Event) => {
 
         //security
-        if (event.type !== SetupEventType.Profile) {
+        if (event.type !== EventType.Profile) {
             log('EventType mismatch in handleEvent_Profile:\n\n' + event)
             return
         }
@@ -723,26 +681,12 @@ export default function Setup(props:SetupProps) {
     const fireEvent_Profiles = async () => {
 
         //prepare
-        let event:Setup_Event = {
-            type: SetupEventType.Profile,
+        let event:Event = {
+            type: EventType.Profile,
             data: ref_profiles.current
         }
-
-        //execute
-        log('broadcast new profiles')
-        const response = await fetch('/api/pusher/setup/trigger', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'pusherchannel': ref_pusherChannel.current.name,
-                'pusherevent': event.type
-            },
-            body: JSON.stringify(event),
-        });
-        
-        //read response
-        const body = await response.text();
-        log(body)
+        //trigger
+        Pu.triggerEvent(getLobbyName(), EventType.Profile, event)
     }
 
     /*
@@ -752,10 +696,10 @@ export default function Setup(props:SetupProps) {
     ##################################
     ##################################
     */
-    const handleEvent_Settings = (event:Setup_Event) => {
+    const handleEvent_Settings = (event:Event) => {
 
         //security
-        if (event.type !== SetupEventType.Settings) {
+        if (event.type !== EventType.Settings) {
             log('EventType mismatch in handleEvent_Settings:\n\n' + event)
             return
         }
@@ -773,26 +717,12 @@ export default function Setup(props:SetupProps) {
     const fireEvent_Settings = async () => {
 
         //prepare
-        let event:Setup_Event = {
-            type: SetupEventType.Settings,
+        let event:Event = {
+            type: EventType.Settings,
             data: ref_settings.current
         }
-
-        //execute
-        log('broadcast new settings')
-        const response = await fetch('/api/pusher/setup/trigger', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'pusherchannel': ref_pusherChannel.current.name,
-                'pusherevent': event.type
-            },
-            body: JSON.stringify(event),
-        });
-        
-        //read response
-        const body = await response.text();
-        log(body)
+        //trigger
+        Pu.triggerEvent(getLobbyName(), EventType.Settings, event)
     }
 
     /*
@@ -802,10 +732,10 @@ export default function Setup(props:SetupProps) {
     ##################################
     ##################################
     */
-    const handleEvent_Content = (event:Setup_Event_Tweets) => {
+    const handleEvent_Tweets = (event:Event_Tweets) => {
 
         //security
-        if (event.type !== SetupEventType.Tweets) {
+        if (event.type !== EventType.Tweets) {
             log('EventType mismatch in handleEvent_Settings:\n\n' + event)
             return
         }
@@ -823,27 +753,14 @@ export default function Setup(props:SetupProps) {
     const fireEvent_Tweets = async (_data:Tweet[], _bottomIndex:number) => {
 
         //prepare
-        let event:Setup_Event_Tweets = {
-            type: SetupEventType.Tweets,
+        let event:Event_Tweets = {
+            type: EventType.Tweets,
             data: _data,
             bottomIndex: _bottomIndex
         }
-
-        //execute
         log(`broadcast ${_data.length} tweets with ${_bottomIndex} bottomIndex`)
-        const response = await fetch('/api/pusher/setup/trigger', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'pusherchannel': ref_pusherChannel.current.name,
-                'pusherevent': event.type
-            },
-            body: JSON.stringify(event),
-        });
-        
-        //read response
-        const body = await response.text();
-        log(body)
+        //trigger
+        Pu.triggerEvent(getLobbyName(), EventType.Tweets, event)
     }
 
     /*
@@ -955,8 +872,6 @@ export default function Setup(props:SetupProps) {
         })
         //addStateMsg(`Removed ${count} 'reply to' tweets`)
         log(`Removed ${count} 'reply to' tweets`)
-
-
 
         /*
         ###################
@@ -1117,8 +1032,6 @@ export default function Setup(props:SetupProps) {
             }
         })
 
-        
-
         /*
         ###################
         UX-MESSAGES
@@ -1139,7 +1052,7 @@ export default function Setup(props:SetupProps) {
         ###################
         */
         setTimeout(() => {
-            ref_state.current.state = SetupStatus.redirectToMatch
+            ref_state.current.state = Status.redirectToMatch
             fireEvent_Players()
         }, 8000)
     }
@@ -1317,21 +1230,21 @@ export default function Setup(props:SetupProps) {
 
         //check if user has tweets
         if (newUser.statuses_count === 0) {
-            showNotification('User should have posted at least one tweet', NotificationType.Not_Error)
+            showNotification('User should have posted at least one tweet', NotType.Error)
             return
         }
 
         //check already added
         for(let i=0;i<ref_profiles.current.length;i++) {
             if (ref_profiles.current[i].screen_name === newUser.screen_name) {
-                showNotification(newUser.name + ' already added!', NotificationType.Not_Error)
+                showNotification(newUser.name + ' already added!', NotType.Error)
                 return
             }
         }
 
         //check maximum
         if (ref_profiles.current.length >= 10) {
-            showNotification('Maximum number of 10 profiles reached', NotificationType.Not_Error)
+            showNotification('Maximum number of 10 profiles reached', NotType.Error)
             return
         }
         
@@ -1339,13 +1252,13 @@ export default function Setup(props:SetupProps) {
         let alreadyL = JSON.stringify(ref_profiles.current).length
         let newUserL = JSON.stringify(newUser).length
         if ((alreadyL + newUserL) > 9000) {
-            showNotification('Pusher server cannot support more profiles!', NotificationType.Not_Error)
+            showNotification('Pusher server cannot support more profiles!', NotType.Error)
             return
         }
 
         //if user did not post a lot, show warning
         if (newUser.statuses_count < 20) {
-            showNotification('Playing profiles with few tweets might affect the game experience', NotificationType.Not_Warning)
+            showNotification('Playing profiles with few tweets might affect the game experience', NotType.Warning)
         }
 
         //add
@@ -1355,7 +1268,7 @@ export default function Setup(props:SetupProps) {
     }
 
     //passed to chat 
-    const onNewChatMessage = (newMsg:Setup_ChatMsg) => {
+    const onNewChatMessage = (newMsg:ChatMsg) => {
         //log('new chat msg received: ' + newMsg.m)
         newMsg.n = ref_username.current //chat component does not know/set user name
         ref_chat.current.push(newMsg)
@@ -1368,13 +1281,13 @@ export default function Setup(props:SetupProps) {
 
     const onToogleReady = (ready:boolean) => {
         if (ref_profiles.current.length < 2) {
-            showNotification('You have to select at least two profiles to play', NotificationType.Not_Warning)
+            showNotification('You have to select at least two profiles to play', NotType.Warning)
             return
         }
         toogleReady(ready)
     }
 
-    const onNewNotification = (msg:string, notType:NotificationType) => {
+    const onNewNotification = (msg:string, notType:NotType) => {
         showNotification(msg, notType)
     }
 
@@ -1410,6 +1323,14 @@ export default function Setup(props:SetupProps) {
         }
         return false
     }
+
+    /*
+    ##################################
+    ##################################
+            UI
+    ##################################
+    ##################################
+    */
 
     const getSpecialContent = () => {
 
@@ -1461,7 +1382,7 @@ export default function Setup(props:SetupProps) {
             -> if all good with pusher, look at actual state of setup
         */
         //retrieve tweets
-        if (ref_state.current.state === SetupStatus.getTweets) {
+        if (ref_state.current.state === Status.getTweets) {
 
             let cards = [<div></div>]
             cards = []
@@ -1488,7 +1409,7 @@ export default function Setup(props:SetupProps) {
                 </div>
         }
         //redirect to match
-        else if (ref_state.current.state === SetupStatus.redirectToMatch) {
+        else if (ref_state.current.state === Status.redirectToMatch) {
 
             //store data to pass to new route in session storage
             sessionStorage.setItem(LocalStorage.Trans_Content, JSON.stringify(ref_tweets.current))
@@ -1506,14 +1427,14 @@ export default function Setup(props:SetupProps) {
     return (
         <div className={st.Content_Con}>
             {getSpecialContent()}
-            <div className={ref_state.current.state === SetupStatus.init ? st.Left_Panel : st.Left_Panel_disabled}>
+            <div className={ref_state.current.state === Status.init ? st.Left_Panel : st.Left_Panel_disabled}>
                 {Search(
                     ref_profiles.current,
                     onAddProfile,
                     onNewNotification
                 )}
             </div>
-            <div className={ref_state.current.state === SetupStatus.init ? st.Center_Panel : st.Center_Panel_disabled}>
+            <div className={ref_state.current.state === Status.init ? st.Center_Panel : st.Center_Panel_disabled}>
                 <div className={st.Lobby_Con}>
                     {Lobby(
                         getAdmin(),
@@ -1528,7 +1449,7 @@ export default function Setup(props:SetupProps) {
                 }
             </div>
             <div className={st.Right_Panel}>
-                <div className={ref_state.current.state === SetupStatus.init ? st.Interaction_Con : st.Interaction_Con_disabled}>
+                <div className={ref_state.current.state === Status.init ? st.Interaction_Con : st.Interaction_Con_disabled}>
                     <Interaction
                         user={ref_players.current[getIndexOfUser(ref_username.current)]}
                         onLeaveClick={onLeaveTriggered}

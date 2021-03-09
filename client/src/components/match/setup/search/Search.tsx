@@ -11,7 +11,7 @@ import {didUserExceedLimit} from 'components/Logic'
 
 import {Profile} from 'components/Interfaces'
 import {LocalStorage} from 'components/Interfaces'
-import {NotificationType} from 'components/Interfaces'
+import {NotType} from 'components/Interfaces'
 import {TwitterStatus} from 'components/Interfaces'
 import {ProfilesUsage} from 'components/Interfaces'
 
@@ -46,7 +46,7 @@ let actionTimestamps:string[] = []
 export default function Search(
                                 addedUsers:Profile[],
                                 addUserFunc:(par1: Profile) => void,
-                                newNotification:(msg:string, notType:NotificationType) => void) 
+                                newNotification:(msg:string, notType:NotType) => void) 
                                 {
     const [page, setPage] = useState(1);
     const [userObjects, setUserObjects] = useState(stateInitArray);
@@ -100,19 +100,19 @@ export default function Search(
     //send error notification to setup
     const showErrNot = (msg: string) => {
         log(msg)
-        newNotification('Error: ' + msg, NotificationType.Not_Error)
+        newNotification('Error: ' + msg, NotType.Error)
     }
 
     const showWarNot = (msg: string) => {
         log(msg)
-        newNotification('Warning: ' + msg, NotificationType.Not_Warning)
+        newNotification('Warning: ' + msg, NotType.Warning)
     }
 
     //ACTIONS EXCEEDED
     const actionsExceeded = () => {
         if (didUserExceedLimit(actionTimestamps, 20, 30000)) {
             //actions exceeded
-            newNotification('easy boy... small cooldown - too many actions', NotificationType.Not_Warning)
+            newNotification('easy boy... small cooldown - too many actions', NotType.Warning)
             return true
         }
         //not exceeded -> add timestamp

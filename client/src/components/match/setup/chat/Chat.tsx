@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import st from './Chat.module.scss';
 
-import {Setup_ChatMsg} from 'components/Interfaces'
+import {ChatMsg} from 'components/Interfaces'
 import {SysMsgType} from 'components/Interfaces'
 
 import {didUserExceedLimit} from 'components/Logic'
@@ -18,8 +18,8 @@ enum SetupChatStatus {
 let messageTimestamps:string[] = []
 let inputSizeMax = 100
 
-export default function Chat(inputMessages:Setup_ChatMsg[],
-                             onNewMsg:(msg:Setup_ChatMsg) => void) {
+export default function Chat(inputMessages:ChatMsg[],
+                             onNewMsg:(msg:ChatMsg) => void) {
     
     //state
     const [userMsg,setUserMsg] = useState('')
@@ -46,7 +46,7 @@ export default function Chat(inputMessages:Setup_ChatMsg[],
             return
         }
 
-        let newMsg:Setup_ChatMsg = {
+        let newMsg:ChatMsg = {
             n: '',
             m: userMsg,
             t: SysMsgType.none
@@ -102,7 +102,7 @@ export default function Chat(inputMessages:Setup_ChatMsg[],
 
         let cards = []
         for(let i=0;i<inputMessages.length;i++) {
-            let item:Setup_ChatMsg = inputMessages[i]
+            let item:ChatMsg = inputMessages[i]
             let card = 
                 <div className={st.Message_Con} key={i}>
                     {item.t === SysMsgType.welcome &&

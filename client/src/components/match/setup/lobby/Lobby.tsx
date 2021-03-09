@@ -3,7 +3,7 @@ import st from './Lobby.module.scss';
 
 import {Profile} from 'components/Interfaces'
 import {Settings} from 'components/Interfaces'
-import {NotificationType} from 'components/Interfaces'
+import {NotType} from 'components/Interfaces'
 
 import {SettingsProps} from 'components/Functional_Interface'
 
@@ -18,7 +18,7 @@ export default function Lobby(isAdmin:boolean, //first user is admin
                               onRemoveProfile:(profile:Profile) => void,
                               settings:Settings,
                               onSettingsChanged:(newSettings:Settings) => void,
-                              newNotification:(msg:string, notType:NotificationType) => void) {
+                              newNotification:(msg:string, notType:NotType) => void) {
     const [lobbyIndex, setLobbyIndex] = useState(0) //default to profiles
 
     const getLobbyContent = () => {

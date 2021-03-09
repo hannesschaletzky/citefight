@@ -3,7 +3,7 @@ import st from './Settings.module.scss';
 
 import {didUserExceedLimit} from 'components/Logic'
 
-import {NotificationType} from 'components/Interfaces'
+import {NotType} from 'components/Interfaces'
 import {Settings_Roundtime} from 'components/Interfaces'
 import {Settings_DrinkingMode} from 'components/Interfaces'
 import {Settings_Pictures} from 'components/Interfaces'
@@ -37,7 +37,7 @@ export default function Settings(props:SettingsProps) {
 
         //check actions (excluded: rounds, customgamespeed)
         if (didUserExceedLimit(messageTimestamps, 15) ) {
-            props.newNotification('Too many actions, small cooldown', NotificationType.Not_Warning)
+            props.newNotification('Too many actions, small cooldown', NotType.Warning)
             return
         }
 

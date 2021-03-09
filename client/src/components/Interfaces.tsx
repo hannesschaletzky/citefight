@@ -37,10 +37,10 @@ export enum SysMsgType {
     startInfo = '5',
 }
 
-export enum NotificationType {
-    Not_Success = 'Not_Success',
-    Not_Warning = 'Not_Warning',
-    Not_Error = 'Not_Error'
+export enum NotType {
+    Success = 'Success',
+    Warning = 'Warning',
+    Error = 'Error'
 }
 
 
@@ -98,7 +98,7 @@ export interface Profile {
     profile_image_url_https: string;
 }
 
-export interface Setup_ChatMsg {
+export interface ChatMsg {
     n: string;      //name
     m: string;      //message
     t: SysMsgType;  //type

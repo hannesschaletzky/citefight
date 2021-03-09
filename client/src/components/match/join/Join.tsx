@@ -123,22 +123,19 @@ export default function Join(props:JoinProps) {
 
         //sub to lobby channel
         let name:string = Pu.Channel_Lobby + ref_status.current.MatchID
-        const channel_Lobby = props.pusherClient.subscribe(name)
-        channel_Lobby.bind(Pu.Channel_Sub_Fail, subChannelErr)
-        channel_Lobby.bind(Pu.Channel_Sub_Success, () => {
-            log('subscribed to channel: ' + channel_Lobby.name)
-            channel_Lobby.bind(Pu.Event_Pong_Name, 
+        const channel = props.pusherClient.subscribe(name)
+        channel.bind(Pu.Channel_Sub_Fail, subChannelErr)
+        channel.bind(Pu.Channel_Sub_Success, () => {
+            log('JOIN: sub to: ' + channel.name)
+            channel.bind(Pu.Event_Pong_Name, 
                 (data:Pu.Event_Pong) => handleEventPong(data)
             )
-            Pu.triggerEvent(channel_Lobby.name, Pu.Event_Ping_Name)
+            log('trigger ping')
+            Pu.triggerEvent(channel.name, Pu.Event_Ping_Name)
         })
         //user left pusher-event 
-        channel_Lobby.bind(Pu.Channel_Member_Removed, 
+        channel.bind(Pu.Channel_Member_Removed, 
             (member:any) => userLeft(member.id)
-        )
-        //user joined pusher-event
-        channel_Lobby.bind(Pu.Channel_Member_Added, 
-            () => {Pu.triggerEvent(channel_Lobby.name, Pu.Event_Ping_Name)}
         )
     }
 
@@ -159,11 +156,13 @@ export default function Join(props:JoinProps) {
     }
 
     const handleEventPong = (data:Pu.Event_Pong) => {
+        log(data.players)
         log('handle event pong!')
         clearTimeout(gameInfoTimeOut) //clear auto timeout 
         ref_status.current.AlreadyJoined = data.players
         ref_status.current.IsLobby = data.isLobby
         setGameInfoStatus(GameInfoStatus.success)
+        //forceUpdate()
     }
 
     /*
@@ -220,6 +219,10 @@ export default function Join(props:JoinProps) {
             setJoinEnabled(false)
             setUserNameError('Letters, numbers and "_" are allowed')
         }
+        else if (userNameAlreadyExists(name)) {
+            setJoinEnabled(false)
+            setUserNameError('User with this name already joined')
+        }
         else {
             setUserNameError('')
             setUserName(name)
@@ -235,6 +238,25 @@ export default function Join(props:JoinProps) {
 
     const checkUserNameContent = (name:string):boolean => {
         return (/^[a-zA-Z0-9_]+$/.test(name))
+    }
+
+    const userNameAlreadyExists = (name:string = ""):boolean => {
+        if (name === "") {
+            //get from local storage
+            if (localStorage.getItem(LocalStorage.Username) !== null) {
+                name = localStorage.getItem(LocalStorage.Username)!
+            }
+            else {
+                return false
+            }
+        }
+
+        for(let i = 0;i< ref_status.current.AlreadyJoined.length;i++) {
+            if (ref_status.current.AlreadyJoined[i].username === name) {
+                return true
+            }
+        }
+        return false
     }
 
     /*
@@ -353,7 +375,8 @@ export default function Join(props:JoinProps) {
                             Join
                         </button>
                     }
-                    {(localStorage.getItem(LocalStorage.Username) !== null) &&
+                    {(localStorage.getItem(LocalStorage.Username) !== null) && 
+                      !userNameAlreadyExists() &&
                         <button className={st.Button_Join} onClick={() => onQuickJoinClick()}>
                             Quick Join as '{localStorage.getItem(LocalStorage.Username)}'
                         </button>

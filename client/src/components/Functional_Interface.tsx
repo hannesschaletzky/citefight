@@ -1,11 +1,11 @@
 import {Settings} from 'components/Interfaces'
-import {NotificationType} from 'components/Interfaces'
+import {NotType} from 'components/Interfaces'
 
 export interface SettingsProps {
     settings: Settings;
     isAdmin:boolean;
     onSettingsChanged:(newSettings:Settings) => void;
-    newNotification:(msg:string, notType:NotificationType) => void;
+    newNotification:(msg:string, notType:NotType) => void;
 }
 export interface JoinProps {
     pusherClient:any;

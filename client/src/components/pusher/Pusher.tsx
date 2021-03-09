@@ -49,6 +49,7 @@ export const getNewPusherClient = () => {
         //bind error event
         _pusherClient.connection.bind('error', (err:any) => {
             log('error connecting')
+            log(err)
             reject(Error("It broke"))
         })
 
