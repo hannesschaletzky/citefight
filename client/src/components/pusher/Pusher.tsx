@@ -22,6 +22,7 @@ export const Channel_Match = "presence-match-"
 export const Channel_Sub_Success = 'pusher:subscription_succeeded'
 export const Channel_Sub_Fail = 'pusher:subscription_error'
 export const Channel_Member_Removed = 'pusher:member_removed'
+export const Channel_Member_Added = 'pusher:member_added'
 
 
 //export const getPusherClient = (channelName:string) => { -> with input parameters

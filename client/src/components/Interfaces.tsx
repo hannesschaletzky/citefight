@@ -80,6 +80,7 @@ export interface Settings {
 
 export interface Player {
     name: string;
+    pusherID: string;
     ready: boolean;
 }
 

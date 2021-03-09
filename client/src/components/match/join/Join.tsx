@@ -132,6 +132,25 @@ export default function Join(props:JoinProps) {
             )
             Pu.triggerEvent(channel_Lobby.name, Pu.Event_Ping_Name)
         })
+        //user left pusher-event 
+        channel_Lobby.bind(Pu.Channel_Member_Removed, 
+            (member:any) => userLeft(member.id)
+        )
+        //user joined pusher-event
+        channel_Lobby.bind(Pu.Channel_Member_Added, 
+            () => {Pu.triggerEvent(channel_Lobby.name, Pu.Event_Ping_Name)}
+        )
+    }
+    
+    const userLeft = (memberID:string) => {
+        //member id -> e.g. 2021-03-09T01:38:42.941Z7
+        ref_status.current.AlreadyJoined.forEach((item:string, i) => {
+            if (item === memberID) {
+                ref_status.current.AlreadyJoined.splice(i,1)
+                forceUpdate()
+                return
+            }
+        })
     }
 
     const subChannelErr = (err:any) => {

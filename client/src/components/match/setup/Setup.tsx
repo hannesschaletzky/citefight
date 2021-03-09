@@ -55,6 +55,10 @@ interface Setup_Event {
     type: SetupEventType;
     data: any;
 }
+interface Setup_Event_Join {
+    type: SetupEventType;
+    data: Event_Join_Data;
+}
 interface Setup_Event_Players {
     type: SetupEventType;
     data: any;
@@ -72,6 +76,10 @@ enum SetupEventType {
     Profile = 'Profile',
     Settings = 'Settings',
     Tweets = 'Tweets'
+}
+interface Event_Join_Data {
+    username: string;
+    userid: string;
 }
 
 //NOTIFICATION
@@ -285,7 +293,7 @@ export default function Setup(props:SetupProps) {
 
                 //bind to events
                 ref_pusherChannel.current.bind(SetupEventType.Join, 
-                    (data:Setup_Event) => handleEvent_Join(data)
+                    (data:Setup_Event_Join) => handleEvent_Join(data)
                 )
                 ref_pusherChannel.current.bind(Pu.Event_Ping_Name, 
                     (data:any) => handleEvent_Ping(data)
@@ -306,37 +314,31 @@ export default function Setup(props:SetupProps) {
                 ref_pusherChannel.current.bind(SetupEventType.Tweets, 
                     (data:Setup_Event_Tweets) => handleEvent_Content(data)
                 )
-                ref_pusherChannel.current.bind(Pu.Channel_Member_Removed, (member:any) => {
-                    //abort countdown
-                    if (ref_state.current.state === SetupStatus.countdown) {
-                        ref_state.current.state = SetupStatus.init
-                    }
-
-                    /*
-
-
-                        @@TODO:
-                        in players object, put member.id as well and then figure it out through this
-                        after successful join, assign through object.me in pusher
-                        -> var me = presenceChannel.members.me;
-                        -> save id in players object and work with this
-
-                    */
-
-                    //remove user
-                    let i = getIndexOfUser(member.id)
-                    //system users are: "2021-03-09T01:38:42.941Z7" -> will return -1 -> skip
-                    if (i === -1) {return} 
-                    ref_players.current.splice(i,1)
-                    addSysMsg(SysMsgType.userLeft, member.id)
-                    forceUpdate()
-                    assignJoinEventAdmin()
-                })
-
+                //user left pusher-event 
+                ref_pusherChannel.current.bind(Pu.Channel_Member_Removed, 
+                    (member:any) => userLeft(member.id)
+                )
                 //request current state from lobby
                 fireEvent_Join()
             })
         }
+    }
+
+    const userLeft = (memberID:string) => {
+        //abort countdown
+        if (ref_state.current.state === SetupStatus.countdown) {
+            ref_state.current.state = SetupStatus.init
+        }
+        //member id -> e.g. 2021-03-09T01:38:42.941Z7
+        ref_players.current.forEach((item:Player, i) => {
+            if (item.pusherID === memberID) {
+                ref_players.current.splice(i,1)
+                addSysMsg(SysMsgType.userLeft, item.name)
+                forceUpdate()
+                assignJoinEventAdmin()
+                return
+            }
+        })
     }
 
     const leaveGame = () => {
@@ -356,11 +358,9 @@ export default function Setup(props:SetupProps) {
         log('retrieved event ping')
         //parse all player-names to array
         let players:string[] = []
-        log(ref_players.current)
         ref_players.current.forEach((player:Player) => {
             players.push(player.name)
         })
-        log(ref_players.current)
         //create event
         let event:Pu.Event_Pong = {
             players: players,
@@ -377,7 +377,7 @@ export default function Setup(props:SetupProps) {
     ##################################
     ##################################
     */
-    const handleEvent_Join = (event:Setup_Event) => {
+    const handleEvent_Join = (event:Setup_Event_Join) => {
 
         /*
             ONLY FIRST USER HANDLES THIS
@@ -393,16 +393,17 @@ export default function Setup(props:SetupProps) {
             log('EventType mismatch in handleEvent_Admin:\n\n' + event)
             return
         }
-        let triggerUser = event.data
+        let triggerUser = event.data.username
             
         //encapsulated join
-        const joinPlayer = (name:string) => {
+        const joinPlayer = () => {
             let newUser:Player = {
-                name: name,
+                name: event.data.username,
+                pusherID: event.data.userid,
                 ready: false
             }
             ref_players.current.push(newUser)
-            addSysMsg(SysMsgType.userJoined, name)
+            addSysMsg(SysMsgType.userJoined, newUser.name)
         }
 
         if (ref_players.current.length === 0 && triggerUser === ref_username.current ) {
@@ -418,7 +419,7 @@ export default function Setup(props:SetupProps) {
                                             ' You can also let others scan the QR Code.' +
                                             ' The game will start when everyone is ready.') 
             addSysMsg(SysMsgType.welcome,   currentUrl) 
-            joinPlayer(triggerUser)
+            joinPlayer()
             setPusherState(Pu.PusherState.connected) //force update is incl. here
             return
         }
@@ -430,7 +431,7 @@ export default function Setup(props:SetupProps) {
                 -> broadcast current state
             */
             log('BROADCAST join for: ' + triggerUser)
-            joinPlayer(triggerUser)
+            joinPlayer()
             fireEvent_Chat()
             fireEvent_Players()
             fireEvent_Profiles()
@@ -441,9 +442,13 @@ export default function Setup(props:SetupProps) {
     const fireEvent_Join = async () => {
 
         //prepare
-        let event:Setup_Event = {
+        let event_data:Event_Join_Data = {
+            username: ref_username.current,
+            userid: ref_pusherChannel.current.members.me.id
+        }
+        let event:Setup_Event_Join = {
             type: SetupEventType.Join,
-            data: ref_username.current
+            data: event_data
         }
 
         //exectue
