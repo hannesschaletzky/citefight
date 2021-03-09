@@ -357,9 +357,12 @@ export default function Setup(props:SetupProps) {
     const handleEvent_Ping = (data:any) => {
         log('retrieved event ping')
         //parse all player-names to array
-        let players:string[] = []
+        let players:Event_Join_Data[] = []
         ref_players.current.forEach((player:Player) => {
-            players.push(player.name)
+            players.push({
+                username: player.name,
+                userid: player.pusherID
+            })
         })
         //create event
         let event:Pu.Event_Pong = {

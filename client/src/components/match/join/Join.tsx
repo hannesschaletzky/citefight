@@ -19,7 +19,7 @@ interface Status {
     Join: JoinStatus;
     GameInfo: GameInfoStatus;
     MatchID: string;
-    AlreadyJoined: string[];
+    AlreadyJoined: Pu.Event_Join_Data[];
     IsLobby: boolean;
 }
 enum JoinStatus {
@@ -141,11 +141,11 @@ export default function Join(props:JoinProps) {
             () => {Pu.triggerEvent(channel_Lobby.name, Pu.Event_Ping_Name)}
         )
     }
-    
+
     const userLeft = (memberID:string) => {
         //member id -> e.g. 2021-03-09T01:38:42.941Z7
-        ref_status.current.AlreadyJoined.forEach((item:string, i) => {
-            if (item === memberID) {
+        ref_status.current.AlreadyJoined.forEach((item:Pu.Event_Join_Data, i) => {
+            if (item.userid === memberID) {
                 ref_status.current.AlreadyJoined.splice(i,1)
                 forceUpdate()
                 return
@@ -313,10 +313,10 @@ export default function Join(props:JoinProps) {
                 else if (count >= 1) {
                     let items = [<div></div>]
                     items = []
-                    ref_status.current.AlreadyJoined.forEach((member:string, id) => {
+                    ref_status.current.AlreadyJoined.forEach((member:Pu.Event_Join_Data) => {
                         items.push(
-                            <div className={st.MemberInfo_Item} key={id}>
-                                {member}
+                            <div className={st.MemberInfo_Item} key={member.userid}>
+                                {member.username}
                             </div>
                         )
                     })

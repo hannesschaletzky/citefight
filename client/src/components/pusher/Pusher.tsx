@@ -11,8 +11,12 @@ export enum PusherState {
     failed = 'failed'
 }
 export interface Event_Pong {
-    players: string[];
+    players: Event_Join_Data[];
     isLobby: boolean;
+}
+export interface Event_Join_Data {
+    username: string;
+    userid: string;
 }
 
 export const Event_Ping_Name = "Join-Ping"
