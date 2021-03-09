@@ -6,6 +6,7 @@ import {log} from 'components/Logic'
 import TwitterProfileList from './TwitterProfileList'
 import CircularProgress from '@material-ui/core/CircularProgress';
 import TwitterIcon from 'assets/footer/Twitter_Icon.png'
+import TwitterIconBlack from 'assets/user/Twitter_Black.png'
 //logic
 import {didUserExceedLimit} from 'components/Logic'
 //interfaces
@@ -452,8 +453,14 @@ export default function Search(props:SearchProps) {
                     }
                 </div>
                 {userObjects.length === 0 &&
-                    <div className={st.EmptyResults_Con}>
-                        Search for public Twitter profiles and add them by clicking the card.
+                    <div className={st.Empty_Con}>
+                        <div className={st.Empty_Caption}>
+                            Search for public Twitter profiles and add them by clicking the card.
+                        </div>
+                        <img className={st.Empty_Icon} 
+                            src={TwitterIconBlack} 
+                            alt="Twitter"
+                        />
                     </div>
                 }
                 {userObjects.length !== 0  && 

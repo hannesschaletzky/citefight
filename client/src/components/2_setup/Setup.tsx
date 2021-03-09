@@ -34,7 +34,7 @@ import {popProfilesMock} from 'components/Mockdata'
 //components
 import Lobby from './lobby/Lobby'
 import Add from './add/Add'
-import Search from './search/Search'
+import Search from './add/search/Search'
 import Interaction from './interaction/Interaction'
 import Players from './players/Players'
 import Chat from './chat/Chat'

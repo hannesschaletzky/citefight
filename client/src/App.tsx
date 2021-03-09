@@ -25,7 +25,7 @@ import About from 'components/pages/About'
 import Donate from 'components/pages/Donate'
 import Credits from 'components/pages/Credits'
 import TwitterRedirect from 'components/pages/TwitterRedirect'
-import TwitterCallback from 'components/2_setup/TwitterCallback'
+import TwitterCallback from 'components/pages/TwitterCallback'
 
 import NotFound from 'components/pages/errorpages/NotFound'
 

@@ -5,7 +5,7 @@ import {Profile} from 'components/Interfaces'
 import {ProfilesUsage} from 'components/Interfaces'
 import {TwitterStatus} from 'components/Interfaces'
 //components
-import TwitterProfileList from '../../search/TwitterProfileList'
+import TwitterProfileList from '../../add/search/TwitterProfileList'
 
 export default function Profiles(profiles:Profile[],
                                  onRemoveProfile:(deletedUser: Profile) => void) {

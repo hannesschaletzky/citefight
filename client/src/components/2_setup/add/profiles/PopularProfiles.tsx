@@ -6,7 +6,7 @@ import {TwitterStatus} from 'components/Interfaces'
 //functional-interfaces
 import {PopularProfilesProps} from 'components/Functional_Interfaces'
 //components
-import TwitterProfileList from '../../search/TwitterProfileList'
+import TwitterProfileList from '../search/TwitterProfileList'
 
 export default function PopularProfiles(props:PopularProfilesProps) {
 
