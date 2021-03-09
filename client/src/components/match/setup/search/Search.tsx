@@ -429,68 +429,76 @@ export default function Search(
         */
     }
 
-  return (
-    <div className={st.Con}>
-        {getLoginComponent()}
-        <div className={st.Search_Con}>
-            <div className={st.Top_Con}>
-                <input  className={st.Input} 
-                        type="search" 
-                        autoComplete="off" 
-                        placeholder="Enter username or tag..."
-                        onChange={(e) => userNameChanged(e.target.value)} 
-                        onKeyPress={(e) => keyPressed(e)}/>
-                {searchEnabled && 
-                    <div className={st.Button_Con}>
-                        <img className={st.Icon} 
-                            src={TwitterIcon} 
-                            alt="Twitter" 
-                            onClick={(e) => onSearchButtonClick(RequestType.inital)}/>
-                        <button className={st.Search} 
-                                onClick={(e) => onSearchButtonClick(RequestType.inital)}>
-                                    Search
-                        </button>
-                    </div>
-                }
-            </div>
-            {userObjects.length === 0 &&
-                <div className={st.EmptyResults_Con}>
-                    Search for public Twitter profiles and add them by clicking the card.
-                </div>
-            }
-            {userObjects.length !== 0  && 
-                <div className={st.List_Con}>
-                    <TwitterProfileList
-                        parentType={ProfilesUsage.Search}
-                        data={userObjects}
-                        addedUsers={addedUsers}
-                        onAddUser={addUserFunc}
-                        onRemoveUser={() => {}}
-                        twitterStatus = {twitterStatus}
-                    />
-                    {(userObjects.length % 20 === 0) && 
-                        <div className={st.More_Con}>
-                            <button className={st.More} 
-                                    onClick={(e) => onSearchButtonClick(RequestType.more)}>
-                                Show more...
+    const getInputClass = () => {
+        if (searchEnabled ||
+            addedUsers.length > 0) {
+            return st.Input
+        }
+        return st.Input_Blinking
+    }
+
+    return (
+        <div className={st.Con}>
+            {getLoginComponent()}
+            <div className={st.Search_Con}>
+                <div className={st.Top_Con}>
+                    <input  className={getInputClass()} 
+                            type="search" 
+                            autoComplete="off" 
+                            placeholder="Search for Twitter username..."
+                            onChange={(e) => userNameChanged(e.target.value)} 
+                            onKeyPress={(e) => keyPressed(e)}/>
+                    {searchEnabled && 
+                        <div className={st.Button_Con}>
+                            <img className={st.Icon} 
+                                src={TwitterIcon} 
+                                alt="Twitter" 
+                                onClick={(e) => onSearchButtonClick(RequestType.inital)}/>
+                            <button className={st.Search} 
+                                    onClick={(e) => onSearchButtonClick(RequestType.inital)}>
+                                        Search
                             </button>
-                            {loading && //"more" loading
-                                <div className={st.Loading_Con}>
-                                    <CircularProgress/>
-                                </div>
-                            }
                         </div>
                     }
                 </div>
-            }
-            {loading && userObjects.length === 0 && //"inital" loading
-            <div className={st.Loading_Con}>
-                <CircularProgress/>
+                {userObjects.length === 0 &&
+                    <div className={st.EmptyResults_Con}>
+                        Search for public Twitter profiles and add them by clicking the card.
+                    </div>
+                }
+                {userObjects.length !== 0  && 
+                    <div className={st.List_Con}>
+                        <TwitterProfileList
+                            parentType={ProfilesUsage.Search}
+                            data={userObjects}
+                            addedUsers={addedUsers}
+                            onAddUser={addUserFunc}
+                            onRemoveUser={() => {}}
+                            twitterStatus = {twitterStatus}
+                        />
+                        {(userObjects.length % 20 === 0) && 
+                            <div className={st.More_Con}>
+                                <button className={st.More} 
+                                        onClick={(e) => onSearchButtonClick(RequestType.more)}>
+                                    Show more...
+                                </button>
+                                {loading && //"more" loading
+                                    <div className={st.Loading_Con}>
+                                        <CircularProgress/>
+                                    </div>
+                                }
+                            </div>
+                        }
+                    </div>
+                }
+                {loading && userObjects.length === 0 && //"inital" loading
+                <div className={st.Loading_Con}>
+                    <CircularProgress/>
+                </div>
+                }
             </div>
-            }
         </div>
-    </div>
-  );
+    );
 }
 
 

@@ -6,6 +6,40 @@ import {Tweet_Content} from './Interfaces'
 import {Tweet_TopPart} from './Interfaces'
 import {Tweet_BottomPart} from './Interfaces'
 
+import {Profile} from 'components/Interfaces'
+
+//popular profiles mockdata
+export const popProfilesMock:Profile[] = [
+    {
+        id_str:'342599843',
+        screen_name: 'MarioGoetze',
+        name: 'Mario Götze',
+        description: "It's me Mario",
+        location: 'Eindhoven, Nederland',
+        verified: true,
+        protected: false,
+        following: false, 
+        followers_count: 4299723, 
+        statuses_count: 1334, 
+        profile_image_url_https: "https://pbs.twimg.com/profile_images/1352250255048396801/MdiZUeLH_normal.jpg"
+    },
+    {
+        id_str:'2359476565',
+        screen_name: 'matshummels',
+        name: 'Mats Hummels',
+        description: "Official Account of Mats Hummels - German Football Player",
+        location: 'Dortmund',
+        verified: true,
+        protected: false,
+        following: false, 
+        followers_count: 2169147, 
+        statuses_count: 1662, 
+        profile_image_url_https: "https://pbs.twimg.com/profile_images/1123228138316750848/WK6tgKGC_normal.png"
+    }
+
+]
+
+
 export class Mockdata {
 
     private answer1: Answer = {

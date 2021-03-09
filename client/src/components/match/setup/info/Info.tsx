@@ -1,14 +1,30 @@
 import st from './Info.module.scss';
 
-export default function Info() {
-    
+//interfaces
+import {Profile} from 'components/Interfaces'
+import {ProfilesUsage} from 'components/Interfaces'
+import {TwitterStatus} from 'components/Interfaces'
+//components
+import TwitterProfileList from '../search/TwitterProfileList'
+
+export default function Info(profiles:Profile[],
+                            addUserFunc:(par1: Profile) => void) {
+
     return (
         <div className={st.Con}>
-            <div className={st.Empty_Con}>
-                Suggestions, voting, popular categories
+            <div className={st.Caption}>
+                Popular Profiles
             </div>
+            <TwitterProfileList
+                parentType={ProfilesUsage.Search}
+                data={profiles}
+                addedUsers={profiles}
+                onAddUser={addUserFunc}
+                onRemoveUser={() => {}}
+                twitterStatus = {TwitterStatus.none}
+            />
         </div>
-    );
+    )
 }
 
 

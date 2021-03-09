@@ -28,6 +28,9 @@ import {isValidMatchID} from 'components/Logic'
 //puhser
 import * as Pu from 'components/pusher/Pusher'
 
+//mockdata
+import {popProfilesMock} from 'components/Mockdata'
+
 //components
 import Lobby from './lobby/Lobby'
 import Info from './info/Info'
@@ -395,7 +398,7 @@ export default function Setup(props:SetupProps) {
                                             ' The game will start when everyone is ready.') 
             addSysMsg(SysMsgType.welcome,   currentUrl) 
             joinPlayer()
-            setPusherState(Pu.PusherState.connected) //force update is incl. here
+            setPusherState(Pu.PusherState.connected) //force update incl.
         }
         else if (ref_players.current[0].name === ref_username.current) {
             /*
@@ -1418,8 +1421,12 @@ export default function Setup(props:SetupProps) {
                         onNewNotification
                     )}
                 </div>
-                {Info()
-                }
+                <div className={st.Info_Con}>
+                    {Info(
+                        popProfilesMock,
+                        onAddProfile
+                    )}
+                </div>
             </div>
             <div className={st.Right_Panel}>
                 <div className={ref_state.current.state === Status.init ? st.Interaction_Con : st.Interaction_Con_disabled}>

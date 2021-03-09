@@ -86,6 +86,17 @@ $sdbg: false; //show debugging background = sdbg
   }
 }
 
+.Input_Blinking {
+  @extend .Input;
+  animation: blinker 2s linear infinite;
+}
+
+@keyframes blinker {
+  50% {
+    background-color: rgba(255, 251, 0, 0.5);
+  }
+}
+
 .Button_Con {
   height: 40px;
   padding-left: 4px;

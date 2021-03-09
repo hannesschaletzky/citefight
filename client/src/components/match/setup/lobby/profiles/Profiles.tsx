@@ -1,16 +1,15 @@
 import st from './Profiles.module.scss';
 
+//interfaces
 import {Profile} from 'components/Interfaces'
 import {ProfilesUsage} from 'components/Interfaces'
 import {TwitterStatus} from 'components/Interfaces'
-
+//components
 import TwitterProfileList from '../../search/TwitterProfileList'
 
 export default function Profiles(profiles:Profile[],
                                  onRemoveProfile:(deletedUser: Profile) => void) {
     
-
-
     const onRemoveClick = (deletedUser: Profile) => {
         onRemoveProfile(deletedUser)
     }
@@ -18,7 +17,7 @@ export default function Profiles(profiles:Profile[],
     const getContent = () => {
         if (profiles.length === 0) {
             return  <div className={st.Empty_Con}>
-                        The Twitter profiles you selected from the search will appear here
+                        Add profiles to play from the search or the popular profiles section
                     </div>
         }
         return <TwitterProfileList

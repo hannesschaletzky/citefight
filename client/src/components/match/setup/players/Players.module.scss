@@ -14,7 +14,7 @@ $sdbg: false; //show debugging background = sdbg
   padding: 5px;
 
   display: flex;
-
+  box-shadow: 1px 1px rgba(5, 19, 19, 0.267);
   @extend .borderWithRoundedCorners;
   background-color: rgba(230, 230, 230, 0.3);
 }

@@ -21,6 +21,7 @@ $sdbg: false; //show debugging background = sdbg
   margin-left: 5;
   padding: 3px;
   width: fit-content;
+  box-shadow: 1px 1px rgba(5, 19, 19, 0.267);
 
   font-size: 9pt;
   @extend .borderWithRoundedCorners;

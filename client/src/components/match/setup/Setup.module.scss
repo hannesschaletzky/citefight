@@ -62,6 +62,14 @@ $sdbg: false; //show debugging background = sdbg
   @extend .borderWithRoundedCorners;
 }
 
+.Info_Con {
+  flex: 1;
+  height: 48%;
+  margin-top: 10px;
+
+  @extend .borderWithRoundedCorners;
+}
+
 /*
   ################################
   RIGHT
