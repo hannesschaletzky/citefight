@@ -16,9 +16,11 @@ import {Settings,
 import {Player} from 'components/Interfaces'
 import {Profile} from 'components/Interfaces'
 import {Tweet} from 'components/Interfaces'
-import {PusherState} from 'components/Interfaces'
 //functional interfaces
 import {MatchProps} from 'components/Functional_Interface'
+
+//puhser
+import * as Pu from 'components/pusher/Pusher'
 
 //logic
 import {isValidMatchID} from 'components/Logic'
@@ -61,7 +63,7 @@ export default function Match(props:MatchProps) {
     const ref_profiles = useRef(init_profiles)
     const ref_settings = useRef(init_settings)
     const ref_players = useRef(init_players)
-    const ref_pusherState = useRef(PusherState.init)
+    const ref_pusherState = useRef(Pu.PusherState.init)
 
 	useEffect(() => {
 
@@ -74,7 +76,7 @@ export default function Match(props:MatchProps) {
         ref_state.current.matchID = matchID
 
         //get pusherclient (only at first loading -> .init)
-        if (props.pusherClient === null && ref_pusherState.current === PusherState.init) {
+        if (props.pusherClient === null && ref_pusherState.current === Pu.PusherState.init) {
             log('no pusher client -> redirect to join')
             setRedirectToJoin(true)
             return
@@ -124,15 +126,15 @@ export default function Match(props:MatchProps) {
             error = 'error'
         */
         //loading
-        if (ref_pusherState.current === PusherState.init ||
-            ref_pusherState.current === PusherState.connecting) {
+        if (ref_pusherState.current === Pu.PusherState.init ||
+            ref_pusherState.current === Pu.PusherState.connecting) {
             content =  
                 <div className={st.State_Con}>
                     <CircularProgress/>
                 </div>
         }
         //error
-        else if (ref_pusherState.current !== PusherState.connected) {
+        else if (ref_pusherState.current !== Pu.PusherState.connected) {
             content =  
                 <div className={st.State_Con}>
                     Could not connect to lobby, pusher service status is: {ref_pusherState.current}. 

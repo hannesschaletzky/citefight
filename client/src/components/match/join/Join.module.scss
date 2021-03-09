@@ -93,16 +93,25 @@ $sdbg: false; //show debugging background = sdbg
   MEMBER INFO
   ################################
 */
+
 .MemberInfo_Caption {
   margin-top: 15px;
   text-align: center;
-  //@extend .HelveticaNeueBoldFont;
   @extend .HelveticaNeueRegularFont;
+}
+.MemberInfo_Item_Con {
+  padding: 5px;
+  overflow: scroll;
+  height: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .MemberInfo_Item {
   margin-top: 5px;
   padding: 5px;
+  width: fit-content;
   @extend .borderWithRoundedCorners;
   @extend .HelveticaNeueRegularFont;
   font-size: 12px;
@@ -128,4 +137,10 @@ $sdbg: false; //show debugging background = sdbg
   align-items: center;
   background-color: $root_backgroundcolor;
   z-index: 5; //overlay all icons as well
+}
+
+.State_Caption {
+  margin-bottom: 15px;
+  text-align: center;
+  @extend .HelveticaNeueBoldFont;
 }

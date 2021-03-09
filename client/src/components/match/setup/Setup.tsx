@@ -16,7 +16,6 @@ import {Setup_ChatMsg} from 'components/Interfaces'
 import {Profile} from 'components/Interfaces'
 import {SysMsgType} from 'components/Interfaces'
 import {NotificationType} from 'components/Interfaces'
-import {PusherState} from 'components/Interfaces'
 import {Settings} from 'components/Interfaces'
 //functional interfaces
 import {SetupProps} from 'components/Functional_Interface'
@@ -24,6 +23,9 @@ import {SetupProps} from 'components/Functional_Interface'
 //logic
 import {initSettings} from 'components/Logic'
 import {isValidMatchID} from 'components/Logic'
+
+//puhser
+import * as Pu from 'components/pusher/Pusher'
 
 //components
 import Lobby from './lobby/Lobby'
@@ -110,11 +112,11 @@ export default function Setup(props:SetupProps) {
     const ref_settings = useRef(initSettings)
     const ref_players = useRef(init_players)
     const ref_chat = useRef(init_chat)
-    const ref_pusherState = useRef(PusherState.init)
+    const ref_pusherState = useRef(Pu.PusherState.init)
     const ref_notification = useRef(init_notification)
     //control flow refs
     const ref_username = useRef("")
-    const ref_pusherClient = useRef(init_pusherCient)
+    const ref_pusherClient = useRef(init_pusherCient) //CHANGE TO PROPS.pusherclient
     const ref_pusherChannel = useRef(init_pusherChannel)
 
     //important ui update
@@ -132,7 +134,7 @@ export default function Setup(props:SetupProps) {
         ref_state.current.matchID = matchID
 
         //get pusherclient (only at first loading -> .init)
-        if (props.pusherClient === null && ref_pusherState.current === PusherState.init) {
+        if (props.pusherClient === null && ref_pusherState.current === Pu.PusherState.init) {
             log('no pusher client -> redirect to join')
             setRedirectToJoin(true)
             return
@@ -141,7 +143,7 @@ export default function Setup(props:SetupProps) {
         //retrieve & set pusherclient (once)
         if (ref_pusherClient.current === null) {
             ref_pusherClient.current = props.pusherClient
-            log('retrieved pusher client')
+            log('retrieved and set pusher client')
             //get username
             let savedUsername = localStorage.getItem(LocalStorage.Username)
             if (savedUsername !== null) {
@@ -173,7 +175,7 @@ export default function Setup(props:SetupProps) {
         return -1
     }
 
-    const setPusherState = (state:PusherState) => {
+    const setPusherState = (state:Pu.PusherState) => {
         //log('set state to: ' + state)
         ref_pusherState.current = state
         forceUpdate()
@@ -254,35 +256,41 @@ export default function Setup(props:SetupProps) {
             setPusherState(states.current) 
         })
 
-        //bind error event
-        ref_pusherClient.current.connection.bind('error', (err:any) => {
-            setPusherState(PusherState.failed)
-            logObjectPretty(err)
-        })
+        //sub to events of lobby if connected
+        if (ref_pusherClient.current.connection.state === Pu.PusherState.connected) {
 
-        //sub to channel if connected
-        if (ref_pusherClient.current.connection.state === PusherState.connected) {
+            /*
+            //get lobby channel
+            let name:string = Pu.Channel_Lobby + ref_state.current.matchID
+            ref_pusherChannel.current = ref_pusherClient.current.channels.channels[name]
+            if (ref_pusherChannel.current === null) {
+                log('could not get lobby channel!')
+                setPusherState(Pu.PusherState.failed)
+                return
+            }*/
 
-            //unsubscribe from all events first
-            //DO WE NEED TO UNSUBSCRIBE FROM ANY JOIN CHANNELS??? -> I guess no
+            //UNBIND ALL EVENTS FIRST
+            let name:string = Pu.Channel_Lobby + ref_state.current.matchID
+            ref_pusherClient.current.unsubscribe(name)
 
             //sub to lobby channel
-            const channel = ref_pusherClient.current.subscribe("presence-lobby-" + ref_state.current.matchID)
-            // -> error
-            channel.bind('pusher:subscription_error', (err:any) => {
+            const channel_Lobby = props.pusherClient.subscribe(name)
+            channel_Lobby.bind(Pu.Channel_Sub_Fail, (err:any) => {
                 logObjectPretty(err)
-                showNotification('error subscribing to lobby-channel, please try again', NotificationType.Not_Error)
+                setPusherState(Pu.PusherState.failed) 
             })
-            // -> success
-            channel.bind('pusher:subscription_succeeded', () => {
-                log('subscribed to channel: ' + channel.name)
-                
-                ref_pusherChannel.current = channel
+            channel_Lobby.bind(Pu.Channel_Sub_Success, () => {
+                log('subscribed to channel: ' + channel_Lobby.name)
+                ref_pusherChannel.current = channel_Lobby
 
                 //bind to events
                 ref_pusherChannel.current.bind(SetupEventType.Join, 
                     (data:Setup_Event) => handleEvent_Join(data)
                 )
+                ref_pusherChannel.current.bind(Pu.Event_Ping_Name, 
+                    (data:any) => handleEvent_Ping(data)
+                )
+                //above two will be handled by admin when more players in lobby
                 ref_pusherChannel.current.bind(SetupEventType.Player, 
                     (data:Setup_Event_Players) => handleEvent_Player(data)
                 )
@@ -298,13 +306,27 @@ export default function Setup(props:SetupProps) {
                 ref_pusherChannel.current.bind(SetupEventType.Tweets, 
                     (data:Setup_Event_Tweets) => handleEvent_Content(data)
                 )
-                ref_pusherChannel.current.bind('pusher:member_removed', (member:any) => {
+                ref_pusherChannel.current.bind(Pu.Channel_Member_Removed, (member:any) => {
                     //abort countdown
                     if (ref_state.current.state === SetupStatus.countdown) {
                         ref_state.current.state = SetupStatus.init
                     }
+
+                    /*
+
+
+                        @@TODO:
+                        in players object, put member.id as well and then figure it out through this
+                        after successful join, assign through object.me in pusher
+                        -> var me = presenceChannel.members.me;
+                        -> save id in players object and work with this
+
+                    */
+
                     //remove user
                     let i = getIndexOfUser(member.id)
+                    //system users are: "2021-03-09T01:38:42.941Z7" -> will return -1 -> skip
+                    if (i === -1) {return} 
                     ref_players.current.splice(i,1)
                     addSysMsg(SysMsgType.userLeft, member.id)
                     forceUpdate()
@@ -319,8 +341,33 @@ export default function Setup(props:SetupProps) {
 
     const leaveGame = () => {
         log('leaving')
-        setPusherState(PusherState.connecting)
+        setPusherState(Pu.PusherState.connecting)
         window.location.reload()
+    }
+
+    /*
+    ##################################
+    ##################################
+        EVENT: Ping/Pong
+    ##################################
+    ##################################
+    */
+    const handleEvent_Ping = (data:any) => {
+        log('retrieved event ping')
+        //parse all player-names to array
+        let players:string[] = []
+        log(ref_players.current)
+        ref_players.current.forEach((player:Player) => {
+            players.push(player.name)
+        })
+        log(ref_players.current)
+        //create event
+        let event:Pu.Event_Pong = {
+            players: players,
+            isLobby: true
+        }
+        //trigger event
+        Pu.triggerEvent(Pu.Channel_Lobby + ref_state.current.matchID, Pu.Event_Pong_Name, event)
     }
 
     /*
@@ -372,11 +419,11 @@ export default function Setup(props:SetupProps) {
                                             ' The game will start when everyone is ready.') 
             addSysMsg(SysMsgType.welcome,   currentUrl) 
             joinPlayer(triggerUser)
-            setPusherState(PusherState.connected) //force update is incl. here
+            setPusherState(Pu.PusherState.connected) //force update is incl. here
             return
         }
 
-        if (ref_players.current[0].name === ref_username.current ) {
+        if (ref_players.current[0].name === ref_username.current) {
             /*
                 you are admin
                 -> attach new user 
@@ -419,17 +466,21 @@ export default function Setup(props:SetupProps) {
         /*
             This has to be called when a new user joins or one leaves
             -> assign new answer player for join event
-            -> only first player handles join event
+            -> only first player handles join and ping event
             (unbind to avoid double calling!)
         */
         if (ref_players.current.length > 0) {
             ref_pusherChannel.current.unbind(SetupEventType.Join)
-            if (ref_players.current[0].name === ref_username.current ) {
+            ref_pusherChannel.current.unbind(Pu.Event_Ping_Name)
+            if (ref_players.current[0].name === ref_username.current) {
                 //bind
                 ref_pusherChannel.current.bind(SetupEventType.Join,
                     (data:any) => handleEvent_Join(data)
                 )
-                log('Bound join event')
+                ref_pusherChannel.current.bind(Pu.Event_Ping_Name, 
+                    (data:any) => handleEvent_Ping(data)
+                )
+                log('Bound admin events')
             }
         }
     }
@@ -461,7 +512,7 @@ export default function Setup(props:SetupProps) {
         let newPlayers:Player[] = event.data
         log('total players: ' + newPlayers.length)
         ref_players.current = newPlayers
-        setPusherState(PusherState.connected) //force update incl. here
+        setPusherState(Pu.PusherState.connected) //force update incl. here
         assignJoinEventAdmin()
 
         /*  
@@ -1381,15 +1432,15 @@ export default function Setup(props:SetupProps) {
         */
 
         //loading
-        if (ref_pusherState.current === PusherState.init ||
-            ref_pusherState.current === PusherState.connecting) {
+        if (ref_pusherState.current === Pu.PusherState.init ||
+            ref_pusherState.current === Pu.PusherState.connecting) {
             content =  
                 <div className={st.State_Con}>
                     <CircularProgress/>
                 </div>
         }
         //error
-        else if (ref_pusherState.current !== PusherState.connected) {
+        else if (ref_pusherState.current !== Pu.PusherState.connected) {
             content =  
                 <div className={st.State_Con}>
                     Could not connect to lobby, pusher service status is: {ref_pusherState.current}. 

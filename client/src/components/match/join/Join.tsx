@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef, useReducer } from 'react';
 import  { Redirect } from 'react-router-dom'
 import st from './Join.module.scss';
-import {log} from 'components/Logic'
+import {log, logObjectPretty} from 'components/Logic'
 //ui 
 import CircularProgress from '@material-ui/core/CircularProgress'
 //interfaces
@@ -11,17 +11,37 @@ import {LocalStorage} from 'components/Interfaces'
 import {JoinProps} from 'components/Functional_Interface'
 //logic
 import {isValidMatchID} from 'components/Logic'
-import {getNewPusherClient} from './PusherClient' 
+//pusher
+import * as Pu from 'components/pusher/Pusher'
 
-//determine status of join
+//STATUS
+interface Status {
+    Join: JoinStatus;
+    GameInfo: GameInfoStatus;
+    MatchID: string;
+    AlreadyJoined: string[];
+    IsLobby: boolean;
+}
 enum JoinStatus {
     init,
     pusherConnected,
     pusherError,
     connecting //-> redirect to lobby/match
 }
+enum GameInfoStatus {
+    init,
+    loading,
+    success,
+    error,
+}
+const init_status:Status = {
+    Join: JoinStatus.init, //progress status
+    GameInfo: GameInfoStatus.init, //progress status
+    MatchID: "",
+    AlreadyJoined: [],
+    IsLobby: true
+}
 
-//export default function Join(pusherClient:any, onNewClient:(newClient:any) => void) {
 export default function Join(props:JoinProps) {
     //state
     const [validMatchID,setValidMatchID] = useState(true)
@@ -29,13 +49,13 @@ export default function Join(props:JoinProps) {
     const [userName, setUserName] = useState("");
     const [userNameError, setUserNameError] = useState("");
     //refs
-    const ref_matchID = useRef("")
-    const ref_status = useRef(JoinStatus.init)
+    const ref_status = useRef(init_status)
 
     const [,forceUpdate] = useReducer(x => x + 1, 0);
 
     //other
     const maxNameChars = 25
+    let gameInfoTimeOut = setTimeout(() => {}, 1) //hold timeout for game info auto abort
 
     useEffect(() => {
 
@@ -45,19 +65,26 @@ export default function Join(props:JoinProps) {
             setValidMatchID(false)
             return
         }
-        ref_matchID.current = matchID
+        ref_status.current.MatchID = matchID
 
         //connect and get pusher client at very first call
-        if (props.pusherClient === null && ref_status.current === JoinStatus.init) {
-            getNewPusherClient()
-            .then(res => {
-                props.onNewClient(res)
-                setStatus(JoinStatus.pusherConnected)
-            })
-            .catch(err => {
-                log(err)
-                setStatus(JoinStatus.pusherError)
-            })
+        if (props.pusherClient === null && ref_status.current.Join === JoinStatus.init) {
+            Pu.getNewPusherClient()
+                .then(res => {
+                    props.onNewClient(res)
+                    setJoinStatus(JoinStatus.pusherConnected) //start game info retrieval
+                })
+                .catch(err => {
+                    log(err)
+                    setJoinStatus(JoinStatus.pusherError)
+                })
+        }
+
+        //retrieve gameinfo
+        if (ref_status.current.Join === JoinStatus.pusherConnected &&
+            ref_status.current.GameInfo === GameInfoStatus.init) {
+            setGameInfoStatus(GameInfoStatus.loading)
+            retrieveGameInfo()
         }
     })
 
@@ -69,9 +96,55 @@ export default function Join(props:JoinProps) {
     ##################################
     */
 
-    const setStatus = (newStatus:JoinStatus) => {
-        ref_status.current = newStatus
+    const setJoinStatus = (newStatus:JoinStatus) => {
+        ref_status.current.Join = newStatus
         forceUpdate()
+    }
+
+    const setGameInfoStatus = (newStatus:GameInfoStatus) => {
+        ref_status.current.GameInfo = newStatus
+        forceUpdate()
+    }
+
+    /*
+    ##################################
+    ##################################
+            RETRIEVE GAME INFO 
+    ##################################
+    ##################################
+    */
+
+    const retrieveGameInfo = () => {
+
+        //if user is first, no pong event will be received, user will be able to join after a time
+        gameInfoTimeOut = setTimeout(() => {
+            setGameInfoStatus(GameInfoStatus.success)
+        }, 2000)
+
+        //sub to lobby channel
+        let name:string = Pu.Channel_Lobby + ref_status.current.MatchID
+        const channel_Lobby = props.pusherClient.subscribe(name)
+        channel_Lobby.bind(Pu.Channel_Sub_Fail, subChannelErr)
+        channel_Lobby.bind(Pu.Channel_Sub_Success, () => {
+            log('subscribed to channel: ' + channel_Lobby.name)
+            channel_Lobby.bind(Pu.Event_Pong_Name, 
+                (data:Pu.Event_Pong) => handleEventPong(data)
+            )
+            Pu.triggerEvent(channel_Lobby.name, Pu.Event_Ping_Name)
+        })
+    }
+
+    const subChannelErr = (err:any) => {
+        logObjectPretty(err)
+        setJoinStatus(JoinStatus.pusherError)
+    }
+
+    const handleEventPong = (data:Pu.Event_Pong) => {
+        log('handle event pong!')
+        clearTimeout(gameInfoTimeOut) //clear auto timeout 
+        ref_status.current.AlreadyJoined = data.players
+        ref_status.current.IsLobby = data.isLobby
+        setGameInfoStatus(GameInfoStatus.success)
     }
 
     /*
@@ -87,7 +160,7 @@ export default function Join(props:JoinProps) {
             return
         }
         //is trying
-        if (ref_status.current === JoinStatus.connecting) {
+        if (ref_status.current.Join === JoinStatus.connecting) {
             log('already trying')
             return
         }
@@ -103,7 +176,7 @@ export default function Join(props:JoinProps) {
 
     const executeJoin = (userName:string) => {
         localStorage.setItem(LocalStorage.Username, userName)
-        setStatus(JoinStatus.connecting)
+        setJoinStatus(JoinStatus.connecting)
     }
 
     /*
@@ -166,57 +239,113 @@ export default function Join(props:JoinProps) {
         }
         
         //CONNECT TO PUSHER
-        if (ref_status.current === JoinStatus.init) {
+        if (ref_status.current.Join === JoinStatus.init) {
             content  = 
             <div className={st.State_Con}>
-                <div className={st.Caption}>
-                    Setting things up
+                <div className={st.State_Caption}>
+                    Setting things up...
                 </div>
                 <CircularProgress/>
             </div>
         }
         //PUSHER -> ERROR
-        if (ref_status.current === JoinStatus.pusherError) {
+        else if (ref_status.current.Join === JoinStatus.pusherError) {
             content  = 
             <div className={st.State_Con}>
-                <div className={st.Caption}>
-                    Could not connect to service. Please try another time.
+                <div className={st.State_Caption}>
+                    Could not connect to Pusher-service. Please try another time.
                 </div>
             </div>
         }
         //PUSHER -> SUCCESS -> USER CAN JOIN
-        else if (ref_status.current === JoinStatus.pusherConnected) {
-            content = 
-            <div className={st.Join_Con}>
-                <div className={st.Caption}>
-                    Type your name and join in!
-                </div>
-                <input  className={st.Input}
-                            type="search" 
-                            autoComplete="off" 
-                            placeholder="Enter a name"
-                            onChange={e => userNameChanged(e.target.value)} 
-                            onKeyUp={e => keyPressed(e)}/>
-                {(userNameError !== '') &&
-                    <div className={st.Error_Con}>
-                        {userNameError}
+        else if (ref_status.current.Join === JoinStatus.pusherConnected) {
+
+            //DETERMINE GAME INFO STATUS
+            if (ref_status.current.GameInfo === GameInfoStatus.init ||
+                ref_status.current.GameInfo === GameInfoStatus.loading) {
+                content  = 
+                <div className={st.State_Con}>
+                    <div className={st.State_Caption}>
+                        Retrieving Game Info...
                     </div>
+                    <CircularProgress/>
+                </div>
+            }
+            else if (ref_status.current.GameInfo === GameInfoStatus.error) {
+                content  = 
+                <div className={st.State_Con}>
+                    <div className={st.State_Caption}>
+                        Could not retrieve mandatory game info for {ref_status.current.MatchID}. Please try again.
+                    </div>
+                </div>
+            }
+            else if (ref_status.current.GameInfo === GameInfoStatus.success) {
+                //already-joined component
+                let count = ref_status.current.AlreadyJoined.length
+                let memberInfo = <div></div>
+                //you are the only person in room
+                if (count === 0) {
+                    memberInfo = 
+                        <div className={st.MemberInfo_Caption}>
+                            You are the first person to join the lobby!
+                        </div>
                 }
-                {joinEnabled && 
-                    <button className={st.Button_Join} onClick={() => onJoinClick(userName)}>
-                        Join
-                    </button>
+                //more people already joined
+                else if (count >= 1) {
+                    let items = [<div></div>]
+                    items = []
+                    ref_status.current.AlreadyJoined.forEach((member:string, id) => {
+                        items.push(
+                            <div className={st.MemberInfo_Item} key={id}>
+                                {member}
+                            </div>
+                        )
+                    })
+                    memberInfo = 
+                        <div className={st.MemberInfo_Con}>
+                            <div className={st.MemberInfo_Caption}>
+                                {count} already joined:
+                            </div>
+                            <div className={st.MemberInfo_Item_Con}>
+                                {items}
+                            </div>
+                        </div>
                 }
-                {(localStorage.getItem(LocalStorage.Username) !== null) &&
-                    <button className={st.Button_Join} onClick={() => onQuickJoinClick()}>
-                        Quick Join as '{localStorage.getItem(LocalStorage.Username)}'
-                    </button>
-                }
-            </div>
+
+                //compose join comp and member info
+                content = 
+                <div className={st.Join_Con}>
+                    <div className={st.Caption}>
+                        Type your name and join in!
+                    </div>
+                    <input  className={st.Input}
+                                type="search" 
+                                autoComplete="off" 
+                                placeholder="Enter a name"
+                                onChange={e => userNameChanged(e.target.value)} 
+                                onKeyUp={e => keyPressed(e)}/>
+                    {(userNameError !== '') &&
+                        <div className={st.Error_Con}>
+                            {userNameError}
+                        </div>
+                    }
+                    {joinEnabled && 
+                        <button className={st.Button_Join} onClick={() => onJoinClick(userName)}>
+                            Join
+                        </button>
+                    }
+                    {(localStorage.getItem(LocalStorage.Username) !== null) &&
+                        <button className={st.Button_Join} onClick={() => onQuickJoinClick()}>
+                            Quick Join as '{localStorage.getItem(LocalStorage.Username)}'
+                        </button>
+                    }
+                    {memberInfo}
+                </div>
+            }
         }
         //JOINING -> redirect user
-        else if (ref_status.current === JoinStatus.connecting) {
-            let redirectURL = '/setup/' + ref_matchID.current
+        else if (ref_status.current.Join === JoinStatus.connecting) {
+            let redirectURL = '/setup/' + ref_status.current.MatchID 
             content = <Redirect to={redirectURL}/>
         }
         return content
@@ -226,64 +355,4 @@ export default function Join(props:JoinProps) {
         getContent()
     );
 }
-
-
-
-/*
-
-//channel information (already joined players)
-                let memberInfo = [<div key="d"></div>]
-                /*
-                memberInfo = []
-                //you are the only person in room
-                if (ref_pusherChannel_Join.current.members.count === 1) {
-                    memberInfo.push(
-                        <div className={st.MemberInfo_Caption} key="_">
-                            You are the first person to join the lobby!
-                        </div>
-                    )
-                }
-                //more people already joined
-                else if (ref_pusherChannel_Join.current.members.count > 1) {
-                    memberInfo.push(
-                        <div className={st.MemberInfo_Caption} key="_">
-                            {ref_pusherChannel_Join.current.members.count} already joined:
-                        </div>
-                    )
-                    ref_pusherChannel_Join.current.members.each((member:any) => {
-                        memberInfo.push(
-                            <div className={st.MemberInfo_Item} key={member.id}>
-                                {member.id}
-                            </div>
-                        )
-                    })
-                }
-
-
-
-//loading game info
-            if (ref_pusherState.current === PusherStatus.init || 
-                ref_pusherState.current === PusherStatus.loading) {
-                content = 
-                <div className={st.Join_Con}>
-                    <div className={st.Caption}>
-                        Retrieving Game Info
-                    </div>
-                    <CircularProgress/>
-                </div>
-            }
-            //retrieved game info
-            else if (ref_pusherState.current === PusherStatus.succes) {
-                
-                //Join + MemberInfo Component
-                
-            }
-            else if (ref_pusherState.current === PusherStatus.error) { 
-                content = 
-                <div className={st.Join_Con}>
-                    Error retrieving game info... critial error!
-                </div>
-            }
-
-                */
 
