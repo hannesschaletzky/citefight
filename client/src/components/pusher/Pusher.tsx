@@ -1,6 +1,21 @@
 import {log} from 'components/Logic'
 const Pusher = require('pusher-js');
 
+//EVENTS
+export interface Event {
+    type: EventType;
+    data: any;
+}
+export enum EventType {
+    Join = 'Join',
+    Chat = 'Chat',
+    Player = 'Player',
+    Profile = 'Profile',
+    Settings = 'Settings',
+    Tweets = 'Tweets',
+    Match_State = 'Match_State'
+}
+
 //according to: https://pusher.com/docs/channels/using_channels/connection#available-states
 export enum State {
     init = 'init',

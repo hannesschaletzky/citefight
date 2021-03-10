@@ -52,31 +52,19 @@ enum Status {
 }
 
 //PUSHER EVENT
-interface Event {
-    type: EventType;
-    data: any;
-}
 interface Event_Join {
-    type: EventType;
+    type: Pu.EventType;
     data: Event_Join_Data;
 }
 interface Event_Players {
-    type: EventType;
+    type: Pu.EventType;
     data: any;
     state: State;
 }
 interface Event_Tweets {
-    type: EventType;
+    type: Pu.EventType;
     data: any;
     bottomIndex: number;
-}
-enum EventType {
-    Join = 'Setup_Join',
-    Chat = 'Setup_Chat',
-    Player = 'Setup_Player',
-    Profile = 'Profile',
-    Settings = 'Settings',
-    Tweets = 'Tweets'
 }
 interface Event_Join_Data {
     username: string;
@@ -171,6 +159,13 @@ export default function Setup(props:SetupProps) {
 
     const getLobbyName = ():string => {
         return Pu.Channel_Lobby + ref_state.current.matchID
+    }
+
+    const isAdmin = ():boolean => {
+        if (ref_username.current === ref_players.current[0].name) {
+            return true
+        }
+        return false
     }
 
     const getIndexOfUser = (name:string):number => {
@@ -279,23 +274,23 @@ export default function Setup(props:SetupProps) {
                 log('SETUP: sub to: ' + channel.name)
 
                 //bind to events
-                channel.bind(EventType.Join, 
+                channel.bind(Pu.EventType.Join, 
                     (data:Event_Join) => handleEvent_Join(data)
                 )
                 //above will be handled by admin when more players in lobby
-                channel.bind(EventType.Player, 
+                channel.bind(Pu.EventType.Player, 
                     (data:Event_Players) => handleEvent_Player(data)
                 )
-                channel.bind(EventType.Chat, 
-                    (data:Event) => handleEvent_Chat(data)
+                channel.bind(Pu.EventType.Chat, 
+                    (data:Pu.Event) => handleEvent_Chat(data)
                 )
-                channel.bind(EventType.Profile, 
-                    (data:Event) => handleEvent_Profile(data)
+                channel.bind(Pu.EventType.Profile, 
+                    (data:Pu.Event) => handleEvent_Profile(data)
                 )
-                channel.bind(EventType.Settings, 
-                    (data:Event) => handleEvent_Settings(data)
+                channel.bind(Pu.EventType.Settings, 
+                    (data:Pu.Event) => handleEvent_Settings(data)
                 )
-                channel.bind(EventType.Tweets, 
+                channel.bind(Pu.EventType.Tweets, 
                     (data:Event_Tweets) => handleEvent_Tweets(data)
                 )
                 //user left pusher-event 
@@ -312,7 +307,7 @@ export default function Setup(props:SetupProps) {
     }
 
     const userLeft = (memberID:string) => {
-        //abort countdown
+        //abort countdown + fetchTweets
         if (ref_state.current.state === Status.countdown) {
             ref_state.current.state = Status.init
         }
@@ -353,7 +348,7 @@ export default function Setup(props:SetupProps) {
         */
 
         //security
-        if (event.type !== EventType.Join) {
+        if (event.type !== Pu.EventType.Join) {
             log('EventType mismatch in handleEvent_Admin:\n\n' + event)
             return
         }
@@ -416,11 +411,11 @@ export default function Setup(props:SetupProps) {
             userid: ref_pusherChannel.current.members.me.id
         }
         let event:Event_Join = {
-            type: EventType.Join,
+            type: Pu.EventType.Join,
             data: event_data
         }
         //trigger
-        Pu.triggerEvent(getLobbyName(), EventType.Join, event)
+        Pu.triggerEvent(getLobbyName(), event.type, event)
     }
 
     /*
@@ -438,10 +433,10 @@ export default function Setup(props:SetupProps) {
             (unbind first to avoid double calling!)
         */
         if (ref_players.current.length > 0) {
-            ref_pusherChannel.current.unbind(EventType.Join)
+            ref_pusherChannel.current.unbind(Pu.EventType.Join)
             if (ref_players.current[0].name === ref_username.current) {
                 //bind
-                ref_pusherChannel.current.bind(EventType.Join,
+                ref_pusherChannel.current.bind(Pu.EventType.Join,
                     (data:any) => handleEvent_Join(data)
                 )
                 log('Bound admin events')
@@ -456,7 +451,7 @@ export default function Setup(props:SetupProps) {
 
         //log(pusherChannel.members.count)
         //security
-        if (event.type !== EventType.Player) {
+        if (event.type !== Pu.EventType.Player) {
             log('EventType mismatch in handleEvent_Player:\n\n' + event)
             return
         }
@@ -485,8 +480,7 @@ export default function Setup(props:SetupProps) {
         ################
         */
         //let first user trigger management of game content
-        if (ref_state.current.state === Status.init && 
-            ref_username.current === ref_players.current[0].name) {
+        if (ref_state.current.state === Status.init && isAdmin()) {
             
             //everyone ready?
             for(let i=0;i<ref_players.current.length;i++) {
@@ -537,13 +531,13 @@ export default function Setup(props:SetupProps) {
             timeouts.push(setTimeout(() => addStartInfo(1), 5000))
 
             //first triggers start game for everyone
-            if (ref_username.current === ref_players.current[0].name) {
+            if (isAdmin()) {
                 const startGame = () => {
                     if (checkCancelled()) {return}
                     ref_state.current.state = Status.getTweets
                     fireEvent_Players()
                 }
-                timeouts.push(setTimeout(() => startGame(), 5200))
+                timeouts.push(setTimeout(() => startGame(), 1)) //5200
             }
         }
         /*  
@@ -551,9 +545,9 @@ export default function Setup(props:SetupProps) {
         START GETTING TWEETS
         ################
         */
-        else if (ref_state.current.state === Status.getTweets &&
-                 ref_username.current === ref_players.current[0].name &&
-                 ref_state.current.stateTexts.length === 0) { 
+        else if (isAdmin() &&
+                ref_state.current.state === Status.getTweets &&
+                ref_state.current.stateTexts.length === 0) { 
             //first user starts and only call when not called already (stateTexts.length === 0)
             triggerMatchSetup()
         }
@@ -562,12 +556,12 @@ export default function Setup(props:SetupProps) {
     const fireEvent_Players = async () => {
         //prepare
         let event:Event_Players = {
-            type: EventType.Player,
+            type: Pu.EventType.Player,
             data: ref_players.current,
             state: ref_state.current 
         }
         //trigger
-        Pu.triggerEvent(getLobbyName(), EventType.Player, event)
+        Pu.triggerEvent(getLobbyName(), event.type, event)
     }
 
     const toogleReady = (ready:boolean) => {
@@ -584,10 +578,10 @@ export default function Setup(props:SetupProps) {
     ##################################
     ##################################
     */
-    const handleEvent_Chat = (event:Event) => {
+    const handleEvent_Chat = (event:Pu.Event) => {
 
         //security
-        if (event.type !== EventType.Chat) {
+        if (event.type !== Pu.EventType.Chat) {
             log('EventType mismatch in handleEvent_Chat:\n\n' + event)
             return
         }
@@ -617,12 +611,12 @@ export default function Setup(props:SetupProps) {
         }
 
         //prepare
-        let event:Event = {
-            type: EventType.Chat,
+        let event:Pu.Event = {
+            type: Pu.EventType.Chat,
             data: ref_chat.current
         }
         //trigger
-        Pu.triggerEvent(getLobbyName(), EventType.Chat, event)
+        Pu.triggerEvent(getLobbyName(), event.type, event)
     }
 
     /*
@@ -632,10 +626,10 @@ export default function Setup(props:SetupProps) {
     ##################################
     ##################################
     */
-    const handleEvent_Profile = (event:Event) => {
+    const handleEvent_Profile = (event:Pu.Event) => {
 
         //security
-        if (event.type !== EventType.Profile) {
+        if (event.type !== Pu.EventType.Profile) {
             log('EventType mismatch in handleEvent_Profile:\n\n' + event)
             return
         }
@@ -650,12 +644,12 @@ export default function Setup(props:SetupProps) {
     const fireEvent_Profiles = async () => {
 
         //prepare
-        let event:Event = {
-            type: EventType.Profile,
+        let event:Pu.Event = {
+            type: Pu.EventType.Profile,
             data: ref_profiles.current
         }
         //trigger
-        Pu.triggerEvent(getLobbyName(), EventType.Profile, event)
+        Pu.triggerEvent(getLobbyName(), event.type, event)
     }
 
     /*
@@ -665,10 +659,10 @@ export default function Setup(props:SetupProps) {
     ##################################
     ##################################
     */
-    const handleEvent_Settings = (event:Event) => {
+    const handleEvent_Settings = (event:Pu.Event) => {
 
         //security
-        if (event.type !== EventType.Settings) {
+        if (event.type !== Pu.EventType.Settings) {
             log('EventType mismatch in handleEvent_Settings:\n\n' + event)
             return
         }
@@ -686,12 +680,12 @@ export default function Setup(props:SetupProps) {
     const fireEvent_Settings = async () => {
 
         //prepare
-        let event:Event = {
-            type: EventType.Settings,
+        let event:Pu.Event = {
+            type: Pu.EventType.Settings,
             data: ref_settings.current
         }
         //trigger
-        Pu.triggerEvent(getLobbyName(), EventType.Settings, event)
+        Pu.triggerEvent(getLobbyName(), event.type, event)
     }
 
     /*
@@ -704,7 +698,7 @@ export default function Setup(props:SetupProps) {
     const handleEvent_Tweets = (event:Event_Tweets) => {
 
         //security
-        if (event.type !== EventType.Tweets) {
+        if (event.type !== Pu.EventType.Tweets) {
             log('EventType mismatch in handleEvent_Settings:\n\n' + event)
             return
         }
@@ -723,13 +717,13 @@ export default function Setup(props:SetupProps) {
 
         //prepare
         let event:Event_Tweets = {
-            type: EventType.Tweets,
+            type: Pu.EventType.Tweets,
             data: _data,
             bottomIndex: _bottomIndex
         }
         log(`broadcast ${_data.length} tweets with ${_bottomIndex} bottomIndex`)
         //trigger
-        Pu.triggerEvent(getLobbyName(), EventType.Tweets, event)
+        Pu.triggerEvent(getLobbyName(), event.type, event)
     }
 
     /*
@@ -1022,8 +1016,10 @@ export default function Setup(props:SetupProps) {
         */
         setTimeout(() => {
             ref_state.current.state = Status.redirectToMatch
-            fireEvent_Players()
-        }, 8000)
+            setTimeout(() => fireEvent_Players(), 3000) //TEST
+            forceUpdate() //TEST
+            //fireEvent_Players() //ORIGINAL
+        }, 1)
     }
 
 
@@ -1286,9 +1282,7 @@ export default function Setup(props:SetupProps) {
 
     const getAdmin = () => {
         if (ref_username.current !== null && ref_players.current.length > 0) {
-            if (ref_username.current === ref_players.current[0].name) {
-                return true
-            }
+            return isAdmin()
         }
         return false
     }
@@ -1381,10 +1375,11 @@ export default function Setup(props:SetupProps) {
         else if (ref_state.current.state === Status.redirectToMatch) {
 
             //store data to pass to new route in session storage
-            sessionStorage.setItem(LocalStorage.Trans_Content, JSON.stringify(ref_tweets.current))
+            sessionStorage.setItem(LocalStorage.Trans_Tweets, JSON.stringify(ref_tweets.current))
             sessionStorage.setItem(LocalStorage.Trans_Players, JSON.stringify(ref_players.current))
             sessionStorage.setItem(LocalStorage.Trans_Profiles, JSON.stringify(ref_profiles.current))
             sessionStorage.setItem(LocalStorage.Trans_Settings, JSON.stringify(ref_settings.current))
+            sessionStorage.setItem(LocalStorage.Username, ref_username.current)
 
             let redirectURL = '/match/' + ref_state.current.matchID
             return <Redirect to={redirectURL}/>

@@ -3,7 +3,34 @@ $sdbg: false; //show debugging background = sdbg
 
 /*
   ################################
-  STATE
+  READY SCREEN
+  ################################
+*/
+
+.AutoContinue_Con {
+  width: 50%;
+  margin-bottom: 15px;
+  text-align: center;
+  @extend .HelveticaNeueBoldFont;
+}
+
+.Players_Con {
+  width: 50%;
+  margin-bottom: 15px;
+}
+
+.Button_Ready {
+  @extend .Button_Base;
+  flex-shrink: 0;
+  background-color: rgba($ready_colour, 0.8);
+  &:hover {
+    background-color: rgba($ready_colour, 0.6);
+  }
+}
+
+/*
+  ################################
+  STATE 
   ################################
 */
 
@@ -21,4 +48,10 @@ $sdbg: false; //show debugging background = sdbg
   align-items: center;
   background-color: $root_backgroundcolor;
   z-index: 5; //overlay all icons as well
+}
+
+.State_Caption {
+  margin-bottom: 20px;
+  text-align: center;
+  @extend .HelveticaNeueBoldFont;
 }

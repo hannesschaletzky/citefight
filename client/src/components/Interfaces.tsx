@@ -10,7 +10,7 @@ export enum LocalStorage {
     //used to enter game
     JoinGame = 'JoinGame',
     //Redirect Storage Vars from setup to match
-    Trans_Content = 'Content',
+    Trans_Tweets = 'Tweets',
     Trans_Players = 'Players',
     Trans_Profiles = 'Profiles',
     Trans_Settings = 'Settings'

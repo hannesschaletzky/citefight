@@ -1,5 +1,10 @@
 /*custom*/
 @font-face {
+  font-family: "STCaiyun";
+  src: local("STCaiyun"), url("./assets/fonts/stcaiyun.ttf") format("truetype");
+  font-weight: normal;
+}
+@font-face {
   font-family: "HelveticaNeueBold";
   src: local("HelveticaNeueBold"),
     url("./assets/fonts/HelveticaNeueBold.ttf") format("truetype");

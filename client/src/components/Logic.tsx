@@ -14,7 +14,7 @@ export function didUserExceedLimit(timestamps:string[],actionCount:number, timeS
     //calc time difference in milliseconds
     let ref = new Date(timestamps[count - actionCount])
     let now = new Date()
-    let diff = now.getTime() - ref.getTime(); 
+    let diff = now.getTime() - ref.getTime()
     if (diff < timeSpan) {
         return true
     }
@@ -44,6 +44,10 @@ export function log(item:any):void {
     if (process.env.NODE_ENV === 'development') {
         console.log(item)
     }
+}
+
+export function logErr(item:any):void {
+    console.log(item)
 }
 
 export function logObjectPretty(item:any):void {

@@ -68,7 +68,7 @@ app.post("/api/pusher/auth", function(req, res) {
   const presenceData = {
     user_id: userID,
     user_info: {
-      name: "Mr Channels"
+      name: "..."
     }
   };
   const auth = pusher.authenticate(socketId, channel, presenceData);

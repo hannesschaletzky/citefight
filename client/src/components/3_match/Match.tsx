@@ -2,7 +2,7 @@
 import { useRef, useEffect, useState, useReducer } from 'react';
 import  { Redirect } from 'react-router-dom'
 import st from './Match.module.scss'
-import {log, logObjectPretty} from 'components/Logic'
+import {log, logErr, logObjectPretty} from 'components/Logic'
 //UI Elements
 import CircularProgress from '@material-ui/core/CircularProgress'
 //interfaces
@@ -17,21 +17,36 @@ import {isValidMatchID} from 'components/Logic'
 import {initSettings} from 'components/Logic'
 //puhser
 import * as Pu from 'components/pusher/Pusher'
+//components
+import Players from '../2_setup/players/Players'
 
 //STATE
 interface State {
-    matchID: string;
-    state: Status;
+    matchID: string
+    status: Status
+    statusMsg: string //for everyone joinedd
+
+    currentRound: number
+    roundStarts: Date
 }
 enum Status {
-    init = 'init'
+    init,
+    everyoneJoined,
+    startRound,
+    everyoneReady,
+    //errors
+    errorInitalValues
 }
 const init_state:State = {
     matchID: '',
-    state: Status.init
+    status: Status.init,
+    statusMsg: '',
+    currentRound: 0,
+    roundStarts: new Date()
 }
 
 //DATA
+const init_userName = ""
 const init_profiles:Profile[] = []
 const init_players:Player[] = []
 const init_tweets:Tweet[] = []
@@ -41,7 +56,7 @@ export default function Match(props:MatchProps) {
     const [redirectToJoin,setRedirectToJoin] = useState(false)
     const [validMatchID,setValidMatchID] = useState(true)
     //refs
-    const ref_username = useRef("")
+    const ref_username = useRef(init_userName)
     const ref_state = useRef(init_state)
     const ref_tweets = useRef(init_tweets)
     const ref_profiles = useRef(init_profiles)
@@ -70,35 +85,34 @@ export default function Match(props:MatchProps) {
             return
         }
 
-        //set initial values passed from setup
-        const setValue = (ref:React.MutableRefObject<any>, type:LocalStorage) => {
-            let data = sessionStorage.getItem(type)
-            if (data !== null) {
-                ref.current = JSON.parse(data)
-                sessionStorage.removeItem(type)
-                //log('set item: ' + type)
-                log(ref.current)
+        //only get inital values at first loading
+        if (ref_state.current.status === Status.init) {
+            if (ref_tweets.current === init_tweets) {
+                setInitialValues(ref_tweets, LocalStorage.Trans_Tweets)
+            }
+            if (ref_profiles.current === init_profiles) {
+                setInitialValues(ref_profiles, LocalStorage.Trans_Profiles)
+            }
+            if (ref_players.current === init_players) {
+                setInitialValues(ref_players, LocalStorage.Trans_Players)
+                //set everyone to unready
+                ref_players.current.forEach((player) => {
+                    player.ready = false
+                })
+            }
+            if (ref_settings.current === initSettings) {
+                setInitialValues(ref_settings, LocalStorage.Trans_Settings)
+            }
+            if (ref_username.current === init_userName) {
+                setInitialValues(ref_username, LocalStorage.Username)
             }
         }
-        setValue(ref_tweets, LocalStorage.Trans_Content)
-        setValue(ref_profiles, LocalStorage.Trans_Profiles)
-        setValue(ref_players, LocalStorage.Trans_Players)
-        setValue(ref_settings, LocalStorage.Trans_Settings)
-        log('transfered necessary data from setup')
-
-        //retrieve & set pusherclient (once)
+        
+        //retrieve & set pusherclient (once at beginning)
         if (ref_pusherClient.current === null) {
             ref_pusherClient.current = props.pusherClient
             log('match: retrieved and set pusher client')
-            //get username
-            let savedUsername = localStorage.getItem(LocalStorage.Username)
-            if (savedUsername !== null) {
-                ref_username.current = savedUsername
-                joinGame()
-            }
-            else {
-                log('error joining -> no username')
-            }
+            joinGame()
         }
   	})
 
@@ -110,6 +124,36 @@ export default function Match(props:MatchProps) {
     ##################################
     */
 
+    //set initial values passed from setup
+    const setInitialValues = (ref:React.MutableRefObject<any>, type:LocalStorage) => {
+        let data = sessionStorage.getItem(type)
+        if (data !== null) {
+            if (type === LocalStorage.Username) {
+                ref.current = data
+            }
+            else {
+                ref.current = JSON.parse(data)
+            }
+            sessionStorage.removeItem(type)
+            log(ref.current)
+        }
+        else {
+            //CRITIAL ERROR -> could not set inital values
+            logErr(type + ' is null! Inital Values from Setup not retrieved')
+            setStatus(Status.errorInitalValues)
+        }
+    }
+
+    const userIsReady = ():boolean => {
+        for(let i=0;i<ref_players.current.length;i++) {
+            let player = ref_players.current[i]
+            if (player.name === ref_username.current) {
+                return player.ready
+            }
+        }
+        return false
+    }
+
     const getMatchName = ():string => {
         return Pu.Channel_Match + ref_state.current.matchID
     }
@@ -118,6 +162,18 @@ export default function Match(props:MatchProps) {
         //log('set state to: ' + state)
         ref_pusherState.current = state
         forceUpdate()
+    }
+
+    const setStatus = (newStatus:Status) => {
+        ref_state.current.status = newStatus
+        forceUpdate()
+    }
+
+    const isAdmin = ():boolean => {
+        if (ref_username.current === ref_players.current[0].name) {
+            return true
+        }
+        return false
     }
 
     /*
@@ -146,6 +202,12 @@ export default function Match(props:MatchProps) {
             //sub to match channel
             name = getMatchName()
             const channel = props.pusherClient.subscribe(name)
+            channel.bind(Pu.Channel_Member_Removed, //left
+                (member:any) => userLeft(member.id)
+            )
+            channel.bind(Pu.Channel_Member_Added,   //joined
+                () => checkIfEveryoneJoined()
+            )
             channel.bind(Pu.Channel_Sub_Fail, (err:any) => {
                 logObjectPretty(err)
                 setPusherState(Pu.State.failed) 
@@ -153,18 +215,19 @@ export default function Match(props:MatchProps) {
             channel.bind(Pu.Channel_Sub_Success, () => {
                 log('MATCH: sub to: ' + channel.name)
 
-                //BIND TO ALL NECESSARY GAME EVENTS HERE
-
-                //user left pusher-event 
-                channel.bind(Pu.Channel_Member_Removed, 
-                    (member:any) => userLeft(member.id)
+                channel.bind(Pu.EventType.Match_State, 
+                    (data:Pu.Event) => handleEvent_State(data)
                 )
-                
+                channel.bind(Pu.EventType.Player, 
+                    (data:Pu.Event) => handleEvent_Player(data)
+                )
+
                 //set channel
                 ref_pusherChannel.current = channel
                 
-                //TEMP
+                //start next step
                 setPusherState(Pu.State.connected)
+                checkIfEveryoneJoined()
             })
         }
     }
@@ -178,6 +241,149 @@ export default function Match(props:MatchProps) {
                 return
             }
         })
+    }
+
+    /*
+    ##################################
+    ##################################
+            Flow
+    ##################################
+    ##################################
+    */
+
+    //1ST: Check if everyone is in matchroom
+    const checkIfEveryoneJoined = () => {
+        //first user handles
+        if (isAdmin()) {
+            let members:any[] = ref_pusherChannel.current.members.members
+            log(members)
+            
+            //determine missing players
+            let playersLeft = ''
+            let statusMsg = ''
+            ref_players.current.forEach((player) => {
+                if (!(player.pusherID in members)) {
+                    playersLeft += player.name + ', '
+                }
+            })
+            //determine action + broadcast 
+            if (playersLeft !== '') {
+                playersLeft = playersLeft.substring(0, playersLeft.length - 2) //remove last ,
+                statusMsg = `Waiting for: ${playersLeft} to enter the Matchroom`
+                log(statusMsg)
+                ref_state.current.status = Status.everyoneJoined
+                ref_state.current.statusMsg = statusMsg
+                fireEvent_State()
+            }
+            else {
+                log('everyone joined -> start first round')
+                /*
+                    fire after timeout to avoid having another 
+                    call with Status.everyoneJoined coming in afterwards
+                */
+                setTimeout(() => {
+                    ref_state.current.status = Status.everyoneJoined
+                    ref_state.current.statusMsg = 'Everyone joined, starting...'
+                    fireEvent_State()
+                }, 500) 
+                setTimeout(() => {
+                    ref_state.current.status = Status.startRound
+                    ref_state.current.statusMsg = statusMsg
+                    fireEvent_State()
+                }, 2500) 
+            }
+        }
+    }
+
+    /*
+    ##################################
+    ##################################
+            EVENT: State
+    ##################################
+    ##################################
+    */
+    const handleEvent_State = (event:Pu.Event) => {
+        //check type-mismatch
+        if (event.type !== Pu.EventType.Match_State) {
+            log('EventType mismatch in handleEvent_State:\n\n' + event)
+            return
+        }
+        //set new state
+        let newState:State = event.data
+        //log('new state retrieved')
+        //log(newState)
+        ref_state.current = newState
+        forceUpdate()
+
+        //ADMIN EVENTS
+        if (isAdmin()) {
+
+            if (ref_state.current.status === Status.startRound) {
+
+                //create round start date
+                let now = new Date()
+                now.setSeconds(now.getSeconds()+10)
+                ref_state.current.roundStarts = now
+
+            }
+
+        }
+    }
+
+    const fireEvent_State = async () => {
+        //prepare
+        let event:Pu.Event = {
+            type: Pu.EventType.Match_State,
+            data: ref_state.current
+        }
+        //trigger
+        Pu.triggerEvent(getMatchName(), event.type, event)
+    }
+
+    /*
+    ##################################
+    ##################################
+            EVENT: Player
+    ##################################
+    ##################################
+    */
+    const handleEvent_Player = (event:Pu.Event) => {
+        //security
+        if (event.type !== Pu.EventType.Player) {
+            log('EventType mismatch in handleEvent_Player:\n\n' + event)
+            return
+        }
+        //set new players
+        let newPlayers:Player[] = event.data
+        ref_players.current = newPlayers
+        forceUpdate()
+    }
+
+    const fireEvent_Players = async () => {
+        //prepare
+        let event:Pu.Event = {
+            type: Pu.EventType.Player,
+            data: ref_players.current
+        }
+        //trigger
+        Pu.triggerEvent(getMatchName(), event.type, event)
+    }
+
+    /*
+    ##################################
+    ##################################
+                HANDLERS 
+    ##################################
+    ##################################
+    */
+    const onReadyClick = () => {
+        //set yourself ready
+        ref_players.current.forEach((player) => {
+            if (player.name === ref_username.current) {
+                player.ready = true
+            }
+        })
+        fireEvent_Players()
     }
 
     /*
@@ -206,23 +412,79 @@ export default function Match(props:MatchProps) {
             return <Redirect to={redirectURL}/>
         }
         
-        //PUSHER STATE
+        /*
+        ######################
+            PUSHER STATE
+        ######################
+        */
         //loading
         if (ref_pusherState.current === Pu.State.init ||
             ref_pusherState.current === Pu.State.connecting) {
-            content =  
+            return content =  
                 <div className={st.State_Con}>
                     <CircularProgress/>
                 </div>
         }
         //error
         else if (ref_pusherState.current !== Pu.State.connected) {
-            content =  
+            return content =  
                 <div className={st.State_Con}>
                     Could not connect to lobby, pusher service status is: {ref_pusherState.current}. 
                     Please try again later!
                 </div>
         }
+
+        /*
+        ######################
+            MATCH STATUS
+        ######################
+        */
+        //ERROR (transferring initial values from setup)
+        if (ref_state.current.status === Status.errorInitalValues) {
+            return content =  
+                <div className={st.State_Con}>
+                    Critial Error: Inital Values could not be transferred from setup.  
+                </div>
+        }
+        //HAS EVERTYONE JOINED?
+        else if (ref_state.current.status === Status.init ||
+            ref_state.current.status === Status.everyoneJoined) {
+            return content =  
+                <div className={st.State_Con}>
+                    <div className={st.State_Caption}>
+                        {ref_state.current.statusMsg}
+                    </div>
+                    <CircularProgress/>
+                </div>
+        }
+        //IS EVERYONE READY?
+        else if (ref_state.current.status === Status.everyoneReady) {
+            return content = 
+                <div className={st.State_Con}>
+                    {!ref_settings.current.autoContinue && 
+                        <div className={st.AutoContinue_Con}>
+                            Autocontinue: Off
+                        </div>
+                    }
+                    {ref_settings.current.autoContinue && 
+                        <div className={st.AutoContinue_Con}>
+                            Autocontinue in 30
+                        </div>
+                    }
+                    <div className={st.Players_Con}>
+                        <Players   
+                            data={ref_players.current}
+                            currentUser={ref_username.current}
+                        />
+                    </div>
+                    {!userIsReady() && 
+                        <button className={st.Button_Ready} onClick={() => onReadyClick()}>
+                            I am Ready
+                        </button>
+                    }
+                </div>
+        }
+        
 
         return content
     }
