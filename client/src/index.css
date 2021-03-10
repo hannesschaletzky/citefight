@@ -1,19 +1,14 @@
 /*custom*/
 @font-face {
-  font-family: "STCaiyun";
-  src: local("STCaiyun"), url("./fonts/stcaiyun.ttf") format("truetype");
-  font-weight: normal;
-}
-@font-face {
   font-family: "HelveticaNeueBold";
   src: local("HelveticaNeueBold"),
-    url("./fonts/HelveticaNeueBold.ttf") format("truetype");
+    url("./assets/fonts/HelveticaNeueBold.ttf") format("truetype");
   font-weight: normal;
 }
 @font-face {
   font-family: "HelveticaNeueRegular";
   src: local("HelveticaNeueRegular"),
-    url("./fonts/HelveticaNeueRegular.ttf") format("truetype");
+    url("./assets/fonts/HelveticaNeueRegular.ttf") format("truetype");
   font-weight: normal;
 }
 
