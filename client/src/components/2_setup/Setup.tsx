@@ -34,7 +34,6 @@ import {popProfilesMock} from 'components/Mockdata'
 //components
 import Lobby from './lobby/Lobby'
 import Add from './add/Add'
-import Search from './add/search/Search'
 import Interaction from './interaction/Interaction'
 import Players from './players/Players'
 import Chat from './chat/Chat'
@@ -108,8 +107,7 @@ const init_state:State = {
     state: Status.init,
     stateTexts: []
 }
-let init_pusherCient:any = null
-let init_pusherChannel:any = null
+
 
 export default function Setup(props:SetupProps) {
     //state
@@ -125,9 +123,9 @@ export default function Setup(props:SetupProps) {
     const ref_chat = useRef(init_chat)
     const ref_notification = useRef(init_notification)
     //control flow refs
-    const ref_pusherState = useRef(Pu.PusherState.init)
-    const ref_pusherClient = useRef(init_pusherCient)
-    const ref_pusherChannel = useRef(init_pusherChannel)
+    const ref_pusherState = useRef(Pu.State.init)
+    const ref_pusherClient = useRef(Pu.init_pusherCient)
+    const ref_pusherChannel = useRef(Pu.init_pusherChannel)
     const [,forceUpdate] = useReducer(x => x + 1, 0);
 
     useEffect(() => {
@@ -141,7 +139,7 @@ export default function Setup(props:SetupProps) {
         ref_state.current.matchID = matchID
 
         //get pusherclient (only at first loading -> .init)
-        if (props.pusherClient === null && ref_pusherState.current === Pu.PusherState.init) {
+        if (props.pusherClient === null && ref_pusherState.current === Pu.State.init) {
             log('no pusher client -> redirect to join')
             setRedirectToJoin(true)
             return
@@ -166,7 +164,7 @@ export default function Setup(props:SetupProps) {
     /*
     ##################################
     ##################################
-        GENERAL FUNCTIONS
+                GENERAL
     ##################################
     ##################################
     */
@@ -186,7 +184,7 @@ export default function Setup(props:SetupProps) {
         return -1
     }
 
-    const setPusherState = (state:Pu.PusherState) => {
+    const setPusherState = (state:Pu.State) => {
         //log('set state to: ' + state)
         ref_pusherState.current = state
         forceUpdate()
@@ -261,26 +259,21 @@ export default function Setup(props:SetupProps) {
     const joinGame = () => {
 
         //bind to connection state change events
-        ref_pusherClient.current.connection.bind('state_change', (states:any) => {
+        ref_pusherClient.current.connection.bind(Pu.Conn_State_Change, (states:any) => {
             //states = {previous: 'oldState', current: 'newState'}
             log('new pusher state from event "state_change": ' + states.current)
             setPusherState(states.current) 
         })
 
         //sub to events of lobby if connected
-        if (ref_pusherClient.current.connection.state === Pu.PusherState.connected) {
-
-            //unsubscribe from lobby channel first
-            let name:string = Pu.Channel_Lobby + ref_state.current.matchID
-            ref_pusherClient.current.unsubscribe(name)
+        if (ref_pusherClient.current.connection.state === Pu.State.connected) {
 
             //sub to lobby channel
+            let name = getLobbyName()
             const channel = props.pusherClient.subscribe(name)
-            channel.unbind(Pu.Channel_Member_Added)
-            channel.unbind(Pu.Channel_Member_Removed)
             channel.bind(Pu.Channel_Sub_Fail, (err:any) => {
                 logObjectPretty(err)
-                setPusherState(Pu.PusherState.failed) 
+                setPusherState(Pu.State.failed) 
             })
             channel.bind(Pu.Channel_Sub_Success, () => {
                 log('SETUP: sub to: ' + channel.name)
@@ -289,7 +282,7 @@ export default function Setup(props:SetupProps) {
                 channel.bind(EventType.Join, 
                     (data:Event_Join) => handleEvent_Join(data)
                 )
-                //above two will be handled by admin when more players in lobby
+                //above will be handled by admin when more players in lobby
                 channel.bind(EventType.Player, 
                     (data:Event_Players) => handleEvent_Player(data)
                 )
@@ -337,7 +330,7 @@ export default function Setup(props:SetupProps) {
 
     const leaveGame = () => {
         log('leaving')
-        setPusherState(Pu.PusherState.connecting)
+        setPusherState(Pu.State.connecting)
         //unsubscribe from lobby channel
         let name:string = Pu.Channel_Lobby + ref_state.current.matchID
         ref_pusherClient.current.unsubscribe(name)
@@ -398,7 +391,7 @@ export default function Setup(props:SetupProps) {
                                             ' The game will start when everyone is ready.') 
             addSysMsg(SysMsgType.welcome,   currentUrl) 
             joinPlayer()
-            setPusherState(Pu.PusherState.connected) //force update incl.
+            setPusherState(Pu.State.connected) //force update incl.
         }
         else if (ref_players.current[0].name === ref_username.current) {
             /*
@@ -476,7 +469,7 @@ export default function Setup(props:SetupProps) {
         let newPlayers:Player[] = event.data
         log('total players: ' + newPlayers.length)
         ref_players.current = newPlayers
-        setPusherState(Pu.PusherState.connected) //force update incl. here
+        setPusherState(Pu.State.connected) //force update incl. here
         assignJoinEventAdmin()
 
         //set every name when new player joined, bc. admin can edit name to avoid duplicates
@@ -1337,15 +1330,15 @@ export default function Setup(props:SetupProps) {
         */
 
         //loading
-        if (ref_pusherState.current === Pu.PusherState.init ||
-            ref_pusherState.current === Pu.PusherState.connecting) {
+        if (ref_pusherState.current === Pu.State.init ||
+            ref_pusherState.current === Pu.State.connecting) {
             content =  
                 <div className={st.State_Con}>
                     <CircularProgress/>
                 </div>
         }
         //error
-        else if (ref_pusherState.current !== Pu.PusherState.connected) {
+        else if (ref_pusherState.current !== Pu.State.connected) {
             content =  
                 <div className={st.State_Con}>
                     Could not connect to lobby, pusher service status is: {ref_pusherState.current}. 

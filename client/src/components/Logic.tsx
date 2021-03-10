@@ -6,8 +6,8 @@ import {Settings_Pictures} from 'components/Interfaces'
 export function didUserExceedLimit(timestamps:string[],actionCount:number, timeSpan: number = 15000):boolean {
     //if user wants to send more than 5 messages within 15 seconds -> return true
     //check only as soon as five messages were sent
-    actionCount--; //index starts at 0
-    let count = timestamps.length - 1;
+    actionCount-- //index starts at 0
+    let count = timestamps.length - 1
     if (count < actionCount) {
         return false
     }
@@ -31,7 +31,7 @@ export const initSettings:Settings = {
 
 //return the matchID if valid, invalid -> empty string
 export function isValidMatchID(url:string):string | null {
-    let matchID = url.substr(url.lastIndexOf('/') + 1);
+    let matchID = url.substr(url.lastIndexOf('/') + 1)
     if (matchID.length === 0 || !(/^\d+$/.test(matchID))) {
         log('INVALID ID: ' + matchID)
         return null
@@ -47,7 +47,7 @@ export function log(item:any):void {
 }
 
 export function logObjectPretty(item:any):void {
-    let str = JSON.stringify(item, null, 4);
+    let str = JSON.stringify(item, null, 4)
     console.log(str)
 }
 

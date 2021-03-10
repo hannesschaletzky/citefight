@@ -2,7 +2,7 @@ import {log} from 'components/Logic'
 const Pusher = require('pusher-js');
 
 //according to: https://pusher.com/docs/channels/using_channels/connection#available-states
-export enum PusherState {
+export enum State {
     init = 'init',
     connecting = 'connecting',
     connected = 'connected',
@@ -10,11 +10,10 @@ export enum PusherState {
     disconnected = 'disconnected',
     failed = 'failed'
 }
-export interface Event_Join_Data {
-    username: string;
-    userid: string;
-}
-
+//init objects for refs
+export const init_pusherCient:any = null
+export const init_pusherChannel:any = null
+//string constants
 export const Event_Ping_Name = "Join-Ping"
 export const Event_Pong_Name = "Join-Pong"
 export const Channel_Lobby = "presence-lobby-"
@@ -23,6 +22,7 @@ export const Channel_Sub_Success = 'pusher:subscription_succeeded'
 export const Channel_Sub_Fail = 'pusher:subscription_error'
 export const Channel_Member_Removed = 'pusher:member_removed'
 export const Channel_Member_Added = 'pusher:member_added'
+export const Conn_State_Change = 'state_change'
 
 
 //export const getPusherClient = (channelName:string) => { -> with input parameters
@@ -77,6 +77,7 @@ export const triggerEvent = async (channelName:string, eventName:string, event:G
     const body = await response.text()
     let resp:any = JSON.parse(body)
     if (resp.status !== "200") {
+        log('ERROR TRIGGERING PUSHER EVENT:')
         log(body)
     }
 }
