@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import { useRef, useEffect, useState, useReducer } from 'react';
+import React, { useRef, useEffect, useState, useReducer } from 'react';
 import  { Redirect } from 'react-router-dom'
 import st from './Match.module.scss'
 import {log, logErr, logObjectPretty} from 'components/Logic'
@@ -12,6 +12,7 @@ import {Profile} from 'components/Interfaces'
 import {Tweet} from 'components/Interfaces'
 //functional interfaces
 import {MatchProps} from 'components/Functional_Interfaces'
+import {NextRoundCountdownProps} from 'components/Functional_Interfaces'
 //logic
 import {isValidMatchID} from 'components/Logic'
 import {initSettings} from 'components/Logic'
@@ -19,6 +20,7 @@ import {initSettings} from 'components/Logic'
 import * as Pu from 'components/pusher/Pusher'
 //components
 import Players from '../2_setup/players/Players'
+import RoundCountdown from './RoundCountdown'
 
 //STATE
 interface State {
@@ -26,14 +28,18 @@ interface State {
     status: Status
     statusMsg: string //for everyone joinedd
 
-    currentRound: number
+    roundIndex: number
     roundStarts: Date
 }
 enum Status {
     init,
     everyoneJoined,
-    startRound,
     everyoneReady,
+    calcRound,
+    startRoundcountdown,
+    showRound,
+    showRound_Solution,
+    
     //errors
     errorInitalValues
 }
@@ -41,7 +47,7 @@ const init_state:State = {
     matchID: '',
     status: Status.init,
     statusMsg: '',
-    currentRound: 0,
+    roundIndex: -1,
     roundStarts: new Date()
 }
 
@@ -140,7 +146,7 @@ export default function Match(props:MatchProps) {
         else {
             //CRITIAL ERROR -> could not set inital values
             logErr(type + ' is null! Inital Values from Setup not retrieved')
-            setStatus(Status.errorInitalValues)
+            setStatus(Status.errorInitalValues, true)
         }
     }
 
@@ -164,9 +170,9 @@ export default function Match(props:MatchProps) {
         forceUpdate()
     }
 
-    const setStatus = (newStatus:Status) => {
+    const setStatus = (newStatus:Status, update:boolean = false) => {
         ref_state.current.status = newStatus
-        forceUpdate()
+        if (update) {forceUpdate()} 
     }
 
     const isAdmin = ():boolean => {
@@ -282,17 +288,49 @@ export default function Match(props:MatchProps) {
                     call with Status.everyoneJoined coming in afterwards
                 */
                 setTimeout(() => {
-                    ref_state.current.status = Status.everyoneJoined
+                    setStatus(Status.everyoneJoined)
                     ref_state.current.statusMsg = 'Everyone joined, starting...'
                     fireEvent_State()
                 }, 500) 
                 setTimeout(() => {
-                    ref_state.current.status = Status.startRound
+                    setStatus(Status.calcRound)
                     ref_state.current.statusMsg = statusMsg
                     fireEvent_State()
                 }, 2500) 
             }
         }
+    }
+
+    //2ND: Calculate start of new round and trigger countdown
+    const calculateRound = () => {
+        //increment round
+        ref_state.current.roundIndex += 1
+
+        //create round start date
+        let now = new Date()
+        now.setSeconds(now.getSeconds() + 3)
+        ref_state.current.roundStarts = now
+
+        //start round
+        setStatus(Status.startRoundcountdown)
+        fireEvent_State()
+    }
+
+    //3RD: SHOW ROUND
+    const showRound = () => {
+        log(`show round with index ${ref_state.current.roundIndex}`)
+        setStatus(Status.showRound, true)
+    }
+
+
+    const setYourselfReady = () => {
+        //set yourself ready
+        ref_players.current.forEach((player) => {
+            if (player.name === ref_username.current) {
+                player.ready = true
+            }
+        })
+        fireEvent_Players()
     }
 
     /*
@@ -317,16 +355,9 @@ export default function Match(props:MatchProps) {
 
         //ADMIN EVENTS
         if (isAdmin()) {
-
-            if (ref_state.current.status === Status.startRound) {
-
-                //create round start date
-                let now = new Date()
-                now.setSeconds(now.getSeconds()+10)
-                ref_state.current.roundStarts = now
-
+            if (ref_state.current.status === Status.calcRound) {
+                calculateRound()
             }
-
         }
     }
 
@@ -377,13 +408,11 @@ export default function Match(props:MatchProps) {
     ##################################
     */
     const onReadyClick = () => {
-        //set yourself ready
-        ref_players.current.forEach((player) => {
-            if (player.name === ref_username.current) {
-                player.ready = true
-            }
-        })
-        fireEvent_Players()
+        setYourselfReady()
+    }
+
+    const onNextRoundCountdownFinished = () => {
+        showRound()
     }
 
     /*
@@ -394,7 +423,7 @@ export default function Match(props:MatchProps) {
     ##################################
     */
     
-    const getSpecialContent = () => {
+    const getContent = () => {
 
         let content = <div></div>
 
@@ -484,6 +513,40 @@ export default function Match(props:MatchProps) {
                     }
                 </div>
         }
+        //CALC ROUND
+        else if (ref_state.current.status === Status.calcRound) {
+            return content = 
+                <div className={st.State_Con}>
+                    <div className={st.State_Caption}>
+                        Setting up next round...
+                    </div>
+                    <CircularProgress/>
+                </div>
+        }
+        //START ROUND-COUNTDOWN
+        else if (ref_state.current.status === Status.startRoundcountdown) {
+            let props:NextRoundCountdownProps = {
+                targetDate: ref_state.current.roundStarts,
+                onFinished: onNextRoundCountdownFinished
+            }
+            const comp = React.createElement(RoundCountdown, props)
+
+            return content = 
+                <div className={st.State_Con}>
+                    <div>
+                        Round {ref_state.current.roundIndex + 1} starts in:
+                    </div>
+                    <div>
+                        {comp}
+                    </div>
+                </div>
+        }
+        else if (ref_state.current.status === Status.showRound) {
+            return content = 
+                <div className={st.State_Con}>
+                    ROUND {ref_state.current.roundIndex + 1}
+                </div>
+        }
         
 
         return content
@@ -491,10 +554,10 @@ export default function Match(props:MatchProps) {
 
 	return (
 		<div>
-            {getSpecialContent()}
-            Matchroom for ID: {ref_state.current.matchID} ready to go!
+            {getContent()}
         </div>
 	)
 }
+
 
 

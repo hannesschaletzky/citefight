@@ -33,7 +33,6 @@ $sdbg: false; //show debugging background = sdbg
   STATE 
   ################################
 */
-
 .State_Con {
   //this will take the entire screen
   position: absolute;
@@ -41,7 +40,7 @@ $sdbg: false; //show debugging background = sdbg
   bottom: $footer_height + 1;
   right: 0;
   left: 0;
-  //center QR Code
+  //center content
   display: flex;
   flex-direction: column;
   justify-content: center;

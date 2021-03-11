@@ -114,7 +114,7 @@ export default function Setup(props:SetupProps) {
     const ref_pusherState = useRef(Pu.State.init)
     const ref_pusherClient = useRef(Pu.init_pusherCient)
     const ref_pusherChannel = useRef(Pu.init_pusherChannel)
-    const [,forceUpdate] = useReducer(x => x + 1, 0);
+    const [,forceUpdate] = useReducer(x => x + 1, 0)
 
     useEffect(() => {
         
