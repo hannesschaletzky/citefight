@@ -10,20 +10,20 @@ $sdbg: false; //show debugging background = sdbg
 
 .NavBar {
   margin-top: 10px;
-  height: 35px;
   display: flex;
   flex-direction: row;
   justify-content: space-evenly;
+  overflow: auto;
 }
 
 .NavItem_Con {
+  margin-left: 5px;
+  padding: 10px;
   display: flex;
   justify-content: space-evenly;
   align-items: center;
   cursor: pointer;
 
-  padding-left: 10px;
-  padding-right: 10px;
   border-radius: 8px;
 
   @extend .HelveticaNeueRegularFont;
@@ -40,8 +40,6 @@ $sdbg: false; //show debugging background = sdbg
 }
 
 .Icon {
-  margin-left: 5px;
-  margin-right: 5px;
   height: 25px;
 }
 

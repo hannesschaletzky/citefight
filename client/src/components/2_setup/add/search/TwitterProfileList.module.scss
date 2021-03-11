@@ -46,6 +46,7 @@ $sdbg: false; //show debugging background = sdbg
 .UserCard_DataCon {
   margin-left: 5px;
   width: 85%;
+  overflow: scroll;
 }
 
 .User_Pic {

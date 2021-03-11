@@ -26,7 +26,8 @@ export enum TwitterStatus {
 
 export enum ProfilesUsage {
     Search,
-    Added
+    Added,
+    Answer
 }
 
 export enum SysMsgType {

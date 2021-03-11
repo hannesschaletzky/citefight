@@ -6,8 +6,13 @@ import Answer_Icon from 'assets/nav/Answer.png'
 import Ranking_Icon from 'assets/nav/Ranking.png'
 import Chat_Icon from 'assets/nav/Chat.png'
 import Settings_Icon from 'assets/nav/Settings.png'
+//interface
+import {ProfilesUsage} from 'components/Interfaces'
 //functional-interface
-import {NavProps} from 'components/Functional_Interfaces'
+import {NavProps, RankingProps} from 'components/Functional_Interfaces'
+//components
+import TwitterProfileList from 'components/2_setup/add/search/TwitterProfileList'
+import Ranking from './pages/Ranking'
 
 export default function Nav(props:NavProps) {
     const [lobbyIndex, setLobbyIndex] = useState(0) //default to search
@@ -18,16 +23,19 @@ export default function Nav(props:NavProps) {
         //ANSWER
         if (lobbyIndex === 0) {
             content = 
-                <div>
-                    ANSWER
-                </div>
+                <TwitterProfileList
+                    parentType={ProfilesUsage.Answer}
+                    data={props.profiles}
+                    onSelectAnswer={props.onSelectAnswer}
+                />
         }
         //RANKING
         else if (lobbyIndex === 1) {
-            content = 
-                <div>
-                    RANKING
-                </div>
+            let props:RankingProps = {
+                test: ''
+            }
+            const comp = React.createElement(Ranking, props)
+            content = comp
         }
         //CHAT
         else if (lobbyIndex === 2) {
@@ -42,8 +50,6 @@ export default function Nav(props:NavProps) {
                 SET ME AUTOREADY
                 
             */
-
-
             content = 
                 <div>
                     SETTINGS

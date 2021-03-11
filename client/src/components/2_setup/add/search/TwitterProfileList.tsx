@@ -12,7 +12,8 @@ enum ActionConType {
     init,
     add,
     follow,
-    remove
+    remove,
+    answer
 }
 
 class TwitterProfileList extends Component <any, any> {
@@ -62,12 +63,16 @@ class TwitterProfileList extends Component <any, any> {
         this.props.onAddUser(parsedUser)
     }
 
-    followUser(user: Profile) {
+    followUser(user:Profile) {
         log('Trying to follow: ' + user.screen_name)
     }
 
-    removeUser(user: Profile) {
+    removeUser(user:Profile) {
         this.props.onRemoveUser(user)
+    }
+
+    selectAnswer(user:Profile) {
+        this.props.onSelectAnswer(user)
     }
 
     render() { 
@@ -103,6 +108,9 @@ class TwitterProfileList extends Component <any, any> {
             else if (this.props.parentType === ProfilesUsage.Added) {
                 actionCon = ActionConType.remove
             }
+            else if (this.props.parentType === ProfilesUsage.Answer) {
+                actionCon = ActionConType.answer
+            }
 
             //determine if name contains emoji
             let userNameClass = st.UserName
@@ -128,10 +136,10 @@ class TwitterProfileList extends Component <any, any> {
                             </div>
                         </div>
                         <div className={st.Numbers_Con}>
-                            <div className={st.Tweet_Count} title="Tweets" >
+                            <div className={st.Tweet_Count} title={"Tweets: " + numberWithThousandSep(user.statuses_count)}>
                                 {numberWithThousandSep(user.statuses_count)}
                             </div>
-                            <div className={st.Follower_Count} title="Followers" >
+                            <div className={st.Follower_Count} title={"Followers: " + numberWithThousandSep(user.followers_count)}>
                                 {numberWithThousandSep(user.followers_count)}
                             </div>
                         </div>
@@ -154,6 +162,13 @@ class TwitterProfileList extends Component <any, any> {
                                 <div className={st.Actions_Con}>
                                     <button className={st.Button_Remove} onClick={() => this.removeUser(user)}>
                                         Remove
+                                    </button>
+                                </div>
+                            }
+                            {(actionCon === ActionConType.answer) &&
+                                <div className={st.Actions_Con}>
+                                    <button className={st.Button_Add} onClick={() => this.selectAnswer(user)}>
+                                        Select
                                     </button>
                                 </div>
                             }

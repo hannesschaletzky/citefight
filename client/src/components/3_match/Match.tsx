@@ -420,6 +420,10 @@ export default function Match(props:MatchProps) {
         showRound()
     }
 
+    const onSelectAnswer = (profile:Profile) => {
+        log('selected answer: ' + profile.screen_name)
+    }
+
     /*
     ##################################
     ##################################
@@ -566,10 +570,10 @@ export default function Match(props:MatchProps) {
 
     const getNavComp = () => {
         let props:NavProps = {
-            test: ''
+            profiles: ref_profiles.current,
+            onSelectAnswer: onSelectAnswer
         }
         return React.createElement(Nav, props)
-        
     }
 
 	return (

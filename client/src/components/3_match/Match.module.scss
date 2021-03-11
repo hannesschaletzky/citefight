@@ -104,7 +104,7 @@ $sdbg: false; //show debugging background = sdbg
   width: 100%;
   flex: 1;
   margin-top: 15px;
-  //@extend .borderWithRoundedCorners;
+  @extend .borderWithRoundedCorners;
 }
 
 /*

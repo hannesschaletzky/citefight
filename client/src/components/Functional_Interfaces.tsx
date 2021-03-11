@@ -32,5 +32,9 @@ export interface NextRoundCountdownProps {
     onFinished:() => void
 }
 export interface NavProps {
+    profiles: Profile[]
+    onSelectAnswer: (profile:Profile) => void
+}
+export interface RankingProps {
     test: string
 }
