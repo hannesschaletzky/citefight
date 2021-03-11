@@ -11,8 +11,9 @@ import {Player} from 'components/Interfaces'
 import {Profile} from 'components/Interfaces'
 import {Tweet} from 'components/Interfaces'
 //functional interfaces
-import {MatchProps} from 'components/Functional_Interfaces'
-import {NextRoundCountdownProps} from 'components/Functional_Interfaces'
+import {MatchProps, 
+        NavProps, 
+        NextRoundCountdownProps} from 'components/Functional_Interfaces'
 //logic
 import {isValidMatchID} from 'components/Logic'
 import {initSettings} from 'components/Logic'
@@ -21,6 +22,7 @@ import * as Pu from 'components/pusher/Pusher'
 //components
 import Players from '../2_setup/players/Players'
 import Countdown from './Countdown'
+import Nav from './nav/Nav'
 
 //STATE
 interface State {
@@ -425,8 +427,8 @@ export default function Match(props:MatchProps) {
     ##################################
     ##################################
     */
-    
-    const getContent = () => {
+
+    const getOverlayContent = () => {
 
         let content = <div></div>
 
@@ -489,10 +491,18 @@ export default function Match(props:MatchProps) {
                     <CircularProgress/>
                 </div>
         }
+
+        return content
+    }
+    
+    const getContent = () => {
+
+        let content = <div></div>
+
         //IS EVERYONE READY?
-        else if (ref_state.current.status === Status.everyoneReady) {
+        if (ref_state.current.status === Status.everyoneReady) {
             return content = 
-                <div className={st.State_Con}>
+                <div className={st.Content_Con}>
                     {!ref_settings.current.autoContinue && 
                         <div className={st.AutoContinue_Con}>
                             Autocontinue: Off
@@ -519,7 +529,7 @@ export default function Match(props:MatchProps) {
         //CALC ROUND
         else if (ref_state.current.status === Status.calcRound) {
             return content = 
-                <div className={st.State_Con}>
+                <div className={st.Content_Con}>
                     <div className={st.State_Caption}>
                         Setting up next round...
                     </div>
@@ -535,7 +545,7 @@ export default function Match(props:MatchProps) {
             const comp = React.createElement(Countdown, props)
 
             return content = 
-                <div className={st.State_Con}>
+                <div className={st.Content_Con}>
                     <div>
                         Round {ref_state.current.roundIndex + 1} starts in:
                     </div>
@@ -546,18 +556,44 @@ export default function Match(props:MatchProps) {
         }
         else if (ref_state.current.status === Status.showRound) {
             return content = 
-                <div className={st.State_Con}>
+                <div className={st.Content_Con}>
                     ROUND {ref_state.current.roundIndex + 1}
                 </div>
         }
         
-
         return content
     }
 
+    const getNavComp = () => {
+        let props:NavProps = {
+            test: ''
+        }
+        return React.createElement(Nav, props)
+        
+    }
+
 	return (
-		<div>
-            {getContent()}
+		<div className={st.Con}>
+            {getOverlayContent()}
+            <div className={st.Left_Con}>
+                AD CONTAINER
+            </div>
+            <div className={st.Center_Con}>
+                {getContent()}
+            </div>
+            <div className={st.Right_Con}>
+                <div className={st.Info_Con}>
+                    <div className={st.Clock} title="Time">
+                        13
+                    </div>
+                    <div className={st.Round} title="Round">
+                        5/15
+                    </div>
+                </div>
+                <div className={st.Nav_Con}>
+                    {getNavComp()}
+                </div>
+            </div>
         </div>
 	)
 }

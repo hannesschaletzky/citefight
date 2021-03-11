@@ -31,3 +31,6 @@ export interface NextRoundCountdownProps {
     targetDate: Date
     onFinished:() => void
 }
+export interface NavProps {
+    test: string
+}

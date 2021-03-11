@@ -1,115 +1,89 @@
-import React, { Component } from 'react';
-import styled from 'styled-components';
-import st from './Nav.module.scss'
+import React, { useState } from 'react';
+import st from './Nav.module.scss';
+import {log} from 'components/Logic'
+//ui-elements
+import Answer_Icon from 'assets/nav/Answer.png'
+import Ranking_Icon from 'assets/nav/Ranking.png'
+import Chat_Icon from 'assets/nav/Chat.png'
+import Settings_Icon from 'assets/nav/Settings.png'
+//functional-interface
+import {NavProps} from 'components/Functional_Interfaces'
 
-//https://freeicons.io/ 
-import Answer from 'assets/nav/Answer.png'
-import Ranking from 'assets/nav/Ranking.png'
-import Chat from 'assets/nav/Chat.png'
-import Settings from 'assets/nav/Settings.png'
-
-import NavAnswers from './pages/Nav_Answers'
-import NavRanking from './pages/Nav_Ranking'
-
-class Nav extends Component <any, any> {
-
-    //for explanation see here: 
-    //https://styled-components.com/docs/basics#pseudoelements-pseudoselectors-and-nesting
-    active = 'active'
-    inactive = 'inactive'
-
-    Icon_Con = styled.div`
-        height: 50px;
-        width: 50px;
-
-        border: 1.7px transparent;
-        border-radius: 20px;
-
-        display: flex;
-        align-items: center;
-        justify-content: center;
-
-        &.${this.active} {
-            background-color: rgb(238, 235, 235) !important; //overrides hover color
-        }
-
-        &.${this.inactive} {
-            background-color: transparent;
-        }
-
-        &:hover {
-            background-color: rgb(243, 243, 243);
-        }
-    `;
-
-    constructor(props: any) {
-        super(props);
-        this.state = {
-            currentIndex: 0, //always start at answer when entering screen
-            answerConName: ''
-        };
-    }
-
-    setIndex(newIndex: number) {
-        this.setState({currentIndex: newIndex})
-    }
-
-    checkActive(index:number) {
-        //if div is selected index
-        if (this.state.currentIndex === index) {
-            return this.active
-        }
-        return this.inactive
-    }
-
-    setAnswerConName = (conName:string) => {
-        this.setState({answerConName: conName});
-    }
-
-    render() { 
-
+export default function Nav(props:NavProps) {
+    const [lobbyIndex, setLobbyIndex] = useState(0) //default to search
+    
+    const getLobbyContent = () => {
+        
         let content = <div></div>
-        if (this.state.currentIndex === 0) {
-            content =  <NavAnswers  data={this.props.data.answers} 
-                                    onSelectAnswer={this.setAnswerConName}
-                                    initialCon={this.state.answerConName}
-                        />
-        }
-        else if (this.state.currentIndex === 1) {
-            content = <NavRanking data={this.props.data.ranking}/>
-        }
-        else if (this.state.currentIndex === 2) {
-            content = <div>CONTENT 2</div>
-        }
-        else if (this.state.currentIndex === 3) {
-            content = <div>CONTENT 3</div>
-        }
-
-        return (  
-            <div>
-                <div className={st.Nav_Bar}>
-                    <this.Icon_Con className={this.checkActive(0)} onClick={() => this.setIndex(0)} >
-                        <img className={st.Nav_Icon} src={Answer} alt="Answer" title="Answers"/>
-                    </this.Icon_Con>
-                    <this.Icon_Con className={this.checkActive(1)} onClick={() => this.setIndex(1)} >
-                        <img className={st.Nav_Icon} src={Ranking} alt="Ranking" title="Ranking"/>
-                    </this.Icon_Con>
-                    <this.Icon_Con className={this.checkActive(2)} onClick={() => this.setIndex(2)} >
-                        <img className={st.Nav_Icon} src={Chat} alt="Chat" title="Chat"/>
-                    </this.Icon_Con>
-                    <this.Icon_Con className={this.checkActive(3)} onClick={() => this.setIndex(3)} >
-                        <img className={st.Nav_Icon} src={Settings} alt="Settings" title="Settings"/>
-                    </this.Icon_Con>
-                </div>
+        //ANSWER
+        if (lobbyIndex === 0) {
+            content = 
                 <div>
-                    {content}
+                    ANSWER
+                </div>
+        }
+        //RANKING
+        else if (lobbyIndex === 1) {
+            content = 
+                <div>
+                    RANKING
+                </div>
+        }
+        //CHAT
+        else if (lobbyIndex === 2) {
+            content = 
+                <div>
+                    CHAT
+                </div>
+        }
+        //SETTINGS
+        else if (lobbyIndex === 3) {
+            /*
+                SET ME AUTOREADY
+                
+            */
+
+
+            content = 
+                <div>
+                    SETTINGS
+                </div>
+        }
+        return content
+    }
+
+    const getLobbyNavClass = (navItemIndex:number) => {
+        if (navItemIndex === lobbyIndex) {
+            return st.NavItem_Con_Active
+        }
+        return st.NavItem_Con
+    }
+
+    return (
+        <div className={st.Con}>
+            <div className={st.NavBar}>
+                <div className={getLobbyNavClass(0)} onClick={() => {setLobbyIndex(0)}}>
+                    <img className={st.Icon} src={Answer_Icon} alt="Answer" title="Your answer"/>
+                </div>
+                <div className={getLobbyNavClass(1)} onClick={() => {setLobbyIndex(1)}}>
+                    <img className={st.Icon} src={Ranking_Icon} alt="Ranking" title="Ranking"/>
+                </div>
+                <div className={getLobbyNavClass(2)} onClick={() => {setLobbyIndex(2)}}>
+                    <img className={st.Icon} src={Chat_Icon} alt="Chat" title="Chat"/>
+                </div>
+                <div className={getLobbyNavClass(3)} onClick={() => {setLobbyIndex(3)}}>
+                    <img className={st.Icon} src={Settings_Icon} alt="Settings" title="Settings"/>
                 </div>
             </div>
-        );
-    }
-
+            <div className={st.Content}>
+                {getLobbyContent()}
+            </div>
+        </div>
+    );
 }
-export default Nav;
+
+
+
 
 
 

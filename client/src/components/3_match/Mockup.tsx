@@ -47,9 +47,7 @@ class Mockup extends Component {
                         </div>
                     </div>
                     
-                    <div className={st.Navigation_Con}>
-                        <Navigation data={this.rightPanData}/>
-                    </div>
+                    
                 </div>
                 
             </div>

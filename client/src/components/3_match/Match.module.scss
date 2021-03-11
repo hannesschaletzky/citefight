@@ -1,6 +1,112 @@
 $sdbg: false; //show debugging background = sdbg
 @import "styles/app.global.scss";
 
+.Con {
+  width: 100%;
+  height: 100%;
+
+  display: flex;
+  flex-direction: row;
+  justify-content: space-evenly;
+  align-items: center;
+}
+
+/*
+  ################################
+  LEFT
+  ################################
+*/
+.Left_Con {
+  height: 100%;
+  width: 25%;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  @if ($sdbg) {
+    background-color: rgba(102, 192, 107, 0.685);
+  }
+}
+
+/*
+  ################################
+  CENTER
+  ################################
+*/
+.Center_Con {
+  height: 100%;
+  width: 50%;
+
+  margin-left: 15px;
+  margin-right: 15px;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  @if ($sdbg) {
+    background-color: rgba(28, 121, 121, 0.685);
+  }
+}
+
+.Content_Con {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+/*
+  ################################
+  RIGHT
+  ################################
+*/
+.Right_Con {
+  height: 100%;
+  width: 25%;
+
+  display: flex;
+  flex-direction: column;
+
+  @if ($sdbg) {
+    background-color: rgba(70, 53, 124, 0.685);
+  }
+}
+
+.Info_Con {
+  width: 100%;
+  height: 10%;
+  display: flex;
+  justify-content: space-between;
+}
+
+.Info_Base {
+  width: 35%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: default;
+  @extend .borderWithRoundedCorners;
+  font-family: STCaiyun;
+  font-size: calc(20px + 2vmin);
+}
+
+.Clock {
+  @extend .Info_Base;
+}
+
+.Round {
+  @extend .Info_Base;
+}
+
+.Nav_Con {
+  width: 100%;
+  flex: 1;
+  margin-top: 15px;
+  //@extend .borderWithRoundedCorners;
+}
+
 /*
   ################################
   READY SCREEN
