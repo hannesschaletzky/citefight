@@ -20,13 +20,13 @@ import {initSettings} from 'components/Logic'
 import * as Pu from 'components/pusher/Pusher'
 //components
 import Players from '../2_setup/players/Players'
-import RoundCountdown from './RoundCountdown'
+import Countdown from './Countdown'
 
 //STATE
 interface State {
     matchID: string
     status: Status
-    statusMsg: string //for everyone joinedd
+    statusMsg: string //for everyone joined
 
     roundIndex: number
     roundStarts: Date
@@ -225,7 +225,7 @@ export default function Match(props:MatchProps) {
                     (data:Pu.Event) => handleEvent_State(data)
                 )
                 channel.bind(Pu.EventType.Player, 
-                    (data:Pu.Event) => handleEvent_Player(data)
+                    (data:Pu.Event) => handleEvent_Players(data)
                 )
 
                 //set channel
@@ -322,7 +322,10 @@ export default function Match(props:MatchProps) {
         setStatus(Status.showRound, true)
     }
 
+    //4TH: SHOW ROUND SOLUTION
 
+
+    //helper function
     const setYourselfReady = () => {
         //set yourself ready
         ref_players.current.forEach((player) => {
@@ -374,11 +377,11 @@ export default function Match(props:MatchProps) {
     /*
     ##################################
     ##################################
-            EVENT: Player
+            EVENT: Players
     ##################################
     ##################################
     */
-    const handleEvent_Player = (event:Pu.Event) => {
+    const handleEvent_Players = (event:Pu.Event) => {
         //security
         if (event.type !== Pu.EventType.Player) {
             log('EventType mismatch in handleEvent_Player:\n\n' + event)
@@ -529,7 +532,7 @@ export default function Match(props:MatchProps) {
                 targetDate: ref_state.current.roundStarts,
                 onFinished: onNextRoundCountdownFinished
             }
-            const comp = React.createElement(RoundCountdown, props)
+            const comp = React.createElement(Countdown, props)
 
             return content = 
                 <div className={st.State_Con}>
