@@ -176,11 +176,12 @@ export default function Setup(props:SetupProps) {
 
     const showNotification = (msg:string, notType:Not.Type)  => {
         let newNot:Not.Notification = {
+            id: new Date().toISOString(),
             type: notType,
-            msg: msg
+            msg: msg,
+            disapearAfter: 5000
         }
         //update UI
-        log(newNot)
         ref_notification.current = newNot
         forceUpdate()
     }

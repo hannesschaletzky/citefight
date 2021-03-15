@@ -1,4 +1,6 @@
-import React, { useState, useEffect } from 'react';
+/* eslint-disable react-hooks/exhaustive-deps */
+import { clear } from 'console';
+import React, { useEffect, useRef, useReducer } from 'react';
 import st from './Notification.module.scss';
 
 /*
@@ -13,8 +15,10 @@ export enum Type {
     Error = 'Error'
 }
 export interface Notification {
+    id: string
     type: Type
     msg: string
+    disapearAfter: number //milliseconds
 }
 
 /*
@@ -23,19 +27,13 @@ export interface Notification {
 ##################################
 */
 export const init:Notification = {
+    id: new Date().toISOString(),
     type: Type.Init,
-    msg: ''
-}
-interface Props {
-    type: Type
-    msg: string
+    msg: '',
+    disapearAfter: 1
 }
 export const getComponent = (not:Notification) => {
-    let props:Props = {
-        type: not.type,
-        msg: not.msg
-    }
-    return React.createElement(NotificationLogic, props)
+    return React.createElement(NotificationLogic, not)
 }
 
 /*
@@ -43,16 +41,32 @@ export const getComponent = (not:Notification) => {
             LOGIC
 ##################################
 */
-function NotificationLogic(props:Props) {
+function NotificationLogic(not:Notification) {
 
-    const [show, setShow] = useState(true) //default to profiles
+    const ref_show = useRef(true)
+    const ref_current = useRef(init)
+    const ref_timeout = useRef(setTimeout(() => {}, 1))
+    const [,forceUpdate] = useReducer(x => x + 1, 0)
 
     useEffect(() => {
-        setTimeout(() => hideNotification(), 2000)
+        //only show new notification
+        if (ref_current.current.id !== not.id) {
+            //console.log('new not: ' + not.id)
+            ref_current.current = not
+            ref_show.current = true
+            clearTimeout(ref_timeout.current)
+            ref_timeout.current = setTimeout(() => hideNotification(), not.disapearAfter)
+            forceUpdate()
+        }
+        else {
+            ref_show.current = false
+        }
     })
 
     const hideNotification = () => {
-        setShow(false)
+        ref_show.current = false
+        clearTimeout(ref_timeout.current)
+        forceUpdate()
     }
 
     const getClass = (type:Type) => {
@@ -66,22 +80,27 @@ function NotificationLogic(props:Props) {
         else if (type === Type.Error) {
             return st.Error
         }
-        return st.none
+        return st.Init
+    }
+
+    const getNot = () => {
+        let rtn = <div></div>
+        if (ref_show.current) {
+            rtn = 
+            <div className={getClass(not.type)} onClick={() => hideNotification()}>
+                <div className={st.Text}>
+                    {not.msg}
+                </div>
+                <div className={st.Close}>
+                    x
+                </div>
+            </div>
+        }
+        return rtn
     }
 
     return (
-        <div>
-            {show && 
-                <div className={getClass(props.type)} onClick={() => hideNotification()}>
-                    <div className={st.Text}>
-                        {props.msg}
-                    </div>
-                    <div className={st.Close}>
-                        x
-                    </div>
-                </div>
-            }
-        </div>
+        getNot()
     )
 }
 
