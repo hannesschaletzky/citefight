@@ -5,8 +5,6 @@ import st from './Nav_Ranking.module.scss'
 import Clock from 'assets/nav/Clock.png'
 import Tick from 'assets/nav/Tick.png'
 
-import {Ranking_User} from 'components/Interfaces';
-
 class Nav_Ranking extends Component <any, any> {
 
     constructor(props: any) {
@@ -17,6 +15,8 @@ class Nav_Ranking extends Component <any, any> {
     }
 
     render() { 
+
+        /*
 
         //loop array & sort
         let users:Ranking_User[] = this.props.data
@@ -29,9 +29,6 @@ class Nav_Ranking extends Component <any, any> {
             insertIntoArray(item)
         }
 
-        /*
-            User with most points first, if even points, user with less time first 
-        */
         function insertIntoArray(inputItem: Ranking_User) {
 
             //insert first item
@@ -167,7 +164,11 @@ class Nav_Ranking extends Component <any, any> {
             )
 
             placeCounter++
+            
         }
+
+        */
+        
 
         return (  
             <div className={st.Con}>
@@ -185,7 +186,7 @@ class Nav_Ranking extends Component <any, any> {
                         <img className={st.Icon} src={Clock} alt="Time" title="Total time"/>
                     </div>
                 </div>
-                {rankingToDisplay}
+                
             </div>
         );
     }

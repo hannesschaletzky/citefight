@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import st from './Interaction.module.scss'
 
 import {Player} from 'components/Interfaces'
-import {NotType} from 'components/Interfaces'
+import * as Not from 'components/00_shared/notification/Notification'
 
 import {didUserExceedLimit} from 'components/Logic'
 
@@ -48,7 +48,7 @@ class Interaction extends Component <any, any> {
             return
         }
         navigator.clipboard.writeText(this.currentUrl)
-        this.props.addNotification('copied matchlink', NotType.Success)
+        this.props.addNotification('copied matchlink', Not.Type.Success)
     }
 
     onQRCodeClick(show:boolean) {
@@ -68,7 +68,7 @@ class Interaction extends Component <any, any> {
     actionsExceeded():boolean {
         if (didUserExceedLimit(this.actionTimestamps, 7)) {
             //actions exceeded
-            this.props.addNotification('easy boy... small cooldown - too many actions', NotType.Warning)
+            this.props.addNotification('easy boy... small cooldown - too many actions', Not.Type.Warning)
             return true
         }
         //not exceeded -> add timestamp

@@ -2,25 +2,21 @@ import React, { useState } from 'react';
 import st from './Lobby.module.scss';
 
 import {Profile} from 'components/Interfaces'
-import {Settings} from 'components/Interfaces'
-import {NotType} from 'components/Interfaces'
-
-import {SettingsProps} from 'components/Functional_Interfaces'
 
 import AddedProfile_Icon from 'assets/setup/AddedProfile_Icon.png'
 import Settings_Icon from 'assets/setup/Settings_Icon.png'
 
-import SettingsComp from './settings/Settings'
+import * as Settings from 'components/00_shared/settings/Settings'
 import Profiles from './profiles/Profiles'
 
 export default function Lobby(isAdmin:boolean, //first user is admin
                               profiles:Profile[],
                               onRemoveProfile:(profile:Profile) => void,
-                              settings:Settings,
-                              onSettingsChanged:(newSettings:Settings) => void,
-                              newNotification:(msg:string, notType:NotType) => void) {
+                              settings:Settings.Settings_Lobby,
+                              onSettingsChanged:(newSettings:Settings.Settings_Lobby) => void,
+                              newNotification:(msg:string, notType:any) => void) {
     const [lobbyIndex, setLobbyIndex] = useState(0) //default to profiles
-
+    
     const getLobbyContent = () => {
         //PROFILES
         let content = <div></div>
@@ -33,16 +29,7 @@ export default function Lobby(isAdmin:boolean, //first user is admin
         }
         //SETTINGS
         else if (lobbyIndex === 1) {
-
-            //create react component from functional 
-            let props:SettingsProps = {
-                settings: settings,
-                isAdmin: isAdmin,
-                onSettingsChanged:onSettingsChanged, 
-                newNotification:newNotification
-            }
-            const comp = React.createElement(SettingsComp, props)
-            content = comp
+            content = Settings.getComponent(Settings.Usage.Lobby, settings, isAdmin, onSettingsChanged, newNotification)
         }
         return content
     }
@@ -76,7 +63,7 @@ export default function Lobby(isAdmin:boolean, //first user is admin
                 {getLobbyContent()}
             </div>
         </div>
-    );
+    )
 }
 
 

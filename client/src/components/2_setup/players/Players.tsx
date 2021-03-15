@@ -5,6 +5,7 @@ import {Player} from 'components/Interfaces'
 
 import ArrowIcon from 'assets/setup/Arrow_Icon.png'
 import PersonIcon from 'assets/setup/Person_Icon.png'
+import { ListItemAvatar } from '@material-ui/core';
 
 class Players extends Component <any, any> {
 
@@ -35,14 +36,19 @@ class Players extends Component <any, any> {
                 <div className={st.Name_Con}>
                     {item.name}
                 </div>
-                <div className={st.IsYou_Con} title="You are this player">
+                <div className={st.IsAdmin_Con}>
+                    {(item.name === players[0].name) &&
+                        <div title={item.name + " is Admin"}>👑</div>
+                    }
+                </div>
+                <div className={st.IsYou_Con}>
                     {(currentUser === item.name) &&
-                        <img className={st.Icon} src={PersonIcon} alt="IsYou"/>
+                        <div title="You">🐵</div>
                     }
                 </div>
                 <div className={st.Ready_Con}>
                     {item.ready &&
-                        <img className={st.Icon} src={ArrowIcon} alt="Ready" title="You are ready"/>
+                        <div title={item.name + " is ready"}>✅</div>
                     }
                 </div>
                 

@@ -13,6 +13,8 @@ import {NavProps, RankingProps} from 'components/Functional_Interfaces'
 //components
 import TwitterProfileList from 'components/2_setup/add/search/TwitterProfileList'
 import Ranking from './pages/Ranking'
+import * as Chat from 'components/00_shared/chat/Chat'
+import * as SettingsComp from 'components/00_shared/settings/Settings'
 
 export default function Nav(props:NavProps) {
     const [lobbyIndex, setLobbyIndex] = useState(0) //default to search
@@ -31,29 +33,22 @@ export default function Nav(props:NavProps) {
         }
         //RANKING
         else if (lobbyIndex === 1) {
-            let props:RankingProps = {
+            let newProps:RankingProps = {
                 test: ''
             }
-            const comp = React.createElement(Ranking, props)
+            const comp = React.createElement(Ranking, newProps)
             content = comp
         }
         //CHAT
         else if (lobbyIndex === 2) {
-            content = 
-                <div>
-                    CHAT
-                </div>
+            return Chat.getComponent(props.chatmessages,props.onNewMessage)
         }
         //SETTINGS
         else if (lobbyIndex === 3) {
             /*
                 SET ME AUTOREADY
-                
             */
-            content = 
-                <div>
-                    SETTINGS
-                </div>
+            //content = SettingsComp.getComponent(SettingsComp.Usage.Match, settings, isAdmin, onSettingsChanged, newNotification)
         }
         return content
     }

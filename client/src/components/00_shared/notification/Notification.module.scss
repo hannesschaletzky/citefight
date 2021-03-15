@@ -1,0 +1,47 @@
+$sdbg: false; //show debugging background = sdbg
+@import "styles/app.global.scss";
+
+.Not_Base {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: $header_height; //header height
+  height: 25px;
+  margin: 5px;
+
+  //text & cursor
+  cursor: pointer;
+  @extend .HelveticaNeueRegularFont;
+  color: black;
+
+  //align items center
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  @extend .borderWithRoundedCorners;
+}
+
+.Success {
+  @extend .Not_Base;
+  background-color: rgba(41, 216, 18, 0.4);
+}
+
+.Warning {
+  @extend .Not_Base;
+  background-color: rgba(243, 239, 13, 0.7);
+}
+
+.Error {
+  @extend .Not_Base;
+  background-color: rgba(235, 27, 27, 0.7);
+}
+
+.Text {
+  margin-left: 15px;
+}
+
+.Close {
+  @extend .HelveticaNeueRegularFont;
+  margin-right: 15px;
+}

@@ -6,7 +6,6 @@ import Search_Icon from 'assets/setup/Search_Icon.png'
 import Ranking_Icon from 'assets/setup/Ranking_Icon.png'
 //interfaces
 import {Profile} from 'components/Interfaces'
-import {NotType} from 'components/Interfaces'
 //functional-interfaces
 import {PopularProfilesProps} from 'components/Functional_Interfaces'
 import {SearchProps} from 'components/Functional_Interfaces'
@@ -17,7 +16,7 @@ import PopularProfiles from './profiles/PopularProfiles'
 export default function Add(  profiles:Profile[],
                               popularProfiles:Profile[],
                               addProfile:(profile:Profile) => void,
-                              newNotification:(msg:string, notType:NotType) => void) {
+                              newNotification:(msg:string, notType:any) => void) {
     const [lobbyIndex, setLobbyIndex] = useState(0) //default to search
     
     const getLobbyContent = () => {

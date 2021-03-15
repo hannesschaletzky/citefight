@@ -1,14 +1,64 @@
 import React, { useEffect, useRef, useState } from 'react';
 import st from './Chat.module.scss';
 
-import {ChatMsg} from 'components/Interfaces'
-import {SysMsgType} from 'components/Interfaces'
+import {ChatMsg, SysMsgType} from 'components/Interfaces'
 
 import {didUserExceedLimit} from 'components/Logic'
 
 import WarningIcon from 'assets/setup/Warning_Icon.png'
 import SendIcon from 'assets/setup/Send_Icon.png'
 
+/*
+##################################
+            EXPORT
+##################################
+*/
+interface Props {
+    inputMessages: ChatMsg[]
+    onNewMessage: (newMsg:ChatMsg) => void
+}
+export const getComponent = (inputMessages:ChatMsg[], onNewMessage:(newMsg:ChatMsg) => void) => {
+    let props:Props = {
+        inputMessages: inputMessages,
+        onNewMessage: onNewMessage
+    }
+    return React.createElement(Chat, props)
+}
+
+/*
+##################################
+        SHARED METHODS
+##################################
+*/
+export const addSysMsg = (type:SysMsgType, inputMsg:string, ref:React.MutableRefObject<ChatMsg[]>) => {
+        //create msg
+        let msg:ChatMsg = {
+            n: '',
+            m: '',
+            t: type
+        }
+        //determine type 
+        if (type === SysMsgType.welcome) {
+            msg.m = inputMsg
+        }
+        else if (type === SysMsgType.userJoined) {
+            msg.m = inputMsg + ' joined 🎊'
+        }
+        else if (type === SysMsgType.userLeft) {
+            msg.m = inputMsg + ' left 😭'
+        }
+        else if (type === SysMsgType.startInfo) {
+            msg.m = '📢 ' + inputMsg
+        }
+        //add
+        ref.current.push(msg)
+    }
+
+/*
+##################################
+            LOGIC
+##################################
+*/
 enum SetupChatStatus {
     enabled = 'enabled',
     disabled = 'disabled',
@@ -18,8 +68,7 @@ enum SetupChatStatus {
 let messageTimestamps:string[] = []
 let inputSizeMax = 100
 
-export default function Chat(inputMessages:ChatMsg[],
-                             onNewMsg:(msg:ChatMsg) => void) {
+function Chat(props:Props) {
     
     //state
     const [userMsg,setUserMsg] = useState('')
@@ -40,6 +89,13 @@ export default function Chat(inputMessages:ChatMsg[],
     const InputRef = useRef<null | HTMLInputElement>(null)
     
 
+    /*
+    ##################################
+    ##################################
+                GENERAL
+    ##################################
+    ##################################
+    */
     const sendMessage = () => {
         
         if (status !== SetupChatStatus.enabled) {
@@ -52,7 +108,7 @@ export default function Chat(inputMessages:ChatMsg[],
             t: SysMsgType.none
         }
 
-        onNewMsg(newMsg) //fire event in parent
+        props.onNewMessage(newMsg) //fire event in parent
         messageTimestamps.push(new Date().toISOString())
         resetInput()
         setStatus(SetupChatStatus.disabled)
@@ -101,8 +157,8 @@ export default function Chat(inputMessages:ChatMsg[],
     const getContent = () => {
 
         let cards = []
-        for(let i=0;i<inputMessages.length;i++) {
-            let item:ChatMsg = inputMessages[i]
+        for(let i=0;i<props.inputMessages.length;i++) {
+            let item:ChatMsg = props.inputMessages[i]
             let card = 
                 <div className={st.Message_Con} key={i}>
                     {item.t === SysMsgType.welcome &&

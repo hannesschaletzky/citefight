@@ -38,46 +38,6 @@ export enum SysMsgType {
     startInfo = '5',
 }
 
-export enum NotType {
-    Success = 'Success',
-    Warning = 'Warning',
-    Error = 'Error'
-}
-
-
-/*
-    SETTINGS
-*/
-export enum Settings_Roundtime {
-    Little,
-    Normal,
-    Much
-}
-
-export enum Settings_DrinkingMode {
-    Off,
-    Lightweight,
-    Regular,
-    Beast,
-}
-
-export enum Settings_Pictures {
-    Off,
-    Instantly,
-    AtHalftime
-}
-
-
-/*
-    OBJECTS
-*/
-export interface Settings {
-    rounds: number;
-    roundtime: Settings_Roundtime;
-    drinking: Settings_DrinkingMode;
-    autoContinue: boolean;
-    pictures: Settings_Pictures;
-}
 
 export interface Player {
     name: string;
@@ -138,25 +98,5 @@ export interface Tweet_BottomPart {
     likeCount: string,
     retweetCount: string,
     date: string
-}
-
-
-/*
-    MATCH
-*/
-/*
-    RIGHT PANEL
-*/
-export interface Ranking_User {
-    name: string;
-    points: number;
-    totalTime: number;
-}
-
-export interface Answer {
-    name: string,
-    tag: string,
-    isVerified: number,
-    picURL: string
 }
 

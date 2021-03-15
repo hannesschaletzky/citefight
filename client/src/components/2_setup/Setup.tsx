@@ -16,13 +16,10 @@ import {Player} from 'components/Interfaces'
 import {ChatMsg} from 'components/Interfaces'
 import {Profile} from 'components/Interfaces'
 import {SysMsgType} from 'components/Interfaces'
-import {NotType} from 'components/Interfaces'
-import {Settings} from 'components/Interfaces'
 //functional interfaces
 import {SetupProps} from 'components/Functional_Interfaces'
 
 //logic
-import {initSettings} from 'components/Logic'
 import {isValidMatchID} from 'components/Logic'
 
 //puhser
@@ -36,7 +33,9 @@ import Lobby from './lobby/Lobby'
 import Add from './add/Add'
 import Interaction from './interaction/Interaction'
 import Players from './players/Players'
-import Chat from './chat/Chat'
+import * as Chat from 'components/00_shared/chat/Chat'
+import * as Settings from 'components/00_shared/settings/Settings'
+import * as Not from 'components/00_shared/notification/Notification'
 
 //STATE & STATUS
 interface State {
@@ -71,25 +70,11 @@ interface Event_Join_Data {
     userid: string;
 }
 
-//NOTIFICATION
-interface Notification {
-    display: boolean;
-    msg: string;
-    type: NotType;
-    scssClass: string;
-}
-
 //INIT OBJECTS FOR REFS
 const init_profiles:Profile[] = []
 const init_players:Player[] = []
 const init_chat:ChatMsg[] = []
 const init_tweets:Tweet[] = []
-const init_notification:Notification = {
-    display: false,
-    msg: "",
-    type: NotType.Success,
-    scssClass: ''
-}
 const init_state:State = {
     matchID: '',
     state: Status.init,
@@ -106,10 +91,10 @@ export default function Setup(props:SetupProps) {
     const ref_tweets = useRef(init_tweets)
     const ref_state = useRef(init_state)
     const ref_profiles = useRef(init_profiles)
-    const ref_settings = useRef(initSettings)
+    const ref_settings = useRef(Settings.initSettings_Lobby)
     const ref_players = useRef(init_players)
     const ref_chat = useRef(init_chat)
-    const ref_notification = useRef(init_notification)
+    const ref_notification = useRef(Not.init)
     //control flow refs
     const ref_pusherState = useRef(Pu.State.init)
     const ref_pusherClient = useRef(Pu.init_pusherCient)
@@ -186,61 +171,17 @@ export default function Setup(props:SetupProps) {
     }
     
     const addSysMsg = (type:SysMsgType, inputMsg:string) => {
-
-        //create msg
-        let msg:ChatMsg = {
-            n: '',
-            m: '',
-            t: type
-        }
-
-        //determine type 
-        if (type === SysMsgType.welcome) {
-            msg.m = inputMsg
-        }
-        else if (type === SysMsgType.userJoined) {
-            msg.m = inputMsg + ' joined 🎊'
-        }
-        else if (type === SysMsgType.userLeft) {
-            msg.m = inputMsg + ' left 😭'
-        }
-        else if (type === SysMsgType.startInfo) {
-            msg.m = '📢 ' + inputMsg
-        }
-        
-        //add
-        ref_chat.current.push(msg)
+        Chat.addSysMsg(type, inputMsg, ref_chat)
     }
 
-    let notTimeout = setTimeout(() => {}, 1) //store notification-timeout 
-    const showNotification = (msg:string, notType:NotType)  => {
-        let newNot:Notification = {
-            display: true,
-            msg: msg,
+    const showNotification = (msg:string, notType:Not.Type)  => {
+        let newNot:Not.Notification = {
             type: notType,
-            scssClass: ''
-        }
-        //set scss class
-        if (notType === NotType.Success) {
-            newNot.scssClass = st.Not_Success
-        }
-        else if (notType === NotType.Warning) {
-            newNot.scssClass = st.Not_Warning
-        }
-        else if (notType === NotType.Error) {
-            newNot.scssClass = st.Not_Error
+            msg: msg
         }
         //update UI
+        log(newNot)
         ref_notification.current = newNot
-        forceUpdate()
-
-        //clear old timeout && set new timer to hide it after seconds
-        clearTimeout(notTimeout)
-        notTimeout = setTimeout(hideNotification, 5000);
-    }
-
-    const hideNotification = () => {
-        ref_notification.current.display = false
         forceUpdate()
     }
 
@@ -507,7 +448,7 @@ export default function Setup(props:SetupProps) {
                         value.ready = false
                     })
                     //show info
-                    showNotification('Someone left, cancelled starting...', NotType.Warning)
+                    showNotification('Someone left, cancelled starting...', Not.Type.Warning)
                     //clear further steps
                     timeouts.forEach((value) => {
                         clearTimeout(value)
@@ -668,7 +609,7 @@ export default function Setup(props:SetupProps) {
         }
 
         //set new settings
-        let newSettings:Settings = event.data
+        let newSettings:Settings.Settings_Lobby = event.data
         log('new Settings received')
         ref_settings.current = newSettings
         forceUpdate()
@@ -1195,21 +1136,21 @@ export default function Setup(props:SetupProps) {
 
         //check if user has tweets
         if (newUser.statuses_count === 0) {
-            showNotification('User should have posted at least one tweet', NotType.Error)
+            showNotification('User should have posted at least one tweet', Not.Type.Error)
             return
         }
 
         //check already added
         for(let i=0;i<ref_profiles.current.length;i++) {
             if (ref_profiles.current[i].screen_name === newUser.screen_name) {
-                showNotification(newUser.name + ' already added!', NotType.Error)
+                showNotification(newUser.name + ' already added!', Not.Type.Error)
                 return
             }
         }
 
         //check maximum
         if (ref_profiles.current.length >= 10) {
-            showNotification('Maximum number of 10 profiles reached', NotType.Error)
+            showNotification('Maximum number of 10 profiles reached', Not.Type.Error)
             return
         }
         
@@ -1217,13 +1158,13 @@ export default function Setup(props:SetupProps) {
         let alreadyL = JSON.stringify(ref_profiles.current).length
         let newUserL = JSON.stringify(newUser).length
         if ((alreadyL + newUserL) > 9000) {
-            showNotification('Pusher server cannot support more profiles!', NotType.Error)
+            showNotification('Pusher server cannot support more profiles!', Not.Type.Error)
             return
         }
 
         //if user did not post a lot, show warning
         if (newUser.statuses_count < 20) {
-            showNotification('Playing profiles with few tweets might affect the game experience', NotType.Warning)
+            showNotification('Playing profiles with few tweets might affect the game experience', Not.Type.Warning)
         }
 
         //add
@@ -1246,13 +1187,13 @@ export default function Setup(props:SetupProps) {
 
     const onToogleReady = (ready:boolean) => {
         if (ref_profiles.current.length < 2) {
-            showNotification('You have to select at least two profiles to play', NotType.Warning)
+            showNotification('You have to add at least two profiles from the left panel to start', Not.Type.Warning)
             return
         }
         toogleReady(ready)
     }
 
-    const onNewNotification = (msg:string, notType:NotType) => {
+    const onNewNotification = (msg:string, notType:Not.Type) => {
         showNotification(msg, notType)
     }
 
@@ -1267,7 +1208,7 @@ export default function Setup(props:SetupProps) {
         }
     }
 
-    const onSettingsChanged = (newSettings:Settings) => {
+    const onSettingsChanged = (newSettings:Settings.Settings_Lobby) => {
         ref_settings.current = newSettings
         fireEvent_Settings()
     } 
@@ -1429,22 +1370,13 @@ export default function Setup(props:SetupProps) {
                     />
                 </div>
                 <div className={st.Chat_Con}>
-                    {Chat(
+                    {Chat.getComponent(
                         ref_chat.current,
                         onNewChatMessage
                     )}
                 </div>
             </div>
-            {ref_notification.current.display && 
-                <div className={ref_notification.current.scssClass} onClick={() => hideNotification()}>
-                    <div className={st.Not_Text}>
-                        {ref_notification.current.msg}
-                    </div>
-                    <div className={st.Not_Close}>
-                        x
-                    </div>
-                </div>
-            }
+            {Not.getComponent(ref_notification.current)}
         </div>
     );
 }

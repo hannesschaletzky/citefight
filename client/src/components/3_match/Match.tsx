@@ -10,19 +10,21 @@ import {LocalStorage} from 'components/Interfaces'
 import {Player} from 'components/Interfaces'
 import {Profile} from 'components/Interfaces'
 import {Tweet} from 'components/Interfaces'
+import {ChatMsg, SysMsgType} from 'components/Interfaces'
 //functional interfaces
 import {MatchProps, 
         NavProps, 
         NextRoundCountdownProps} from 'components/Functional_Interfaces'
 //logic
 import {isValidMatchID} from 'components/Logic'
-import {initSettings} from 'components/Logic'
 //puhser
 import * as Pu from 'components/pusher/Pusher'
 //components
 import Players from '../2_setup/players/Players'
 import Countdown from './Countdown'
 import Nav from './nav/Nav'
+import * as Chat from 'components/00_shared/chat/Chat'
+import * as Settings from 'components/00_shared/settings/Settings'
 
 //STATE
 interface State {
@@ -58,6 +60,7 @@ const init_userName = ""
 const init_profiles:Profile[] = []
 const init_players:Player[] = []
 const init_tweets:Tweet[] = []
+const init_chat:ChatMsg[] = []
 
 export default function Match(props:MatchProps) {
     //state
@@ -68,8 +71,10 @@ export default function Match(props:MatchProps) {
     const ref_state = useRef(init_state)
     const ref_tweets = useRef(init_tweets)
     const ref_profiles = useRef(init_profiles)
-    const ref_settings = useRef(initSettings)
+    const ref_settings_lobby = useRef(Settings.initSettings_Lobby)
+    const ref_settings_match = useRef(Settings.initSettings_Match)
     const ref_players = useRef(init_players)
+    const ref_chat = useRef(init_chat)
     //pusher refs
     const ref_pusherClient = useRef(Pu.init_pusherCient)
     const ref_pusherChannel = useRef(Pu.init_pusherChannel)
@@ -108,12 +113,18 @@ export default function Match(props:MatchProps) {
                     player.ready = false
                 })
             }
-            if (ref_settings.current === initSettings) {
-                setInitialValues(ref_settings, LocalStorage.Trans_Settings)
+            if (ref_settings_lobby.current === Settings.initSettings_Lobby) {
+                setInitialValues(ref_settings_lobby, LocalStorage.Trans_Settings)
             }
             if (ref_username.current === init_userName) {
                 setInitialValues(ref_username, LocalStorage.Username)
             }
+        }
+
+        //set welcome chat messages
+        if (ref_chat.current.length === 0) {
+            addSysMsg(SysMsgType.welcome, '🎉🎉🎉 Welcome to the Match 🎉🎉🎉')
+            addSysMsg(SysMsgType.welcome, 'Set yourself ready and lets go!')
         }
         
         //retrieve & set pusherclient (once at beginning)
@@ -150,6 +161,10 @@ export default function Match(props:MatchProps) {
             logErr(type + ' is null! Inital Values from Setup not retrieved')
             setStatus(Status.errorInitalValues, true)
         }
+    }
+
+    const addSysMsg = (type:SysMsgType, inputMsg:string) => {
+        Chat.addSysMsg(type, inputMsg, ref_chat)
     }
 
     const userIsReady = ():boolean => {
@@ -228,6 +243,9 @@ export default function Match(props:MatchProps) {
                 )
                 channel.bind(Pu.EventType.Player, 
                     (data:Pu.Event) => handleEvent_Players(data)
+                )
+                channel.bind(Pu.EventType.Chat, 
+                    (data:Pu.Event) => handleEvent_Chat(data)
                 )
 
                 //set channel
@@ -408,6 +426,53 @@ export default function Match(props:MatchProps) {
     /*
     ##################################
     ##################################
+        EVENT: Chat
+    ##################################
+    ##################################
+    */
+    const handleEvent_Chat = (event:Pu.Event) => {
+
+        //security
+        if (event.type !== Pu.EventType.Chat) {
+            log('EventType mismatch in handleEvent_Chat:\n\n' + event)
+            return
+        }
+
+        //set new chat
+        let newChat:ChatMsg[] = event.data
+        log('total msgs: ' + newChat.length)
+        ref_chat.current = newChat
+        forceUpdate()
+    }
+
+    const fireEvent_Chat = async () => {
+
+        //remove first message of chat until chat is smaller than 10KB
+        let chatString = JSON.stringify(ref_chat.current)
+        while (chatString.length > 10000) {
+            log('Chat too long\n -> removing first message')
+            //find first non welcome message to remove
+            for(let i=0;i<ref_chat.current.length;i++) {
+                if (ref_chat.current[i].t !== SysMsgType.welcome) {
+                    ref_chat.current.splice(i,1)
+                    break
+                }
+            }
+            chatString = JSON.stringify(ref_chat.current)
+        }
+
+        //prepare
+        let event:Pu.Event = {
+            type: Pu.EventType.Chat,
+            data: ref_chat.current
+        }
+        //trigger
+        Pu.triggerEvent(getMatchName(), event.type, event)
+    }
+
+    /*
+    ##################################
+    ##################################
                 HANDLERS 
     ##################################
     ##################################
@@ -422,6 +487,12 @@ export default function Match(props:MatchProps) {
 
     const onSelectAnswer = (profile:Profile) => {
         log('selected answer: ' + profile.screen_name)
+    }
+
+    const onNewChatMessage = (newMsg:ChatMsg) => {
+        newMsg.n = ref_username.current //chat component does not know/set user name
+        ref_chat.current.push(newMsg)
+        fireEvent_Chat()
     }
 
     /*
@@ -507,12 +578,12 @@ export default function Match(props:MatchProps) {
         if (ref_state.current.status === Status.everyoneReady) {
             return content = 
                 <div className={st.Content_Con}>
-                    {!ref_settings.current.autoContinue && 
+                    {!ref_settings_lobby.current.autoContinue && 
                         <div className={st.AutoContinue_Con}>
                             Autocontinue: Off
                         </div>
                     }
-                    {ref_settings.current.autoContinue && 
+                    {ref_settings_lobby.current.autoContinue && 
                         <div className={st.AutoContinue_Con}>
                             Autocontinue in 30
                         </div>
@@ -571,7 +642,9 @@ export default function Match(props:MatchProps) {
     const getNavComp = () => {
         let props:NavProps = {
             profiles: ref_profiles.current,
-            onSelectAnswer: onSelectAnswer
+            onSelectAnswer: onSelectAnswer,
+            chatmessages: ref_chat.current,
+            onNewMessage: onNewChatMessage
         }
         return React.createElement(Nav, props)
     }

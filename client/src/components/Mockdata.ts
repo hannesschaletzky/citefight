@@ -1,5 +1,3 @@
-import {Ranking_User} from './Interfaces'
-import {Answer} from './Interfaces'
 
 import {Tweet} from './Interfaces'
 import {Tweet_Content} from './Interfaces'
@@ -42,6 +40,7 @@ export const popProfilesMock:Profile[] = [
 
 export class Mockdata {
 
+    /*
     private answer1: Answer = {
         name: 'Mario Götze',
         tag: 'MarioGoetze',
@@ -68,6 +67,7 @@ export class Mockdata {
         rtnArr.push(this.answer3)
         return  rtnArr
     }
+    
 
 
 
@@ -210,7 +210,7 @@ export class Mockdata {
 
         return  rtnArr
     }
-
+    */
 
 
 

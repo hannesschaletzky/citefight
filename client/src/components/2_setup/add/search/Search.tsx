@@ -12,11 +12,12 @@ import {didUserExceedLimit} from 'components/Logic'
 //interfaces
 import {Profile} from 'components/Interfaces'
 import {LocalStorage} from 'components/Interfaces'
-import {NotType} from 'components/Interfaces'
 import {TwitterStatus} from 'components/Interfaces'
 import {ProfilesUsage} from 'components/Interfaces'
 //functional-interfaces
 import {SearchProps} from 'components/Functional_Interfaces'
+//components
+import * as Not from 'components/00_shared/notification/Notification'
 
 const stateInitArray:Profile[] = []
 
@@ -99,19 +100,19 @@ export default function Search(props:SearchProps) {
     //send error notification to setup
     const showErrNot = (msg: string) => {
         log(msg)
-        props.newNotification('Error: ' + msg, NotType.Error)
+        props.newNotification('Error: ' + msg, Not.Type.Error)
     }
 
     const showWarNot = (msg: string) => {
         log(msg)
-        props.newNotification('Warning: ' + msg, NotType.Warning)
+        props.newNotification('Warning: ' + msg, Not.Type.Warning)
     }
 
     //ACTIONS EXCEEDED
     const actionsExceeded = () => {
         if (didUserExceedLimit(actionTimestamps, 20, 30000)) {
             //actions exceeded
-            props.newNotification('easy boy... small cooldown - too many actions', NotType.Warning)
+            props.newNotification('easy boy... small cooldown - too many actions', Not.Type.Warning)
             return true
         }
         //not exceeded -> add timestamp

@@ -33,27 +33,31 @@ $sdbg: false; //show debugging background = sdbg
   }
 }
 
-.IsYou_Con {
+.Icon_Base {
   flex: 1;
   display: flex;
   justify-content: center;
+  align-items: center;
+  cursor: default;
+}
 
+.IsAdmin_Con {
+  @extend .Icon_Base;
+  @if $sdbg {
+    background-color: rgb(25, 57, 160);
+  }
+}
+
+.IsYou_Con {
+  @extend .Icon_Base;
   @if $sdbg {
     background-color: lawngreen;
   }
 }
 
 .Ready_Con {
-  flex: 1;
-  display: flex;
-  justify-content: center;
-
+  @extend .Icon_Base;
   @if $sdbg {
     background-color: lightpink;
   }
-}
-
-.Icon {
-  width: 20px;
-  height: 20px;
 }

@@ -13,10 +13,6 @@ class Mockup extends Component {
     private mockdata = new Mockdata();
 
     //passed to right panel
-    rightPanData = {
-        answers: this.mockdata.getAnswers(),
-        ranking: this.mockdata.getRanking()
-    }
 
     //passed to center panel -> tweet
     tweet: Tweet = this.mockdata.getTweet()

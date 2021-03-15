@@ -1,0 +1,63 @@
+$sdbg: false; //show debugging background = sdbg
+@import "styles/app.global.scss";
+
+.Con {
+  flex: 1;
+  padding-bottom: 10px;
+  overflow-y: scroll;
+
+  @if $sdbg {
+    background-color: rgba(43, 40, 78, 0.5);
+  }
+}
+
+.Con_NoAdmin {
+  @extend .Con;
+  opacity: 0.2;
+  pointer-events: none; //disable clicking
+  user-select: none; //disable selecting
+}
+
+.Header {
+  margin-top: 20px;
+  margin-bottom: 3px;
+  padding: 3px;
+  @extend .HelveticaNeueBoldFont;
+  color: black;
+}
+
+.Row {
+  width: 100%;
+  display: flex;
+  justify-content: space-evenly;
+}
+
+//BUTTON TEMPLATE
+.Button_Base_Settings {
+  height: 25px;
+  cursor: pointer;
+  //border
+  border-color: transparent;
+  border-radius: 8px;
+  //text
+  //@extend .HelveticaNeueBoldFont;
+  @extend .HelveticaNeueRegularFont;
+  color: white;
+  //colour, shadow, outline
+  box-shadow: 2px 2px rgba(5, 19, 19, 0.5);
+  outline: none;
+  &:active {
+    box-shadow: 0 0px transparent;
+  }
+}
+
+.Button_InActive {
+  @extend .Button_Base_Settings;
+  color: rgb(80, 80, 80);
+  background-color: rgb(240, 240, 240);
+}
+
+.Button_Active {
+  @extend .Button_Base_Settings;
+  background-color: $unready_colour;
+}
