@@ -1,10 +1,31 @@
-import { useEffect, useReducer, useRef } from 'react'
+import React, { useEffect, useReducer, useRef } from 'react'
 //import st from './RoundCountdown.module.scss';
 import {log} from 'components/Logic'
 
-import {NextRoundCountdownProps} from 'components/Functional_Interfaces'
 
-//STATE
+/*
+##################################
+            EXPORT
+##################################
+*/
+interface Props {
+    targetDate: Date
+    onFinished:() => void
+}
+export default function getComponent(targetDate:Date, onFinished:() => void) {
+    let props:Props = {
+        targetDate: targetDate,
+        onFinished: onFinished
+    }
+    return React.createElement(Countdown, props)
+}
+
+
+/*
+##################################
+            LOGIC
+##################################
+*/
 interface State {
     triggered: boolean
     seconds: number
@@ -13,8 +34,7 @@ let init_state:State = {
     triggered: false,
     seconds: -1
 }
-
-export default function Countdown(props:NextRoundCountdownProps) {
+function Countdown(props:Props) {
 
     const ref_state = useRef(init_state)
     const [,forceUpdate] = useReducer(x => x + 1, 0)
@@ -50,6 +70,9 @@ export default function Countdown(props:NextRoundCountdownProps) {
                 timespan += 1000
                 diffS -= 1
             }
+        }
+        else {
+            log('ALREADY TRIGGERED')
         }
     })
 

@@ -11,9 +11,9 @@ import * as Not from 'components/00_shared/notification/Notification'
 ##################################
 */
 export enum Roundtime {
-    Little,
-    Normal,
-    Much
+    Fast = 3,
+    Regular = 7,
+    Slow = 15 
 }
 export enum DrinkingMode {
     Off,
@@ -39,7 +39,7 @@ export interface Settings_Match {
 //INIT
 export const initSettings_Lobby:Settings_Lobby = {
     rounds: 25,
-    roundtime: Roundtime.Normal,
+    roundtime: Roundtime.Regular,
     autoContinue: true,
     pictures: Pictures.AtHalftime,
     drinking: DrinkingMode.Off
@@ -213,9 +213,9 @@ function SettingsLogic(props:Props) {
                     Roundtime
                 </div>
                 <div className={st.Row}>
-                    <button className={getClass(Type.l_roundtime, Roundtime.Little)} onClick={() => {newSettings(Type.l_roundtime, Roundtime.Little)}}>Low</button>
-                    <button className={getClass(Type.l_roundtime, Roundtime.Normal)} onClick={() => {newSettings(Type.l_roundtime, Roundtime.Normal)}}>Normal</button>
-                    <button className={getClass(Type.l_roundtime, Roundtime.Much)} onClick={() => {newSettings(Type.l_roundtime, Roundtime.Much)}}>High</button>
+                    <button className={getClass(Type.l_roundtime, Roundtime.Fast)} onClick={() => {newSettings(Type.l_roundtime, Roundtime.Fast)}}>Fast</button>
+                    <button className={getClass(Type.l_roundtime, Roundtime.Regular)} onClick={() => {newSettings(Type.l_roundtime, Roundtime.Regular)}}>Regular</button>
+                    <button className={getClass(Type.l_roundtime, Roundtime.Slow)} onClick={() => {newSettings(Type.l_roundtime, Roundtime.Slow)}}>Slow</button>
                 </div>
                 
                 {/*AUTO CONTINUE*/}

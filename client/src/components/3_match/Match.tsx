@@ -12,15 +12,15 @@ import {Profile} from 'components/Interfaces'
 import {Tweet} from 'components/Interfaces'
 import {ChatMsg, SysMsgType} from 'components/Interfaces'
 //functional interfaces
-import {MatchProps, NextRoundCountdownProps} from 'components/Functional_Interfaces'
+import {MatchProps} from 'components/Functional_Interfaces'
 //logic
 import {isValidMatchID} from 'components/Logic'
-//puhser
+//pusher
 import * as Pu from 'components/pusher/Pusher'
 //components
 import Players from '../2_setup/players/Players'
-import Countdown from './Countdown'
 import Nav, {NavProps} from './nav/Nav'
+import Countdown from './Countdown'
 import * as Chat from 'components/00_shared/chat/Chat'
 import * as Settings from 'components/00_shared/settings/Settings'
 import * as Not from 'components/00_shared/notification/Notification'
@@ -33,6 +33,9 @@ interface State {
 
     roundIndex: number
     roundStarts: Date
+    roundEnds: Date
+    roundCountdown: number
+
 }
 enum Status {
     init,
@@ -51,7 +54,9 @@ const init_state:State = {
     status: Status.init,
     statusMsg: '',
     roundIndex: -1,
-    roundStarts: new Date()
+    roundStarts: new Date(),
+    roundEnds: new Date(),
+    roundCountdown: -1
 }
 
 //DATA
@@ -115,6 +120,8 @@ export default function Match(props:MatchProps) {
             }
             if (ref_settings_lobby.current === Settings.initSettings_Lobby) {
                 setInitialValues(ref_settings_lobby, LocalStorage.Trans_Settings)
+                //set roundtime
+                ref_state.current.roundCountdown = ref_settings_lobby.current.roundtime
             }
             if (ref_username.current === init_userName) {
                 setInitialValues(ref_username, LocalStorage.Username)
@@ -341,12 +348,18 @@ export default function Match(props:MatchProps) {
         //increment round
         ref_state.current.roundIndex += 1
 
-        //create round start date
-        let now = new Date()
-        now.setSeconds(now.getSeconds() + 3)
-        ref_state.current.roundStarts = now
+        //round start/end time
+        let startCountdown = 3
+        let start = new Date()
+        let end = new Date()
+        //start
+        start.setSeconds(start.getSeconds() + startCountdown)
+        ref_state.current.roundStarts = start
+        //end
+        end.setSeconds(end.getSeconds() + startCountdown + ref_settings_lobby.current.roundtime)
+        ref_state.current.roundEnds = end
 
-        //start round
+        //start round-countdown
         setStatus(Status.startRoundcountdown)
         fireEvent_State()
     }
@@ -355,9 +368,53 @@ export default function Match(props:MatchProps) {
     const showRound = () => {
         log(`show round with index ${ref_state.current.roundIndex}`)
         setStatus(Status.showRound, true)
+
+        //reset countdown
+        ref_state.current.roundCountdown = ref_settings_lobby.current.roundtime
+
+        //calc differnce until target date
+        let diffS = ref_settings_lobby.current.roundtime
+
+
+
+        //logic for decrease timeout
+        const decrease = () => {
+            if (ref_state.current.status === Status.showRound) {
+                ref_state.current.roundCountdown -= 1
+                forceUpdate()
+            }
+        }
+
+        /*
+        FROM HERE INTO LOGIC MODULE
+        */
+
+        //last call
+        setTimeout(() => {
+            decrease()
+            showRoundSolution()
+        }, diffS*1000)
+        //intermediate calls
+        let span = 1000
+        while (diffS > 1) { //>1 -> skip last call
+            setTimeout(() => {
+                decrease()
+            }, span)
+            span += 1000
+            diffS -= 1
+        }
+        
+        /*
+        UNTIL HERE
+        */
     }
 
     //4TH: SHOW ROUND SOLUTION
+    const showRoundSolution = () => {
+        log('finished round')
+        setStatus(Status.showRound_Solution, true)
+    }
+
 
 
     //helper function
@@ -620,28 +677,28 @@ export default function Match(props:MatchProps) {
         }
         //START ROUND-COUNTDOWN
         else if (ref_state.current.status === Status.startRoundcountdown) {
-            let props:NextRoundCountdownProps = {
-                targetDate: ref_state.current.roundStarts,
-                onFinished: onNextRoundCountdownFinished
-            }
-            const comp = React.createElement(Countdown, props)
-
             return content = 
                 <div className={st.Content_Con}>
                     <div>
                         Round {ref_state.current.roundIndex + 1} starts in:
                     </div>
                     <div>
-                        {comp}
+                        {Countdown(ref_state.current.roundStarts, onNextRoundCountdownFinished)}
                     </div>
                 </div>
         }
         //SHOW ROUND 
         else if (ref_state.current.status === Status.showRound) {
-            showNotification('Round starts - select your answer!', Not.Type.Success, false)
             return content = 
                 <div className={st.Content_Con}>
                     ROUND {ref_state.current.roundIndex + 1}
+                </div>
+        }
+        //SHOW SOLUTION 
+        else if (ref_state.current.status === Status.showRound_Solution) {
+            return content = 
+                <div className={st.Content_Con}>
+                    ROUND {ref_state.current.roundIndex + 1} SOLUTION COMES HERE
                 </div>
         }
         
@@ -674,10 +731,10 @@ export default function Match(props:MatchProps) {
             <div className={st.Right_Con}>
                 <div className={st.Info_Con}>
                     <div className={st.Clock} title="Time">
-                        13
+                        {ref_state.current.roundCountdown}
                     </div>
                     <div className={st.Round} title="Round">
-                        5/15
+                        {(ref_state.current.roundIndex + 1)+ '/' + ref_settings_lobby.current.rounds}
                     </div>
                 </div>
                 <div className={st.Nav_Con}>

@@ -1,7 +1,6 @@
 import {Profile} from 'components/Interfaces'
 import {ChatMsg} from 'components/Interfaces'
 import * as Not from 'components/00_shared/notification/Notification'
-import * as Settings from 'components/00_shared/settings/Settings'
 
 
 export interface PopularProfilesProps {
@@ -22,10 +21,6 @@ export interface SetupProps {
 }
 export interface MatchProps {
     pusherClient:any
-}
-export interface NextRoundCountdownProps {
-    targetDate: Date
-    onFinished:() => void
 }
 
 /*
