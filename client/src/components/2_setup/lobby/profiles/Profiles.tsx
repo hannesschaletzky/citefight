@@ -5,7 +5,7 @@ import {Profile} from 'components/Interfaces'
 import {ProfilesUsage} from 'components/Interfaces'
 import {TwitterStatus} from 'components/Interfaces'
 //components
-import TwitterProfileList from '../../add/search/TwitterProfileList'
+import TwitterProfileList from 'components/00_shared/profiles/TwitterProfileList'
 
 export default function Profiles(profiles:Profile[],
                                  onRemoveProfile:(deletedUser: Profile) => void) {
@@ -23,10 +23,7 @@ export default function Profiles(profiles:Profile[],
         return <TwitterProfileList
                     parentType={ProfilesUsage.Added}
                     data={profiles}
-                    addedUsers={profiles}
-                    onAddUser={() => {}}
                     onRemoveUser={onRemoveClick}
-                    twitterStatus = {TwitterStatus.none}
                 />
     }
 

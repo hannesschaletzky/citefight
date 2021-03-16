@@ -45,6 +45,7 @@ $sdbg: false; //show debugging background = sdbg
 
 .Content {
   flex: 1;
+  height: 1px; //set to a value -> wont grow
   margin: 5px;
   overflow-y: scroll;
 }

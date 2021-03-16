@@ -1,5 +1,4 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import { clear } from 'console';
 import React, { useEffect, useRef, useReducer } from 'react';
 import st from './Notification.module.scss';
 
@@ -70,7 +69,6 @@ function NotificationLogic(not:Notification) {
     }
 
     const getClass = (type:Type) => {
-        console.log(type)
         if (type === Type.Success) {
             return st.Success
         }

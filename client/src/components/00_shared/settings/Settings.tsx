@@ -45,7 +45,7 @@ export const initSettings_Lobby:Settings_Lobby = {
     drinking: DrinkingMode.Off
 }
 export const initSettings_Match:Settings_Match = {
-    autoready: true
+    autoready: false
 }
 
 
@@ -86,11 +86,14 @@ export const getComponent = (usage: Usage,
 ##################################
 */
 enum Type {
-    rounds,
-    roundtime,
-    drinking,
-    autoContinue,
-    pictures
+    //LOBBY
+    l_rounds,
+    l_roundtime,
+    l_drinking,
+    l_autoContinue,
+    l_pictures,
+    //MATCH
+    m_autoready
 }
 
 let messageTimestamps:string[] = []
@@ -106,20 +109,25 @@ function SettingsLogic(props:Props) {
         }
 
         //determine value to change
-        if (type === Type.rounds) {
+        //LOBBY
+        if (type === Type.l_rounds) {
             props.settings.rounds = value
         }
-        else if (type === Type.roundtime) {
+        else if (type === Type.l_roundtime) {
             props.settings.roundtime = value
         }
-        else if (type === Type.drinking) {
+        else if (type === Type.l_drinking) {
             props.settings.drinking = value
         }
-        else if (type === Type.autoContinue) {
+        else if (type === Type.l_autoContinue) {
             props.settings.autoContinue = value
         }
-        else if (type === Type.pictures) {
+        else if (type === Type.l_pictures) {
             props.settings.pictures = value
+        }
+        //MATCH
+        else if (type === Type.m_autoready) {
+            props.settings.autoready = value
         }
 
         //give to parent
@@ -141,28 +149,35 @@ function SettingsLogic(props:Props) {
 
     const getClass = (type:Type, value:any) => {
         
-        if (type === Type.rounds) {
+        //LOBBY
+        if (type === Type.l_rounds) {
             if (value === props.settings.rounds) {
                 return act
             }
         }
-        else if (type === Type.roundtime) {
+        else if (type === Type.l_roundtime) {
             if (value === props.settings.roundtime) {
                 return act
             }
         }
-        else if (type === Type.autoContinue) {
+        else if (type === Type.l_autoContinue) {
             if (value === props.settings.autoContinue) {
                 return act
             }
         }
-        else if (type === Type.pictures) {
+        else if (type === Type.l_pictures) {
             if (value === props.settings.pictures) {
                 return act
             }
         }
-        else if (type === Type.drinking) {
+        else if (type === Type.l_drinking) {
             if (value === props.settings.drinking) {
+                return act
+            }
+        }
+        //MATCH
+        else if (type === Type.m_autoready) {
+            if (value === props.settings.autoready) {
                 return act
             }
         }
@@ -186,11 +201,11 @@ function SettingsLogic(props:Props) {
                     Rounds
                 </div>
                 <div className={st.Row}>
-                    <button className={getClass(Type.rounds, 5)} onClick={() => {newSettings(Type.rounds, 5)}}>5</button>
-                    <button className={getClass(Type.rounds, 10)} onClick={() => {newSettings(Type.rounds, 10)}}>10</button>
-                    <button className={getClass(Type.rounds, 25)} onClick={() => {newSettings(Type.rounds, 25)}}>25</button>
-                    <button className={getClass(Type.rounds, 50)} onClick={() => {newSettings(Type.rounds, 50)}}>50</button>
-                    <button className={getClass(Type.rounds, 100)} onClick={() => {newSettings(Type.rounds, 100)}}>100</button>
+                    <button className={getClass(Type.l_rounds, 5)} onClick={() => {newSettings(Type.l_rounds, 5)}}>5</button>
+                    <button className={getClass(Type.l_rounds, 10)} onClick={() => {newSettings(Type.l_rounds, 10)}}>10</button>
+                    <button className={getClass(Type.l_rounds, 25)} onClick={() => {newSettings(Type.l_rounds, 25)}}>25</button>
+                    <button className={getClass(Type.l_rounds, 50)} onClick={() => {newSettings(Type.l_rounds, 50)}}>50</button>
+                    <button className={getClass(Type.l_rounds, 100)} onClick={() => {newSettings(Type.l_rounds, 100)}}>100</button>
                 </div>
 
                 {/*ROUNDTIME*/}
@@ -198,9 +213,9 @@ function SettingsLogic(props:Props) {
                     Roundtime
                 </div>
                 <div className={st.Row}>
-                    <button className={getClass(Type.roundtime, Roundtime.Little)} onClick={() => {newSettings(Type.roundtime, Roundtime.Little)}}>Low</button>
-                    <button className={getClass(Type.roundtime, Roundtime.Normal)} onClick={() => {newSettings(Type.roundtime, Roundtime.Normal)}}>Normal</button>
-                    <button className={getClass(Type.roundtime, Roundtime.Much)} onClick={() => {newSettings(Type.roundtime, Roundtime.Much)}}>High</button>
+                    <button className={getClass(Type.l_roundtime, Roundtime.Little)} onClick={() => {newSettings(Type.l_roundtime, Roundtime.Little)}}>Low</button>
+                    <button className={getClass(Type.l_roundtime, Roundtime.Normal)} onClick={() => {newSettings(Type.l_roundtime, Roundtime.Normal)}}>Normal</button>
+                    <button className={getClass(Type.l_roundtime, Roundtime.Much)} onClick={() => {newSettings(Type.l_roundtime, Roundtime.Much)}}>High</button>
                 </div>
                 
                 {/*AUTO CONTINUE*/}
@@ -208,8 +223,8 @@ function SettingsLogic(props:Props) {
                     Automatically continue rounds
                 </div>
                 <div className={st.Row}>
-                    <button className={getClass(Type.autoContinue, false)} onClick={() => {newSettings(Type.autoContinue, false)}}>Off</button>
-                    <button className={getClass(Type.autoContinue, true)} onClick={() => {newSettings(Type.autoContinue, true)}}>On</button>
+                    <button className={getClass(Type.l_autoContinue, false)} onClick={() => {newSettings(Type.l_autoContinue, false)}}>Off</button>
+                    <button className={getClass(Type.l_autoContinue, true)} onClick={() => {newSettings(Type.l_autoContinue, true)}}>On</button>
                 </div>
 
                 {/*DRINKING*/}
@@ -217,9 +232,9 @@ function SettingsLogic(props:Props) {
                     Show Tweet Pictures
                 </div>
                 <div className={st.Row}>
-                    <button className={getClass(Type.pictures, Pictures.Off)} onClick={() => {newSettings(Type.pictures, Pictures.Off)}}>Off</button>
-                    <button className={getClass(Type.pictures, Pictures.Instantly)} onClick={() => {newSettings(Type.pictures, Pictures.Instantly)}}>Instantly</button>
-                    <button className={getClass(Type.pictures, Pictures.AtHalftime)} onClick={() => {newSettings(Type.pictures, Pictures.AtHalftime)}}>Half-Roundtime</button>
+                    <button className={getClass(Type.l_pictures, Pictures.Off)} onClick={() => {newSettings(Type.l_pictures, Pictures.Off)}}>Off</button>
+                    <button className={getClass(Type.l_pictures, Pictures.Instantly)} onClick={() => {newSettings(Type.l_pictures, Pictures.Instantly)}}>Instantly</button>
+                    <button className={getClass(Type.l_pictures, Pictures.AtHalftime)} onClick={() => {newSettings(Type.l_pictures, Pictures.AtHalftime)}}>Half-Roundtime</button>
                 </div>
                 
                 {/*DRINKING*/}
@@ -227,18 +242,27 @@ function SettingsLogic(props:Props) {
                     Drinking Mode
                 </div>
                 <div className={st.Row}>
-                    <button className={getClass(Type.drinking, DrinkingMode.Off)} onClick={() => {newSettings(Type.drinking, DrinkingMode.Off)}}>Off</button>
-                    <button className={getClass(Type.drinking, DrinkingMode.Lightweight)} onClick={() => {newSettings(Type.drinking, DrinkingMode.Lightweight)}}>Lightweight</button>
-                    <button className={getClass(Type.drinking, DrinkingMode.Regular)} onClick={() => {newSettings(Type.drinking, DrinkingMode.Regular)}}>Regular</button>
-                    <button className={getClass(Type.drinking, DrinkingMode.Beast)} onClick={() => {newSettings(Type.drinking, DrinkingMode.Beast)}}>Beast</button>
+                    <button className={getClass(Type.l_drinking, DrinkingMode.Off)} onClick={() => {newSettings(Type.l_drinking, DrinkingMode.Off)}}>Off</button>
+                    <button className={getClass(Type.l_drinking, DrinkingMode.Lightweight)} onClick={() => {newSettings(Type.l_drinking, DrinkingMode.Lightweight)}}>Lightweight</button>
+                    <button className={getClass(Type.l_drinking, DrinkingMode.Regular)} onClick={() => {newSettings(Type.l_drinking, DrinkingMode.Regular)}}>Regular</button>
+                    <button className={getClass(Type.l_drinking, DrinkingMode.Beast)} onClick={() => {newSettings(Type.l_drinking, DrinkingMode.Beast)}}>Beast</button>
                 </div>
                 
             </div>
         }
         else if (props.usage === Usage.Match) {
             rtn = 
-            <div>
-                Match Settings come HERE!
+            <div className={props.isAdmin ? st.Con : st.Con_NoAdmin}>
+
+                {/*DRINKING*/}
+                <div className={st.Header}>
+                    Autoready
+                </div>
+                <div className={st.Row}>
+                    <button className={getClass(Type.m_autoready, false)} onClick={() => {newSettings(Type.m_autoready, false)}}>Off</button>
+                    <button className={getClass(Type.m_autoready, true)} onClick={() => {newSettings(Type.m_autoready, true)}}>On</button>
+                </div>
+                
             </div>
         }
 

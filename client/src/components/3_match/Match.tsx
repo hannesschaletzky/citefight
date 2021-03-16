@@ -12,9 +12,7 @@ import {Profile} from 'components/Interfaces'
 import {Tweet} from 'components/Interfaces'
 import {ChatMsg, SysMsgType} from 'components/Interfaces'
 //functional interfaces
-import {MatchProps, 
-        NavProps, 
-        NextRoundCountdownProps} from 'components/Functional_Interfaces'
+import {MatchProps, NextRoundCountdownProps} from 'components/Functional_Interfaces'
 //logic
 import {isValidMatchID} from 'components/Logic'
 //puhser
@@ -22,9 +20,10 @@ import * as Pu from 'components/pusher/Pusher'
 //components
 import Players from '../2_setup/players/Players'
 import Countdown from './Countdown'
-import Nav from './nav/Nav'
+import Nav, {NavProps} from './nav/Nav'
 import * as Chat from 'components/00_shared/chat/Chat'
 import * as Settings from 'components/00_shared/settings/Settings'
+import * as Not from 'components/00_shared/notification/Notification'
 
 //STATE
 interface State {
@@ -73,6 +72,7 @@ export default function Match(props:MatchProps) {
     const ref_profiles = useRef(init_profiles)
     const ref_settings_lobby = useRef(Settings.initSettings_Lobby)
     const ref_settings_match = useRef(Settings.initSettings_Match)
+    const ref_notification = useRef(Not.init)
     const ref_players = useRef(init_players)
     const ref_chat = useRef(init_chat)
     //pusher refs
@@ -193,10 +193,25 @@ export default function Match(props:MatchProps) {
     }
 
     const isAdmin = ():boolean => {
-        if (ref_username.current === ref_players.current[0].name) {
-            return true
+        if (ref_username.current !== null && ref_players.current.length > 0) {
+            if (ref_username.current === ref_players.current[0].name) {
+                return true
+            }
+            return false
         }
-        return false
+        return true
+    }
+
+    const showNotification = (msg:string, notType:Not.Type, update:boolean=true)  => {
+        let newNot:Not.Notification = {
+            id: new Date().toISOString(),
+            type: notType,
+            msg: msg,
+            disapearAfter: 5000
+        }
+        //update UI
+        ref_notification.current = newNot
+        if (update) {forceUpdate()}
     }
 
     /*
@@ -447,21 +462,8 @@ export default function Match(props:MatchProps) {
 
     const fireEvent_Chat = async () => {
 
-        //remove first message of chat until chat is smaller than 10KB
-        let chatString = JSON.stringify(ref_chat.current)
-        while (chatString.length > 10000) {
-            log('Chat too long\n -> removing first message')
-            //find first non welcome message to remove
-            for(let i=0;i<ref_chat.current.length;i++) {
-                if (ref_chat.current[i].t !== SysMsgType.welcome) {
-                    ref_chat.current.splice(i,1)
-                    break
-                }
-            }
-            chatString = JSON.stringify(ref_chat.current)
-        }
-
         //prepare
+        ref_chat.current = Chat.cutToSizeLimit(ref_chat.current)
         let event:Pu.Event = {
             type: Pu.EventType.Chat,
             data: ref_chat.current
@@ -493,6 +495,10 @@ export default function Match(props:MatchProps) {
         newMsg.n = ref_username.current //chat component does not know/set user name
         ref_chat.current.push(newMsg)
         fireEvent_Chat()
+    }
+    const onSettingsChanged = (newSettings:Settings.Settings_Match) => {
+        ref_settings_match.current = newSettings
+        forceUpdate()
     }
 
     /*
@@ -570,6 +576,7 @@ export default function Match(props:MatchProps) {
         return content
     }
     
+    //OPERATIONAL MATCH LOGIC
     const getContent = () => {
 
         let content = <div></div>
@@ -629,7 +636,9 @@ export default function Match(props:MatchProps) {
                     </div>
                 </div>
         }
+        //SHOW ROUND 
         else if (ref_state.current.status === Status.showRound) {
+            showNotification('Round starts - select your answer!', Not.Type.Success, false)
             return content = 
                 <div className={st.Content_Con}>
                     ROUND {ref_state.current.roundIndex + 1}
@@ -644,13 +653,17 @@ export default function Match(props:MatchProps) {
             profiles: ref_profiles.current,
             onSelectAnswer: onSelectAnswer,
             chatmessages: ref_chat.current,
-            onNewMessage: onNewChatMessage
+            onNewMessage: onNewChatMessage,
+            settings: ref_settings_match.current,
+            onSettingsChanged: onSettingsChanged,
+            onNotfication: showNotification
         }
         return React.createElement(Nav, props)
     }
 
 	return (
 		<div className={st.Con}>
+            {Not.getComponent(ref_notification.current)}
             {getOverlayContent()}
             <div className={st.Left_Con}>
                 AD CONTAINER

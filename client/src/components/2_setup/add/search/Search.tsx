@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import st from './Search.module.scss'
 import {log} from 'components/Logic'
 //ui-elements
-import TwitterProfileList from './TwitterProfileList'
+import TwitterProfileList from 'components/00_shared/profiles/TwitterProfileList'
 import CircularProgress from '@material-ui/core/CircularProgress';
 import TwitterIcon from 'assets/footer/Twitter_Icon.png'
 import TwitterIconBlack from 'assets/user/Twitter_Black.png'

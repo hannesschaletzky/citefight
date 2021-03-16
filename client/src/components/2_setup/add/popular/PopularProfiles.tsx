@@ -6,7 +6,7 @@ import {TwitterStatus} from 'components/Interfaces'
 //functional-interfaces
 import {PopularProfilesProps} from 'components/Functional_Interfaces'
 //components
-import TwitterProfileList from '../search/TwitterProfileList'
+import TwitterProfileList from 'components/00_shared/profiles/TwitterProfileList'
 
 export default function PopularProfiles(props:PopularProfilesProps) {
 
@@ -15,10 +15,7 @@ export default function PopularProfiles(props:PopularProfilesProps) {
             <TwitterProfileList
                 parentType={ProfilesUsage.Search}
                 data={props.popularProfiles}
-                addedUsers={props.popularProfiles}
                 onAddUser={props.addProfile}
-                onRemoveUser={() => {}}
-                twitterStatus = {TwitterStatus.none}
             />
         </div>
     )

@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import st from './Chat.module.scss';
+import {log} from 'components/Logic'
 
 import {ChatMsg, SysMsgType} from 'components/Interfaces'
 
@@ -31,28 +32,45 @@ export const getComponent = (inputMessages:ChatMsg[], onNewMessage:(newMsg:ChatM
 ##################################
 */
 export const addSysMsg = (type:SysMsgType, inputMsg:string, ref:React.MutableRefObject<ChatMsg[]>) => {
-        //create msg
-        let msg:ChatMsg = {
-            n: '',
-            m: '',
-            t: type
-        }
-        //determine type 
-        if (type === SysMsgType.welcome) {
-            msg.m = inputMsg
-        }
-        else if (type === SysMsgType.userJoined) {
-            msg.m = inputMsg + ' joined 🎊'
-        }
-        else if (type === SysMsgType.userLeft) {
-            msg.m = inputMsg + ' left 😭'
-        }
-        else if (type === SysMsgType.startInfo) {
-            msg.m = '📢 ' + inputMsg
-        }
-        //add
-        ref.current.push(msg)
+    //create msg
+    let msg:ChatMsg = {
+        n: '',
+        m: '',
+        t: type
     }
+    //determine type 
+    if (type === SysMsgType.welcome) {
+        msg.m = inputMsg
+    }
+    else if (type === SysMsgType.userJoined) {
+        msg.m = inputMsg + ' joined 🎊'
+    }
+    else if (type === SysMsgType.userLeft) {
+        msg.m = inputMsg + ' left 😭'
+    }
+    else if (type === SysMsgType.startInfo) {
+        msg.m = '📢 ' + inputMsg
+    }
+    //add
+    ref.current.push(msg)
+}
+
+//Pusher event size is 10KB -> remove older messages if exceeded
+export const cutToSizeLimit = (messages:ChatMsg[]):ChatMsg[] => {
+    let chatString = JSON.stringify(messages)
+    while (chatString.length > 10000) {
+        log(chatString.length + ' - Chat too long\n -> removing first message')
+        //find first non welcome message to remove
+        for(let i=0;i<messages.length;i++) {
+            if (messages[i].t !== SysMsgType.welcome) {
+                messages.splice(i,1)
+                break
+            }
+        }
+        chatString = JSON.stringify(messages)
+    }
+    return messages
+}
 
 /*
 ##################################

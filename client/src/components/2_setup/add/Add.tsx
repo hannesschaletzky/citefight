@@ -11,7 +11,7 @@ import {PopularProfilesProps} from 'components/Functional_Interfaces'
 import {SearchProps} from 'components/Functional_Interfaces'
 //components
 import Search from './search/Search'
-import PopularProfiles from './profiles/PopularProfiles'
+import PopularProfiles from './popular/PopularProfiles'
 
 export default function Add(  profiles:Profile[],
                               popularProfiles:Profile[],

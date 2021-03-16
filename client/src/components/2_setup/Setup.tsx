@@ -147,10 +147,13 @@ export default function Setup(props:SetupProps) {
     }
 
     const isAdmin = ():boolean => {
-        if (ref_username.current === ref_players.current[0].name) {
-            return true
+        if (ref_username.current !== null && ref_players.current.length > 0) {
+            if (ref_username.current === ref_players.current[0].name) {
+                return true
+            }
+            return false
         }
-        return false
+        return true
     }
 
     const getIndexOfUser = (name:string):number => {
@@ -538,21 +541,8 @@ export default function Setup(props:SetupProps) {
 
     const fireEvent_Chat = async () => {
 
-        //remove first message of chat until chat is smaller than 10KB
-        let chatString = JSON.stringify(ref_chat.current)
-        while (chatString.length > 10000) {
-            log('Chat too long\n -> removing first message')
-            //find first non welcome message to remove
-            for(let i=0;i<ref_chat.current.length;i++) {
-                if (ref_chat.current[i].t !== SysMsgType.welcome) {
-                    ref_chat.current.splice(i,1)
-                    break
-                }
-            }
-            chatString = JSON.stringify(ref_chat.current)
-        }
-
         //prepare
+        ref_chat.current = Chat.cutToSizeLimit(ref_chat.current)
         let event:Pu.Event = {
             type: Pu.EventType.Chat,
             data: ref_chat.current
@@ -1222,13 +1212,6 @@ export default function Setup(props:SetupProps) {
     ##################################
     */
 
-    const getAdmin = () => {
-        if (ref_username.current !== null && ref_players.current.length > 0) {
-            return isAdmin()
-        }
-        return false
-    }
-
     /*
     ##################################
     ##################################
@@ -1332,6 +1315,7 @@ export default function Setup(props:SetupProps) {
     
     return (
         <div className={st.Content_Con}>
+            {Not.getComponent(ref_notification.current)}
             {getSpecialContent()}
             <div className={ref_state.current.state === Status.init ? st.Left_Panel : st.Left_Panel_disabled}>
                 <div className={st.Add_Con}>
@@ -1346,7 +1330,7 @@ export default function Setup(props:SetupProps) {
             <div className={ref_state.current.state === Status.init ? st.Center_Panel : st.Center_Panel_disabled}>
                 <div className={st.Lobby_Con}>
                     {Lobby(
-                        getAdmin(),
+                        isAdmin(),
                         ref_profiles.current,
                         onRemoveProfile,
                         ref_settings.current,
@@ -1377,7 +1361,6 @@ export default function Setup(props:SetupProps) {
                     )}
                 </div>
             </div>
-            {Not.getComponent(ref_notification.current)}
         </div>
     );
 }

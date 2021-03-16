@@ -10,7 +10,7 @@ import {Tweet} from 'components/Interfaces'
 class TweetComponent extends Component <any, any> { 
 
     constructor(props: any) {
-        super(props);
+        super(props)
         this.state = {
         };
     }
@@ -39,4 +39,4 @@ class TweetComponent extends Component <any, any> {
 
 }
 
-export default TweetComponent;
+export default TweetComponent

@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import st from './Nav.module.scss';
-import {log} from 'components/Logic'
 //ui-elements
 import Answer_Icon from 'assets/nav/Answer.png'
 import Ranking_Icon from 'assets/nav/Ranking.png'
@@ -8,13 +7,26 @@ import Chat_Icon from 'assets/nav/Chat.png'
 import Settings_Icon from 'assets/nav/Settings.png'
 //interface
 import {ProfilesUsage} from 'components/Interfaces'
+import {Profile} from 'components/Interfaces'
+import {ChatMsg} from 'components/Interfaces'
 //functional-interface
-import {NavProps, RankingProps} from 'components/Functional_Interfaces'
+import {RankingProps} from 'components/Functional_Interfaces'
 //components
-import TwitterProfileList from 'components/2_setup/add/search/TwitterProfileList'
+import TwitterProfileList from 'components/00_shared/profiles/TwitterProfileList'
 import Ranking from './pages/Ranking'
 import * as Chat from 'components/00_shared/chat/Chat'
-import * as SettingsComp from 'components/00_shared/settings/Settings'
+import * as Not from 'components/00_shared/notification/Notification'
+import * as Settings from 'components/00_shared/settings/Settings'
+
+export interface NavProps {
+    profiles: Profile[]
+    onSelectAnswer: (profile:Profile) => void
+    chatmessages: ChatMsg[]
+    onNewMessage: (newMsg:ChatMsg) => void
+    settings: Settings.Settings_Match
+    onSettingsChanged: (newSettings:Settings.Settings_Match) => void
+    onNotfication: (msg:string, notType:Not.Type) => void
+}
 
 export default function Nav(props:NavProps) {
     const [lobbyIndex, setLobbyIndex] = useState(0) //default to search
@@ -45,10 +57,7 @@ export default function Nav(props:NavProps) {
         }
         //SETTINGS
         else if (lobbyIndex === 3) {
-            /*
-                SET ME AUTOREADY
-            */
-            //content = SettingsComp.getComponent(SettingsComp.Usage.Match, settings, isAdmin, onSettingsChanged, newNotification)
+            content = Settings.getComponent(Settings.Usage.Match, props.settings, true, props.onSettingsChanged , props.onNotfication)
         }
         return content
     }

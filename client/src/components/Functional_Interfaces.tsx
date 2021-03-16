@@ -1,6 +1,8 @@
-import * as Not from 'components/00_shared/notification/Notification'
 import {Profile} from 'components/Interfaces'
 import {ChatMsg} from 'components/Interfaces'
+import * as Not from 'components/00_shared/notification/Notification'
+import * as Settings from 'components/00_shared/settings/Settings'
+
 
 export interface PopularProfilesProps {
     popularProfiles:Profile[]
@@ -29,12 +31,6 @@ export interface NextRoundCountdownProps {
 /*
     NAVIGATION PANEL IN MATCH
 */
-export interface NavProps {
-    profiles: Profile[]
-    onSelectAnswer: (profile:Profile) => void
-    chatmessages: ChatMsg[]
-    onNewMessage: (newMsg:ChatMsg) => void
-}
 export interface RankingProps {
     test: string
 }
