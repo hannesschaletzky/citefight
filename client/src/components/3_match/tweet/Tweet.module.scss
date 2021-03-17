@@ -105,7 +105,7 @@ $x: 40px;
 
   flex: 1;
   @if $sdbg {
-    background-color: rgba(24, 10, 150, 0.445);
+    background-color: rgba(112, 105, 173, 0.445);
   }
 }
 
@@ -128,6 +128,12 @@ $x: 40px;
 .Text_Link {
   @extend .Text_Base;
   color: rgb(27, 149, 224);
+}
+
+.Date_Con {
+  margin-top: 10px;
+  margin-bottom: 15px;
+  @extend .HelveticaNeueRegularFont;
 }
 
 /*#####################

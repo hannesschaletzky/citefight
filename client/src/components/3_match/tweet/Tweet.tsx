@@ -61,14 +61,15 @@ function TweetLogic(tweet:Tweet) {
             userNameClass = st.UserName_Emoji
         }
 
-        //split text into spans if it contains #hastags or @links
-        log(tweet.c_text)
-
+        /*
+            Hashtags AND Usernames can only contain letters, numbers, and underscores (_) 
+            -> no special characters
+        */
         //FROM HERE: https://stackoverflow.com/a/25693471
         function findSpecialWords(searchText:string, links:boolean=false) {
-            let regexp = /(\s|^)\#\w\w+\b/gm
+            let regexp = /(\s|^)#\w\w+\b/gm
             if (links) {
-                regexp = /(\s|^)\@\w\w+\b/gm
+                regexp = /(\s|^)@\w\w+\b/gm
             }
             let result = searchText.match(regexp)
             if (result) {
@@ -79,18 +80,13 @@ function TweetLogic(tweet:Tweet) {
             }
         }
 
-
-        /*
-            Hashtags AND Usernames can only contain letters, numbers, and underscores (_) 
-            -> no special characters
-        */
-
-        //EXTRACT ALL HASHTAGS
+        log(tweet.c_text)
+        //EXTRACT HASHTAGS
         let foundHastags:RegExpMatchArray = []
         let hashtags = findSpecialWords(tweet.c_text)
         if (hashtags) {foundHastags = hashtags}
         log(hashtags)
-        //EXTRACT ALL LINKS
+        //EXTRACT USERTAGS
         let foundTags:RegExpMatchArray = []
         let tags = findSpecialWords(tweet.c_text, true)
         if (tags) {foundTags = tags}
@@ -99,54 +95,97 @@ function TweetLogic(tweet:Tweet) {
         let blocks = tweet.c_text.split(/\r?\n/)
         log(blocks)
 
-        function isHashtag(word:string):boolean {
+       
+        function isHashtag(word:string):string {
             for(let i=0;i<foundHastags.length;i++) {
-                if (foundHastags[i] === word) {return true}
+                //also detect: #MalalaDay,
+                if (word.indexOf(foundHastags[i]) >= 0) {return foundHastags[i]}
             }
-            return false
+            return ""
         }
-        function isUsertag(word:string):boolean {
+        function isUsertag(word:string):string {
             for(let i=0;i<foundTags.length;i++) {
-                if (foundTags[i] === word) {return true}
+                //also detect: #MalalaDay,
+                if (word.indexOf(foundTags[i]) >= 0) {return foundTags[i]}
             }
-            return false
+            return ""
         }
 
         /*
-            Now back to Bundesliga business... 😉 
-            #TAGHeuerCarrera #DontCrackUnderPressure
-            @tagheuer
-            @Bundesliga_EN
+            Wishing a very happy birthday to @Malala! 
+            To celebrate #MalalaDay, join me and the @GirlsAlliance
+            in our work to empower girls around the world. 
+            Check out http://girlsopportunityalliance.org to learn more and get involved.
+            -> split text into spans if it contains #hastags or @links
         */
-        //-> <span>This i a <span className={st.Text_Link}>Test</span>bro!</span>
         let text = [<span></span>]
         text = []
         //loop each block
         for(let i=0;i<blocks.length;i++) {
             //split block
-            let words = blocks[i].split(/[ ,.;?!]+/)
+            let words = blocks[i].split(/[ ]+/)
             //loop each word
             for(let j=0;j<words.length;j++) {
                 let word = words[j]
-                if (isHashtag(word)) {
+
+                //determine word category
+                let hashtag = isHashtag(word)
+                let usertag = isUsertag(word)
+                //check hashtag
+                if (hashtag !== "") {
                     text.push(  <a className={st.Link} href={"https://twitter.com/hashtag/" + word.substring(1)} target="_blank" rel="noreferrer" title="View hastag">
-                                    <span className={st.Text_Link}>{word}</span>
+                                    <span className={st.Text_Link}>{hashtag}</span>
                                 </a>)
+                    let rest = word.replace(hashtag, "") //like: '#MalalaDay,' -> ','
+                    if (rest !== "") {
+                        text.push(<span className={st.Text}>{rest}</span>)
+                    }
                 }
-                else if (isUsertag(word)) {
+                //check usertag
+                else if (usertag !== "") {
                     text.push(  <a className={st.Link} href={"https://twitter.com/" + word.substring(1)} target="_blank" rel="noreferrer" title="View profile">
-                                    <span className={st.Text_Link}>{word}</span>
+                                    <span className={st.Text_Link}>{usertag}</span>
                                 </a>)
+                    let rest = word.replace(usertag, "") //like: '@Malala!' -> '!'
+                    if (rest !== "") {
+                        text.push(<span className={st.Text}>{rest}</span>)
+                    }
                 }
+                //normal word
                 else {
                     text.push(<span className={st.Text}>{word}</span>)
                 }
-                text.push(<span> </span>) //insert space
+                //insert space after each word
+                text.push(<span> </span>)
             }
-            //line break after block -> not at last
+            //line break after block -> not at last one
             if (i < blocks.length-1) {
                 text.push(<br/>)
             }
+        }
+
+        
+        const formatDate = (input:string):string => {
+            //input: 2019-06-06T14:59:47.000Z
+            let parsed = new Date(input).toLocaleDateString() 
+            //parsed: 06/06/2019
+            let elements = parsed.split('/')
+            let m = ""
+            let nr:number = +elements[1]
+            if      (nr === 1) {m='Jan'}
+            else if (nr === 2) {m='Feb'}
+            else if (nr === 3) {m='Mar'}
+            else if (nr === 4) {m='Apr'}
+            else if (nr === 5) {m='May'}
+            else if (nr === 6) {m='Jun'}
+            else if (nr === 7) {m='Jul'}
+            else if (nr === 8) {m='Aug'}
+            else if (nr === 9) {m='Sep'}
+            else if (nr === 10) {m='Oct'}
+            else if (nr === 11) {m='Nov'}
+            else if (nr === 12) {m='Dec'}
+            let d = `${+elements[0]} ${m} ${elements[2]}`
+            return d
         }
         
 
@@ -179,6 +218,9 @@ function TweetLogic(tweet:Tweet) {
                 <div className={st.Content_Con}>
                     <div className={st.Text_Con}>
                         <span>{text}</span>
+                    </div>
+                    <div className={st.Date_Con}>
+                        {formatDate(tweet.b_date)}
                     </div>
                 </div>
                 {/*BOTTOM*/}
