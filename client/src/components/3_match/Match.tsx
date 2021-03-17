@@ -691,14 +691,14 @@ export default function Match(props:MatchProps) {
         //SHOW ROUND 
         else if (ref_state.current.status === Status.showRound) {
             return content = 
-                <div className={st.Content_Con}>
+                <div className={st.Tweet_Con}>
                     {TweetComp.getComponent(ref_tweets.current[0])}
                 </div>
         }
         //SHOW SOLUTION 
         else if (ref_state.current.status === Status.showRound_Solution) {
             return content = 
-                <div className={st.Content_Con}>
+                <div className={st.Tweet_Con}>
                     {TweetComp.getComponent(ref_tweets.current[0])}
                 </div>
         }

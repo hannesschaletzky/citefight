@@ -948,6 +948,7 @@ export default function Setup(props:SetupProps) {
         */
         setTimeout(() => {
             ref_state.current.state = Status.redirectToMatch
+            ref_tweets.current = finalTweets //TEST
             setTimeout(() => fireEvent_Players(), 3000) //TEST
             forceUpdate() //TEST
             //fireEvent_Players() //ORIGINAL

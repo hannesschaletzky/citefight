@@ -3,10 +3,6 @@ import st from './Players.module.scss'
 
 import {Player} from 'components/Interfaces'
 
-import ArrowIcon from 'assets/setup/Arrow_Icon.png'
-import PersonIcon from 'assets/setup/Person_Icon.png'
-import { ListItemAvatar } from '@material-ui/core';
-
 class Players extends Component <any, any> {
 
     constructor(props: any) {

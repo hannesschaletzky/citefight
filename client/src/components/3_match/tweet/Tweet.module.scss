@@ -6,33 +6,82 @@ $sdbg: true; //show debugging background = sdbg
   Tweet treatments
   -> used variable $x as consistent measure
 */
-$box_width: 550px;
 $x: 40px;
-$marginToSides: $x * 0.5;
-$topConHeight: $x;
-//text height automatically grows depending on content
-$bottomConHeight: $x/2;
 
 .Con {
   width: 100%;
   height: 100%;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
   @extend .borderWithRoundedCorners;
 }
 
+.Inside_Con {
+  width: 90%;
+  height: 90%;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+/*#####################
+      TOP 
+#####################*/
 .Top_Con {
   @if $sdbg {
     background-color: rgba(66, 150, 10, 0.445);
   }
 }
 
+/*#####################
+      CONTENT 
+#####################*/
 .Content_Con {
+  flex: 1;
   @if $sdbg {
     background-color: rgba(24, 10, 150, 0.445);
   }
 }
 
-.Bottom_Con {
+/*#####################
+      BOTTOM 
+#####################*/
+.Bot_Con {
+  width: 100%;
+
+  display: flex;
+  justify-content: space-evenly;
+
   @if $sdbg {
     background-color: rgba(150, 10, 120, 0.445);
   }
+}
+
+.Data_Con {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.Bot_Icon {
+  width: 18px;
+}
+
+.Bot_Number {
+  @extend .HelveticaNeueRegularFont;
+  margin-left: 5px;
+}
+
+//CUSTOM
+.Bot_Icon_Retweet {
+  height: 18px;
+  width: 19px;
+}
+.Bot_Icon_Like {
+  height: 18px;
+  width: 19px;
 }
