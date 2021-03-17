@@ -65,38 +65,27 @@ export interface ChatMsg {
     t: SysMsgType;  //type
 }
 
-
-
 /*
     TWEET 
 */
 export interface Tweet {
-    content: Tweet_Content,
-    topPart: Tweet_TopPart,
-    bottomPart: Tweet_BottomPart
-}
-
-export interface Tweet_Content {
-    text: string,
-    photo1: string,
-    photo2: string,
-    photo3: string,
-    photo4: string,
-}
-
-export interface Tweet_TopPart {
-    userName: string
-    userTag: string,
-    userVerified: boolean,
-    profileURL: string,
-    userPicURL: string,
-    tweetURL: string
-}
-
-export interface Tweet_BottomPart {
-    replyCount: string,
-    likeCount: string,
-    retweetCount: string,
-    date: string
+    //TOP PART
+    t_userName: string
+    t_userTag: string,
+    t_userVerified: boolean,
+    t_profileURL: string,
+    t_userPicURL: string,
+    t_tweetURL: string
+    //CONTENT
+    c_text: string,
+    c_photo1: string,
+    c_photo2: string,
+    c_photo3: string,
+    c_photo4: string,
+    //BOTTOM PART
+    b_replyCount: string,
+    b_likeCount: string,
+    b_retweetCount: string,
+    b_date: string
 }
 

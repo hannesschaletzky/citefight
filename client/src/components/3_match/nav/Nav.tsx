@@ -53,7 +53,7 @@ export default function Nav(props:NavProps) {
         }
         //CHAT
         else if (lobbyIndex === 2) {
-            return Chat.getComponent(props.chatmessages,props.onNewMessage)
+            return Chat.getComponent(props.chatmessages, props.onNewMessage)
         }
         //SETTINGS
         else if (lobbyIndex === 3) {

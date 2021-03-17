@@ -1,42 +1,57 @@
-import React, { Component } from 'react';
+import React from 'react'
 import st from './Tweet.module.scss'
-
-import TopPart from './parts/TopPart'
-import Images from './parts/Images'
-import BottomPart from './parts/BottomPart'
-
+//interfaces
 import {Tweet} from 'components/Interfaces'
 
-class TweetComponent extends Component <any, any> { 
-
-    constructor(props: any) {
-        super(props)
-        this.state = {
-        };
+/*
+##################################
+            EXPORT
+##################################
+*/
+interface Props {
+    tweet: Tweet
+}
+export const getComponent = (tweet:Tweet) => {
+    let props:Props = {
+        tweet: tweet
     }
-
-    tweet:Tweet = this.props.data //infert to type for safety
-
-    render() { 
-
-        return (  
-            <div className ={st.Box} >
-                <div className={st.Top_Con}>
-                    <TopPart data={this.tweet.topPart}/>
-                </div>
-                <div className={st.Mid_Con}>
-                    <div className={st.Text}>
-                        {this.tweet.content.text}
-                    </div>
-                    <Images data={this.tweet.content}/>
-                </div>
-                <div className={st.Bottom_Con}>
-                    <BottomPart data={this.tweet.bottomPart}/>
-                </div>
-            </div>
-        );
-    }
-
+    return React.createElement(TweetLogic, props)
 }
 
-export default TweetComponent
+/*
+##################################
+            LOGIC
+##################################
+*/
+
+function TweetLogic(props:Props) {
+
+    const getContent = () => {
+
+        let content = 
+
+        <div className ={st.Box} >
+            <div className={st.Top_Con}>
+                TOP
+            </div>
+            <div className={st.Mid_Con}>
+                <div className={st.Text}>
+                    HERE COMES THE CONTENT
+                </div>
+            </div>
+            <div className={st.Bottom_Con}>
+                BOTTOM
+            </div>
+        </div>
+
+        return content
+    }
+
+    return (
+        getContent()
+    )
+}
+
+
+
+

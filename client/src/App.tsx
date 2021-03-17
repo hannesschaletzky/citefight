@@ -17,7 +17,6 @@ import Landing from 'components/pages/Landing'
 import Join from 'components/1_join/Join'
 import Setup from 'components/2_setup/Setup'
 import Match from 'components/3_match/Match'
-import Mockup from 'components/3_match/Mockup'
 
 import Root_Footer from 'components/0_root/Footer'
 import Legal from 'components/pages/Legal'
@@ -103,7 +102,6 @@ export default function App() {
                     <Route exact path="/donate" component={Donate}/>
                     <Route exact path="/credits" component={Credits}/>
 
-                    <Route exact path="/match/mockup" component={Mockup}/> 
                     <Route exact path="/match/setup/twittercallback" component={TwitterCallback}/> 
                         
                     <Route path="/join/:id" render={() => getJoinComp()}/>

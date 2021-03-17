@@ -1,5 +1,5 @@
-import React, { useEffect, useRef, useState } from 'react';
-import st from './Chat.module.scss';
+import React, { useEffect, useRef, useState } from 'react'
+import st from './Chat.module.scss'
 import {log} from 'components/Logic'
 
 import {ChatMsg, SysMsgType} from 'components/Interfaces'

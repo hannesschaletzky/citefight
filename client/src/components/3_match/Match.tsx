@@ -24,6 +24,7 @@ import Countdown from './Countdown'
 import * as Chat from 'components/00_shared/chat/Chat'
 import * as Settings from 'components/00_shared/settings/Settings'
 import * as Not from 'components/00_shared/notification/Notification'
+import * as TweetComp from './tweet/Tweet'
 
 //STATE
 interface State {
@@ -403,7 +404,7 @@ export default function Match(props:MatchProps) {
             span += 1000
             diffS -= 1
         }
-        
+
         /*
         UNTIL HERE
         */
@@ -691,14 +692,14 @@ export default function Match(props:MatchProps) {
         else if (ref_state.current.status === Status.showRound) {
             return content = 
                 <div className={st.Content_Con}>
-                    ROUND {ref_state.current.roundIndex + 1}
+                    {TweetComp.getComponent(ref_tweets.current[0])}
                 </div>
         }
         //SHOW SOLUTION 
         else if (ref_state.current.status === Status.showRound_Solution) {
             return content = 
                 <div className={st.Content_Con}>
-                    ROUND {ref_state.current.roundIndex + 1} SOLUTION COMES HERE
+                    {TweetComp.getComponent(ref_tweets.current[0])}
                 </div>
         }
         

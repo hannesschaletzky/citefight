@@ -10,7 +10,7 @@ import CircularProgress from '@material-ui/core/CircularProgress'
 import ArrowIcon from 'assets/setup/Arrow_Icon.png'
 
 //interfaces
-import {Tweet, Tweet_TopPart, Tweet_Content, Tweet_BottomPart} from 'components/Interfaces'
+import {Tweet} from 'components/Interfaces'
 import {LocalStorage} from 'components/Interfaces'
 import {Player} from 'components/Interfaces'
 import {ChatMsg} from 'components/Interfaces'
@@ -1012,6 +1012,27 @@ export default function Setup(props:SetupProps) {
         let parsed:Tweet[] = []
         data.forEach((item:any,i) => {
 
+            let tweet:Tweet = {
+                //TOP PART
+                t_userName: '',
+                t_userTag: '',
+                t_userVerified: false,
+                t_profileURL: '',
+                t_userPicURL: '',
+                t_tweetURL: '',
+                //CONTENT
+                c_text: '',
+                c_photo1: '',
+                c_photo2: '',
+                c_photo3: '',
+                c_photo4: '',
+                //BOTTOM PART
+                b_replyCount: '',
+                b_likeCount: '',
+                b_retweetCount: '',
+                b_date: ''
+            }
+
             //"Absolutely upsetting week. https://t.co/JumIw4XgV3"
             let text_org:string = item.text
 
@@ -1021,14 +1042,13 @@ export default function Setup(props:SetupProps) {
             //get tweetURL
             let profileLink = `https://twitter.com/${profile.screen_name}`
             let tweetLink = `https://twitter.com/${profile.screen_name}/status/${item.id}`
-            let topPart:Tweet_TopPart = {
-                userName: profile.name,
-                userTag: profile.screen_name,
-                userVerified: profile.verified,
-                profileURL: profileLink,
-                userPicURL: profile.profile_image_url_https,
-                tweetURL: tweetLink
-            }
+            //set
+            tweet.t_userName = profile.name
+            tweet.t_userTag = profile.screen_name
+            tweet.t_userVerified = profile.verified
+            tweet.t_profileURL = profileLink
+            tweet.t_userPicURL = profile.profile_image_url_https
+            tweet.t_tweetURL = tweetLink
 
             //CONTENT
             let text_cut = ""
@@ -1075,13 +1095,12 @@ export default function Setup(props:SetupProps) {
                     } 
                 }
             }
-            let content:Tweet_Content = {
-                text: text_cut,
-                photo1: ph1,
-                photo2: ph2,
-                photo3: ph3,
-                photo4: ph4,
-            }
+            //set
+            tweet.c_text = text_cut
+            tweet.c_photo1 = ph1
+            tweet.c_photo2 = ph2
+            tweet.c_photo3 = ph3
+            tweet.c_photo4 = ph4
 
             //BOTTOM PART
             /*
@@ -1093,18 +1112,11 @@ export default function Setup(props:SetupProps) {
             }
             */
             let met = item.public_metrics
-            let bottomPart:Tweet_BottomPart = {
-                replyCount: met.reply_count,
-                likeCount: met.like_count,
-                retweetCount: met.retweet_count,
-                date: item.created_at
-            }
-
-            let tweet:Tweet = {
-                content: content,
-                topPart: topPart,
-                bottomPart: bottomPart
-            }
+            //set
+            tweet.b_replyCount = met.reply_count
+            tweet.b_likeCount = met.like_count
+            tweet.b_retweetCount = met.retweet_count
+            tweet.b_date = item.created_at
 
             //push
             parsed.push(tweet)
