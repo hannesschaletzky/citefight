@@ -32,9 +32,71 @@ $x: 40px;
       TOP 
 #####################*/
 .Top_Con {
+  width: 100%;
+  display: flex;
+  cursor: default;
   @if $sdbg {
     background-color: rgba(66, 150, 10, 0.445);
   }
+}
+
+.UserCard_Con {
+  width: 100%;
+  display: flex;
+}
+
+.Pic {
+  height: 50px;
+  margin: 5px;
+  border-radius: 50%;
+}
+
+.Names_Con {
+  flex: 1;
+  margin-top: 5px;
+  overflow: scroll;
+}
+
+.UserName_Con {
+  display: flex;
+  width: inherit;
+}
+
+.UserName {
+  height: 22px;
+  //stick to top
+  display: flex;
+  align-items: baseline;
+
+  word-break: break-all;
+  overflow: hidden;
+  @extend .HelveticaNeueBoldFont;
+}
+
+.UserName_Emoji {
+  @extend .UserName;
+  //super work around -> RIP
+  margin-top: -4px !important;
+  height: 26px !important;
+}
+
+.UserTag {
+  height: 19px;
+  width: fit-content;
+  margin-top: -3px;
+  overflow-x: hidden;
+  @extend .HelveticaNeueRegularFont;
+}
+
+.Verified_Icon {
+  margin-top: 3px;
+  margin-left: 3px;
+  height: 16px;
+}
+
+.Twitter_Icon {
+  height: 50px;
+  margin: 5px;
 }
 
 /*#####################
@@ -55,6 +117,7 @@ $x: 40px;
 
   display: flex;
   justify-content: space-evenly;
+  cursor: default;
 
   @if $sdbg {
     background-color: rgba(150, 10, 120, 0.445);

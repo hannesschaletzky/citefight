@@ -4,9 +4,12 @@ import st from './Tweet.module.scss'
 import {Tweet} from 'components/Interfaces'
 
 //ui-elements
+import VerifiedIcon from 'assets/tweet/VerifiedIcon.png'
+import TwitterIcon from 'assets/tweet/Twitter_Icon.png'
 import Reply_Icon from 'assets/tweet/Reply.png'
 import Retweet_Icon from 'assets/tweet/Retweet.png'
 import Like_Icon from 'assets/tweet/Like.png'
+
 
 /*
 ##################################
@@ -51,16 +54,43 @@ function TweetLogic(tweet:Tweet) {
 
     const getContent = () => {
 
+        //determine if name contains emoji
+        let userNameClass = st.UserName
+        if (/\p{Extended_Pictographic}/u.test(tweet.t_userName) ) {
+            userNameClass = st.UserName_Emoji
+        }
+
         let content = 
 
         <div className ={st.Con}>
             <div className ={st.Inside_Con}>
+                {/*TOP*/}
                 <div className={st.Top_Con}>
-                    TOP
+                    <a href={tweet.t_profileURL} target="_blank" rel="noreferrer" title="View twitter profile">
+                        <img className={st.Pic} src={tweet.t_userPicURL} alt="User"/>
+                    </a>
+                    <div className={st.UserCard_Con}>
+                        <div className={st.Names_Con}>
+                            <div className={st.UserName_Con}>
+                                <div className={userNameClass} title={tweet.t_userName}>
+                                    {tweet.t_userName}
+                                </div>
+                                {tweet.t_userVerified && <img className={st.Verified_Icon} src={VerifiedIcon} title="Verified User" alt="Verified"/>}
+                            </div>
+                            <div className={st.UserTag}>
+                                @{tweet.t_userTag}
+                            </div>
+                        </div>
+                        <a href={tweet.t_tweetURL} target="_blank" rel="noreferrer" title="View tweet">
+                            <img className={st.Twitter_Icon} src={TwitterIcon} alt="Tweet"/>
+                        </a>
+                    </div>
                 </div>
+                {/*CONTENT*/}
                 <div className={st.Content_Con}>
                     HERE COMES THE CONTENT
                 </div>
+                {/*BOTTOM*/}
                 <div className={st.Bot_Con}>
                     <div className={st.Data_Con}>
                         <img className={st.Bot_Icon} src={Reply_Icon} alt="Reply"/>
