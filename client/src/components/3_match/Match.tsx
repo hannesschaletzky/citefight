@@ -692,14 +692,15 @@ export default function Match(props:MatchProps) {
         else if (ref_state.current.status === Status.showRound) {
             return content = 
                 <div className={st.Tweet_Con}>
-                    {TweetComp.getComponent(ref_tweets.current[0])}
+                    {TweetComp.getComponent(ref_tweets.current[ref_state.current.roundIndex])}
                 </div>
         }
         //SHOW SOLUTION 
         else if (ref_state.current.status === Status.showRound_Solution) {
             return content = 
                 <div className={st.Tweet_Con}>
-                    {TweetComp.getComponent(ref_tweets.current[0])}
+                    {TweetComp.getComponent(ref_tweets.current[ref_state.current.roundIndex])}
+                    <button onClick={() => {ref_state.current.roundIndex+=1;forceUpdate()}}>Next Tweet</button>
                 </div>
         }
         

@@ -54,12 +54,11 @@ $sdbg: false; //show debugging background = sdbg
   display: flex;
   flex-direction: column;
   justify-content: center;
-  align-items: center;
 }
 
 .Tweet_Con {
   width: 90%;
-  height: 40%;
+  //height: 60%;
 }
 
 /*
@@ -87,14 +86,14 @@ $sdbg: false; //show debugging background = sdbg
 }
 
 .Info_Base {
-  width: 35%;
+  padding: 10px;
   display: flex;
   justify-content: center;
   align-items: center;
   cursor: default;
   @extend .borderWithRoundedCorners;
   font-family: STCaiyun;
-  font-size: calc(20px + 2vmin);
+  font-size: calc(8px + 4vmin);
 }
 
 .Clock {

@@ -10,7 +10,6 @@ $x: 40px;
 
 .Con {
   width: 100%;
-  height: 100%;
 
   display: flex;
   justify-content: center;
@@ -19,13 +18,12 @@ $x: 40px;
 }
 
 .Inside_Con {
-  width: 90%;
-  height: 90%;
+  width: 100%;
+  margin: 10px;
 
   display: flex;
   flex-direction: column;
   justify-content: center;
-  align-items: center;
 }
 
 /*#####################
@@ -43,6 +41,7 @@ $x: 40px;
 .UserCard_Con {
   width: 100%;
   display: flex;
+  overflow: scroll;
 }
 
 .Pic {
@@ -54,7 +53,6 @@ $x: 40px;
 .Names_Con {
   flex: 1;
   margin-top: 5px;
-  overflow: scroll;
 }
 
 .UserName_Con {
@@ -103,10 +101,33 @@ $x: 40px;
       CONTENT 
 #####################*/
 .Content_Con {
+  padding: 10px;
+
   flex: 1;
   @if $sdbg {
     background-color: rgba(24, 10, 150, 0.445);
   }
+}
+
+.Link {
+  text-decoration: none;
+}
+
+.Text_Con {
+  width: 100%;
+}
+
+.Text_Base {
+  @extend .HelveticaNeueBoldFont;
+  font-size: 15pt;
+}
+
+.Text {
+  @extend .Text_Base;
+}
+.Text_Link {
+  @extend .Text_Base;
+  color: rgb(27, 149, 224);
 }
 
 /*#####################

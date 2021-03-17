@@ -1,8 +1,9 @@
 import React from 'react'
 import st from './Tweet.module.scss'
+import {log} from 'components/Logic'
+
 //interfaces
 import {Tweet} from 'components/Interfaces'
-
 //ui-elements
 import VerifiedIcon from 'assets/tweet/VerifiedIcon.png'
 import TwitterIcon from 'assets/tweet/Twitter_Icon.png'
@@ -60,8 +61,96 @@ function TweetLogic(tweet:Tweet) {
             userNameClass = st.UserName_Emoji
         }
 
-        let content = 
+        //split text into spans if it contains #hastags or @links
+        log(tweet.c_text)
 
+        //FROM HERE: https://stackoverflow.com/a/25693471
+        function findSpecialWords(searchText:string, links:boolean=false) {
+            let regexp = /(\s|^)\#\w\w+\b/gm
+            if (links) {
+                regexp = /(\s|^)\@\w\w+\b/gm
+            }
+            let result = searchText.match(regexp)
+            if (result) {
+                result = result.map(function(s:any){ return s.trim();})
+                return result
+            } else {
+                return false
+            }
+        }
+
+
+        /*
+            Hashtags AND Usernames can only contain letters, numbers, and underscores (_) 
+            -> no special characters
+        */
+
+        //EXTRACT ALL HASHTAGS
+        let foundHastags:RegExpMatchArray = []
+        let hashtags = findSpecialWords(tweet.c_text)
+        if (hashtags) {foundHastags = hashtags}
+        log(hashtags)
+        //EXTRACT ALL LINKS
+        let foundTags:RegExpMatchArray = []
+        let tags = findSpecialWords(tweet.c_text, true)
+        if (tags) {foundTags = tags}
+        log(tags)
+        //split at line breaks
+        let blocks = tweet.c_text.split(/\r?\n/)
+        log(blocks)
+
+        function isHashtag(word:string):boolean {
+            for(let i=0;i<foundHastags.length;i++) {
+                if (foundHastags[i] === word) {return true}
+            }
+            return false
+        }
+        function isUsertag(word:string):boolean {
+            for(let i=0;i<foundTags.length;i++) {
+                if (foundTags[i] === word) {return true}
+            }
+            return false
+        }
+
+        /*
+            Now back to Bundesliga business... 😉 
+            #TAGHeuerCarrera #DontCrackUnderPressure
+            @tagheuer
+            @Bundesliga_EN
+        */
+        //-> <span>This i a <span className={st.Text_Link}>Test</span>bro!</span>
+        let text = [<span></span>]
+        text = []
+        //loop each block
+        for(let i=0;i<blocks.length;i++) {
+            //split block
+            let words = blocks[i].split(/[ ,.;?!]+/)
+            //loop each word
+            for(let j=0;j<words.length;j++) {
+                let word = words[j]
+                if (isHashtag(word)) {
+                    text.push(  <a className={st.Link} href={"https://twitter.com/hashtag/" + word.substring(1)} target="_blank" rel="noreferrer" title="View hastag">
+                                    <span className={st.Text_Link}>{word}</span>
+                                </a>)
+                }
+                else if (isUsertag(word)) {
+                    text.push(  <a className={st.Link} href={"https://twitter.com/" + word.substring(1)} target="_blank" rel="noreferrer" title="View profile">
+                                    <span className={st.Text_Link}>{word}</span>
+                                </a>)
+                }
+                else {
+                    text.push(<span className={st.Text}>{word}</span>)
+                }
+                text.push(<span> </span>) //insert space
+            }
+            //line break after block -> not at last
+            if (i < blocks.length-1) {
+                text.push(<br/>)
+            }
+        }
+        
+
+        let content = 
         <div className ={st.Con}>
             <div className ={st.Inside_Con}>
                 {/*TOP*/}
@@ -86,9 +175,11 @@ function TweetLogic(tweet:Tweet) {
                         </a>
                     </div>
                 </div>
-                {/*CONTENT*/}
+                {/*CONTENT  <span className={st.Text_1}>This is a</span> <span className={st.Text_2}>Test</span> */}
                 <div className={st.Content_Con}>
-                    HERE COMES THE CONTENT
+                    <div className={st.Text_Con}>
+                        <span>{text}</span>
+                    </div>
                 </div>
                 {/*BOTTOM*/}
                 <div className={st.Bot_Con}>
