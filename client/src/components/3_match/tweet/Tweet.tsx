@@ -53,6 +53,29 @@ const nFormatter = (input: string, digits = 2) => {
 
 function TweetLogic(tweet:Tweet) {
 
+    const formatDate = (input:string):string => {
+        //input: 2019-06-06T14:59:47.000Z
+        let parsed = new Date(input).toLocaleDateString() 
+        //parsed: 06/06/2019
+        let elements = parsed.split('/')
+        let m = ""
+        let nr:number = +elements[1]
+        if      (nr === 1) {m='Jan'}
+        else if (nr === 2) {m='Feb'}
+        else if (nr === 3) {m='Mar'}
+        else if (nr === 4) {m='Apr'}
+        else if (nr === 5) {m='May'}
+        else if (nr === 6) {m='Jun'}
+        else if (nr === 7) {m='Jul'}
+        else if (nr === 8) {m='Aug'}
+        else if (nr === 9) {m='Sep'}
+        else if (nr === 10) {m='Oct'}
+        else if (nr === 11) {m='Nov'}
+        else if (nr === 12) {m='Dec'}
+        let d = `${+elements[0]} ${m} ${elements[2]}`
+        return d
+    }
+
     const getContent = () => {
 
         //determine if name contains emoji
@@ -62,8 +85,11 @@ function TweetLogic(tweet:Tweet) {
         }
 
         /*
-            Hashtags AND Usernames can only contain letters, numbers, and underscores (_) 
-            -> no special characters
+        ###########################
+                TEXT
+        ###########################
+        Hashtags AND Usernames can only contain letters, numbers, and underscores (_) 
+        -> no special characters
         */
         //FROM HERE: https://stackoverflow.com/a/25693471
         function findSpecialWords(searchText:string, links:boolean=false) {
@@ -79,6 +105,22 @@ function TweetLogic(tweet:Tweet) {
                 return false
             }
         }
+
+        /*
+
+
+            TODO:
+                https://stackoverflow.com/a/27422629/6421228
+                https://dev.w3.org/html5/html-author/charref
+
+                -> https://ascii.cl/htmlcodes.htm !!!!!!
+
+                q
+                -> ampersand (&) is escaped to &amp; 
+
+
+        */
+
 
         log(tweet.c_text)
         //EXTRACT HASHTAGS
@@ -164,29 +206,78 @@ function TweetLogic(tweet:Tweet) {
             }
         }
 
+        /*
+        ###########################
+                PICTURES
+        ###########################
+        */
+
+        let pictures = <div></div>
         
-        const formatDate = (input:string):string => {
-            //input: 2019-06-06T14:59:47.000Z
-            let parsed = new Date(input).toLocaleDateString() 
-            //parsed: 06/06/2019
-            let elements = parsed.split('/')
-            let m = ""
-            let nr:number = +elements[1]
-            if      (nr === 1) {m='Jan'}
-            else if (nr === 2) {m='Feb'}
-            else if (nr === 3) {m='Mar'}
-            else if (nr === 4) {m='Apr'}
-            else if (nr === 5) {m='May'}
-            else if (nr === 6) {m='Jun'}
-            else if (nr === 7) {m='Jul'}
-            else if (nr === 8) {m='Aug'}
-            else if (nr === 9) {m='Sep'}
-            else if (nr === 10) {m='Oct'}
-            else if (nr === 11) {m='Nov'}
-            else if (nr === 12) {m='Dec'}
-            let d = `${+elements[0]} ${m} ${elements[2]}`
-            return d
+        let count = 0
+        if (tweet.c_photo1 !== "") {count++}
+        if (tweet.c_photo2 !== "") {count++}
+        if (tweet.c_photo3 !== "") {count++}
+        if (tweet.c_photo4 !== "") {count++}
+
+        //ONE
+        if (count === 1) {
+            pictures = 
+            <div className={st.Images_Con}>
+                <img className={st.OnePic} src={tweet.c_photo1} alt=""/>
+            </div>
         }
+        else if (count === 2) {
+            pictures = 
+            <div className={st.Images_Con}>
+                <img className={st.Two_Left} src={tweet.c_photo1} alt=""/>
+                <img className={st.Two_Right} src={tweet.c_photo2} alt=""/>
+            </div>
+        }
+        else if (count === 3) {
+
+            //<img className={st.Three_Right_Top} src={tweet.c_photo2} alt=""/>
+            //<img className={st.Three_Right_Bottom} src={tweet.c_photo3} alt=""/>
+            pictures =  
+                <div className={st.Images_Con}>
+                    <div className={st.Three_Left_Con}>
+                        <img className={st.Three_Left} src={tweet.c_photo1} alt=""/>
+                    </div>
+                    <div className={st.Three_Right_Con}>
+                        <div className={st.Three_Right_Top_Con}>
+                            <img className={st.Three_Right_Top} src={tweet.c_photo2} alt=""/>
+                        </div>
+                        <div className={st.Three_Right_Bottom_Con}>
+                            <img className={st.Three_Right_Bottom} src={tweet.c_photo3} alt=""/>
+                        </div>
+                    </div>
+                </div>
+        }
+        else if (count === 4) {
+            pictures =  
+                <div className={st.Images_Con}>
+                    <div className={st.Four_Left_Con}>
+                        <div className={st.Four_Left_Top_Con}>
+                            <img className={st.Four_Left_Top} src={tweet.c_photo1} alt=""/>
+                        </div>
+                        <div className={st.Four_Left_Bottom_Con}>
+                            <img className={st.Four_Left_Bottom} src={tweet.c_photo2} alt=""/>
+                        </div>
+                    </div>
+                    <div className={st.Four_Right_Con}>
+                        <div className={st.Four_Right_Top_Con}>
+                            <img className={st.Four_Right_Top} src={tweet.c_photo3} alt=""/>
+                        </div>
+                        <div className={st.Four_Right_Bottom_Con}>
+                            <img className={st.Four_Right_Bottom} src={tweet.c_photo4} alt=""/>
+                        </div>
+                    </div>
+                </div>
+        }
+
+
+
+        
         
 
         let content = 
@@ -214,11 +305,12 @@ function TweetLogic(tweet:Tweet) {
                         </a>
                     </div>
                 </div>
-                {/*CONTENT  <span className={st.Text_1}>This is a</span> <span className={st.Text_2}>Test</span> */}
+                {/*CONTENT*/}
                 <div className={st.Content_Con}>
                     <div className={st.Text_Con}>
                         <span>{text}</span>
                     </div>
+                    {pictures}
                     <div className={st.Date_Con}>
                         {formatDate(tweet.b_date)}
                     </div>

@@ -108,6 +108,36 @@ export default function Match(props:MatchProps) {
         if (ref_state.current.status === Status.init) {
             if (ref_tweets.current === init_tweets) {
                 setInitialValues(ref_tweets, LocalStorage.Trans_Tweets)
+                
+                //mock
+                for(let i=0;i<ref_tweets.current.length;i++) {
+                    if (i===0) {
+                        ref_tweets.current[i].c_photo1 = "https://pbs.twimg.com/media/EsWwrpuW8AIRn_q.jpg"
+                        ref_tweets.current[i].c_photo2 = "" 
+                        ref_tweets.current[i].c_photo3 = "" 
+                        ref_tweets.current[i].c_photo4 = "" 
+                    }
+                    if (i===1) {
+                        ref_tweets.current[i].c_photo1 = "https://pbs.twimg.com/media/EsWwrpuW8AIRn_q.jpg"
+                        ref_tweets.current[i].c_photo2 = "https://pbs.twimg.com/media/EsWwrpvXEAAeKSW.jpg" 
+                        ref_tweets.current[i].c_photo3 = "" 
+                        ref_tweets.current[i].c_photo4 = "" 
+                    }
+                    if (i===2) {
+                        ref_tweets.current[i].c_photo1 = "https://pbs.twimg.com/media/EsWwrpuW8AIRn_q.jpg"
+                        ref_tweets.current[i].c_photo2 = "https://pbs.twimg.com/media/EsWwrpvXEAAeKSW.jpg" 
+                        ref_tweets.current[i].c_photo3 = "https://pbs.twimg.com/media/EsWwrpmW8AALVuN.jpg" 
+                        ref_tweets.current[i].c_photo4 = "" 
+                    }
+                    if (i===3) {
+                        ref_tweets.current[i].c_photo1 = "https://pbs.twimg.com/media/EsWwrpuW8AIRn_q.jpg"
+                        ref_tweets.current[i].c_photo2 = "https://pbs.twimg.com/media/EsWwrpvXEAAeKSW.jpg" 
+                        ref_tweets.current[i].c_photo3 = "https://pbs.twimg.com/media/EsWwrpmW8AALVuN.jpg" 
+                        ref_tweets.current[i].c_photo4 = "https://pbs.twimg.com/media/EsWwrppW4AQrA4z.jpg" 
+                    }
+                    
+                }
+                
             }
             if (ref_profiles.current === init_profiles) {
                 setInitialValues(ref_profiles, LocalStorage.Trans_Profiles)
@@ -700,6 +730,7 @@ export default function Match(props:MatchProps) {
             return content = 
                 <div className={st.Tweet_Con}>
                     {TweetComp.getComponent(ref_tweets.current[ref_state.current.roundIndex])}
+                    <button onClick={() => {ref_state.current.roundIndex-=1;forceUpdate()}}>Prev Tweet</button>
                     <button onClick={() => {ref_state.current.roundIndex+=1;forceUpdate()}}>Next Tweet</button>
                 </div>
         }

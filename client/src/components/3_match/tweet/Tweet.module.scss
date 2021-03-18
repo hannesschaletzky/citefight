@@ -109,6 +109,7 @@ $x: 40px;
   }
 }
 
+//TEXT
 .Link {
   text-decoration: none;
 }
@@ -132,8 +133,156 @@ $x: 40px;
 
 .Date_Con {
   margin-top: 10px;
-  margin-bottom: 15px;
+  margin-bottom: 10px;
   @extend .HelveticaNeueRegularFont;
+}
+
+//PICTURES
+.Images_Con {
+  width: 100%;
+  max-height: 250px;
+  margin-top: 10px;
+  display: flex;
+}
+// 1
+.OnePic {
+  width: inherit;
+  max-height: inherit;
+  object-fit: cover;
+  vertical-align: middle;
+
+  border: 1px solid;
+  border-color: rgba(194, 192, 192, 0.75);
+  border-radius: 8px;
+}
+
+// 2
+.Two_Left {
+  width: 49%;
+  max-height: inherit;
+
+  object-fit: cover;
+  vertical-align: middle;
+
+  border-top: 1px solid;
+  border-left: 1px solid;
+  border-bottom: 1px solid;
+  border-color: rgba(194, 192, 192, 0.75);
+
+  border-top-left-radius: 8px;
+  border-bottom-left-radius: 8px;
+
+  margin-right: 1px;
+}
+.Two_Right {
+  width: 49%;
+  max-height: inherit;
+
+  object-fit: cover;
+  vertical-align: middle;
+
+  border-top: 1px solid;
+  border-right: 1px solid;
+  border-bottom: 1px solid;
+  border-color: rgba(194, 192, 192, 0.75);
+
+  border-top-right-radius: 8px;
+  border-bottom-right-radius: 8px;
+}
+
+// 3
+.Three_Left_Con {
+  width: inherit;
+  max-height: inherit;
+  padding-right: 1px;
+}
+
+.Three_Left {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+
+  border-top-left-radius: 8px;
+  border-bottom-left-radius: 8px;
+}
+
+.Three_Right_Con {
+  width: inherit;
+  max-height: inherit;
+
+  display: flex;
+  flex-direction: column;
+}
+
+.Three_Right_Top_Con {
+  flex: 1;
+  height: 1px;
+  padding-bottom: 1px;
+}
+
+.Three_Right_Bottom_Con {
+  flex: 1;
+  height: 1px;
+}
+
+.Three_Right_Top {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-top-right-radius: 8px;
+}
+
+.Three_Right_Bottom {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-bottom-right-radius: 8px;
+}
+
+// 4
+.Four_Left_Con {
+  @extend .Three_Right_Con;
+}
+
+.Four_Left_Top_Con {
+  @extend .Three_Right_Top_Con;
+}
+
+.Four_Left_Bottom_Con {
+  @extend .Three_Right_Bottom_Con;
+}
+
+.Four_Left_Top {
+  //one picture has to have no height property in flex box so it grows
+  width: 100%;
+  object-fit: cover;
+  border-top-left-radius: 8px;
+}
+
+.Four_Left_Bottom {
+  @extend .Three_Right_Bottom;
+  border-bottom-right-radius: 0;
+  border-bottom-left-radius: 8px;
+}
+
+.Four_Right_Con {
+  @extend .Three_Right_Con;
+}
+
+.Four_Right_Top_Con {
+  @extend .Three_Right_Top_Con;
+}
+
+.Four_Right_Bottom_Con {
+  @extend .Three_Right_Bottom_Con;
+}
+
+.Four_Right_Top {
+  @extend .Three_Right_Top;
+}
+
+.Four_Right_Bottom {
+  @extend .Three_Right_Bottom;
 }
 
 /*#####################

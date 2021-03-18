@@ -994,7 +994,7 @@ export default function Setup(props:SetupProps) {
                         "width": 1600,
                         "media_key": "3_1336401334170431490",
                         "url": "https://pbs.twimg.com/media/EovZ7tCWMAIS46l.jpg",
-                        "type": "photo",
+                        "type": "photo", OR "animated_gif", OR "video",
                         "height": 1342
                     }
                 ]
@@ -1003,7 +1003,11 @@ export default function Setup(props:SetupProps) {
             let media:any[] = includes.media
             for(let i=0;i<media.length;i++) {
                 if (media[i].media_key === key) {
-                    return media[i].url
+                    //only parse photos, not gifs/videos/etc.
+                    if (media[i].type === "photo") {
+                        return media[i].url
+                    }
+                    return ""
                 }
             }
             return ""
