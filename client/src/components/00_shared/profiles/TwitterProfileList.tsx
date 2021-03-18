@@ -25,14 +25,16 @@ class TwitterProfileList extends Component <any, any> {
         };
     }
 
-    toogleActiveCard(newKey:string, profileProtected:boolean) {
+    toogleActiveCard(newKey:string, profileProtected:boolean, actionCon:ActionConType) {
         if (this.state.activeCard === newKey) {
             //deselect
             this.setState({activeCard: ''})
         }
         else {
-            //select
-            this.setState({activeCard: newKey})
+            if (actionCon !== ActionConType.init) {
+                //select
+                this.setState({activeCard: newKey})
+            }
         }
     }
 
@@ -120,16 +122,26 @@ class TwitterProfileList extends Component <any, any> {
             }
             //match -> answer
             if (this.props.parentType === ProfilesUsage.Answer && !this.props.roundActive) {
-                //topClassName = st.userCard_Con_Disabled
+                topClassName = st.userCard_Con_Disabled
                 topTitle = 'Selecting your answer is only enabled during the round'
                 actionCon = ActionConType.init
             }
 
+            
+            let profilePicComp = 
+                <a href={profileUrl} target="_blank" rel="noreferrer" title="View twitter profile">
+                    <img className={st.User_Pic} src={user.profile_image_url_https} alt="User"/>
+                </a>
+            //open twitter profile not while selecting answer
+            if (this.props.parentType === ProfilesUsage.Answer) {
+                profilePicComp = 
+                    <img className={st.User_Pic} src={user.profile_image_url_https} alt="User"/>
+            }
+
+            //COMPOSE
             cards.push(
-                <div className={topClassName} key={user.screen_name} title={topTitle} onClick={() => this.toogleActiveCard(user.screen_name, user.protected)}>
-                    <a href={profileUrl} target="_blank" rel="noreferrer" title="View twitter profile">
-                        <img className={st.User_Pic} src={user.profile_image_url_https} alt="User"/>
-                    </a>
+                <div className={topClassName} key={user.screen_name} title={topTitle} onClick={() => this.toogleActiveCard(user.screen_name, user.protected, actionCon)}>
+                    {profilePicComp}
                     <div className={st.UserCard_DataCon}>
                         <div className={st.Names_Con}>
                             <div className={st.UserName_Con}>
@@ -150,7 +162,7 @@ class TwitterProfileList extends Component <any, any> {
                                 {numberWithThousandSep(user.followers_count)}
                             </div>
                         </div>
-                        <div className={this.checkActive(user.screen_name)} onClick={() => this.toogleActiveCard(user.screen_name, user.protected)}>
+                        <div className={this.checkActive(user.screen_name)} onClick={() => this.toogleActiveCard(user.screen_name, user.protected, actionCon)}>
                             {(actionCon === ActionConType.add) &&
                                 <div className={st.Actions_Con}>
                                     <button className={st.Button_Add} onClick={() => this.addUser(user)}>

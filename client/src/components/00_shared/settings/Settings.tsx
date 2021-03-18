@@ -11,9 +11,9 @@ import * as Not from 'components/00_shared/notification/Notification'
 ##################################
 */
 export enum Roundtime {
-    Fast = 3,
-    Regular = 7,
-    Slow = 15 
+    Fast = 10,
+    Regular = 15,
+    Slow = 25 
 }
 export enum DrinkingMode {
     Off,

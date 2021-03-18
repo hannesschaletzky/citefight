@@ -26,19 +26,23 @@ import * as Settings from 'components/00_shared/settings/Settings'
 import * as Not from 'components/00_shared/notification/Notification'
 import * as TweetComp from './tweet/Tweet'
 
-//STATE
-interface State {
-    matchID: string
-    status: Status
-    statusMsg: string //for everyone joined
-
-    roundIndex: number
-    roundStarts: Date
-    roundEnds: Date
-    roundCountdown: number
-    roundActive: boolean
-
+interface RoundSolution {
+    t_userName: string
+    t_userTag: string
+    t_userVerified: boolean
+    t_profileURL: string
+    t_userPicURL: string
+    t_tweetURL: string
 }
+const init_roundSolution: RoundSolution = {
+    t_userName: '',
+    t_userTag: '',
+    t_userVerified: false,
+    t_profileURL: '',
+    t_userPicURL: '',
+    t_tweetURL: ''
+} 
+
 enum Status {
     init,
     everyoneJoined,
@@ -52,6 +56,21 @@ enum Status {
     //errors
     errorInitalValues
 }
+
+//STATE
+interface State {
+    matchID: string
+    status: Status
+    statusMsg: string //for everyone joined
+
+    roundIndex: number
+    roundStarts: Date
+    roundEnds: Date
+    roundCountdown: number
+    roundActive: boolean
+    roundSolution: RoundSolution
+}
+
 const init_state:State = {
     matchID: '',
     status: Status.init,
@@ -60,7 +79,8 @@ const init_state:State = {
     roundStarts: new Date(),
     roundEnds: new Date(),
     roundCountdown: -1,
-    roundActive: false
+    roundActive: false,
+    roundSolution: init_roundSolution
 }
 
 //DATA
@@ -164,7 +184,6 @@ export default function Match(props:MatchProps) {
             }
 
             //cache images
-            log('loading images into cache')
             let imageUrls:string[] = []
             for(let i=0;i<ref_tweets.current.length;i++) {
                 let t = ref_tweets.current[i]
@@ -173,10 +192,11 @@ export default function Match(props:MatchProps) {
                 if (t.c_photo3 !== "") {imageUrls.push(t.c_photo3)}
                 if (t.c_photo4 !== "") {imageUrls.push(t.c_photo4)}
             }
+            log('caching images')
             imageUrls.forEach((picURL) => {
                 new Image().src = picURL
             })
-            log('-> finished caching images')
+            log(imageUrls.length + ' images cached!')
         }
 
         //set welcome chat messages
@@ -415,26 +435,6 @@ export default function Match(props:MatchProps) {
         fireEvent_State()
     }
 
-    interface RoundSolution {
-        t_userName: string
-        t_userTag: string
-        t_userVerified: boolean
-        t_profileURL: string
-        t_userPicURL: string
-        t_tweetURL: string
-    }
-    const init_roundSolution: RoundSolution = {
-        t_userName: '',
-        t_userTag: '',
-        t_userVerified: false,
-        t_profileURL: '',
-        t_userPicURL: '',
-        t_tweetURL: ''
-    } 
-    const ref_roundSolution = useRef(init_roundSolution) //maybe integrate into ref_state
-
-
-
     //3RD: SHOW ROUND
     const showRound = () => {
 
@@ -473,12 +473,12 @@ export default function Match(props:MatchProps) {
 
         //save solution of round
         let cur = ref_tweets.current[ref_state.current.roundIndex]
-        ref_roundSolution.current.t_userName = cur.t_userName
-        ref_roundSolution.current.t_userTag = cur.t_userTag
-        ref_roundSolution.current.t_userVerified = cur.t_userVerified
-        ref_roundSolution.current.t_profileURL = cur.t_profileURL
-        ref_roundSolution.current.t_userPicURL = cur.t_userPicURL
-        ref_roundSolution.current.t_tweetURL = cur.t_tweetURL
+        ref_state.current.roundSolution.t_userName = cur.t_userName
+        ref_state.current.roundSolution.t_userTag = cur.t_userTag
+        ref_state.current.roundSolution.t_userVerified = cur.t_userVerified
+        ref_state.current.roundSolution.t_profileURL = cur.t_profileURL
+        ref_state.current.roundSolution.t_userPicURL = cur.t_userPicURL
+        ref_state.current.roundSolution.t_tweetURL = cur.t_tweetURL
 
         //hide solution in current
         ref_tweets.current[ref_state.current.roundIndex].t_userName = '???'
@@ -492,6 +492,13 @@ export default function Match(props:MatchProps) {
         ref_state.current.roundActive = true
         setStatus(Status.showRound, true)
     }
+
+
+
+    
+
+
+
 
     //4TH: SHOW OWN PICK
     const showOwnSelection = (pick:Profile) => {
@@ -508,18 +515,16 @@ export default function Match(props:MatchProps) {
         setStatus(Status.showRound_OwnPick, true)
     }
 
-    
-
     //5TH: SHOW ROUND SOLUTION
     const showRoundSolution = () => {
 
         //set correct values in current
-        ref_tweets.current[ref_state.current.roundIndex].t_userName = ref_roundSolution.current.t_userName
-        ref_tweets.current[ref_state.current.roundIndex].t_userTag = ref_roundSolution.current.t_userTag
-        ref_tweets.current[ref_state.current.roundIndex].t_userVerified = ref_roundSolution.current.t_userVerified
-        ref_tweets.current[ref_state.current.roundIndex].t_profileURL = ref_roundSolution.current.t_profileURL
-        ref_tweets.current[ref_state.current.roundIndex].t_userPicURL = ref_roundSolution.current.t_userPicURL
-        ref_tweets.current[ref_state.current.roundIndex].t_tweetURL = ref_roundSolution.current.t_tweetURL
+        ref_tweets.current[ref_state.current.roundIndex].t_userName = ref_state.current.roundSolution.t_userName
+        ref_tweets.current[ref_state.current.roundIndex].t_userTag = ref_state.current.roundSolution.t_userTag
+        ref_tweets.current[ref_state.current.roundIndex].t_userVerified = ref_state.current.roundSolution.t_userVerified
+        ref_tweets.current[ref_state.current.roundIndex].t_profileURL = ref_state.current.roundSolution.t_profileURL
+        ref_tweets.current[ref_state.current.roundIndex].t_userPicURL = ref_state.current.roundSolution.t_userPicURL
+        ref_tweets.current[ref_state.current.roundIndex].t_tweetURL = ref_state.current.roundSolution.t_tweetURL
 
         log('show solution')
         ref_state.current.roundActive = false
