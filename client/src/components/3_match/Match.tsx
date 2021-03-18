@@ -162,6 +162,21 @@ export default function Match(props:MatchProps) {
             if (ref_username.current === init_userName) {
                 setInitialValues(ref_username, LocalStorage.Username)
             }
+
+            //cache images
+            log('loading images into cache')
+            let imageUrls:string[] = []
+            for(let i=0;i<ref_tweets.current.length;i++) {
+                let t = ref_tweets.current[i]
+                if (t.c_photo1 !== "") {imageUrls.push(t.c_photo1)}
+                if (t.c_photo2 !== "") {imageUrls.push(t.c_photo2)}
+                if (t.c_photo3 !== "") {imageUrls.push(t.c_photo3)}
+                if (t.c_photo4 !== "") {imageUrls.push(t.c_photo4)}
+            }
+            imageUrls.forEach((picURL) => {
+                new Image().src = picURL
+            })
+            log('-> finished caching images')
         }
 
         //set welcome chat messages
