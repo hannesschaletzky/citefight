@@ -70,7 +70,6 @@ interface State {
     roundActive: boolean
     roundSolution: RoundSolution
 }
-
 const init_state:State = {
     matchID: '',
     status: Status.init,
@@ -81,6 +80,24 @@ const init_state:State = {
     roundCountdown: -1,
     roundActive: false,
     roundSolution: init_roundSolution
+}
+
+//MATRIX
+interface Point {
+    goal: string        //target usertag
+    answer: string      //chosen usertag
+    correct: boolean    //evaluation
+    timeMS: number      //answer time in Milliseconds
+}
+const init_matrix:{[index:string] : Point[]} = {}
+interface Event_Matrix_Data {
+    player: string
+    round: number
+    point: Point
+}
+interface Event_Matrix {
+    type: Pu.EventType
+    data: Event_Matrix_Data
 }
 
 //DATA
@@ -97,6 +114,7 @@ export default function Match(props:MatchProps) {
     //refs
     const ref_username = useRef(init_userName)
     const ref_state = useRef(init_state)
+    const ref_matrix = useRef(init_matrix)
     const ref_tweets = useRef(init_tweets)
     const ref_profiles = useRef(init_profiles)
     const ref_settings_lobby = useRef(Settings.initSettings_Lobby)
@@ -128,11 +146,10 @@ export default function Match(props:MatchProps) {
             return
         }
 
-        //only get inital values at first loading
+        //at first loading -> do init stuff (set values, cache images, create matrix, ...)
         if (ref_state.current.status === Status.init) {
             if (ref_tweets.current === init_tweets) {
                 setInitialValues(ref_tweets, LocalStorage.Trans_Tweets)
-                
                 /*
                 //mock
                 for(let i=0;i<ref_tweets.current.length;i++) {
@@ -162,7 +179,6 @@ export default function Match(props:MatchProps) {
                     }
                 }
                 */
-                
             }
             if (ref_profiles.current === init_profiles) {
                 setInitialValues(ref_profiles, LocalStorage.Trans_Profiles)
@@ -183,40 +199,29 @@ export default function Match(props:MatchProps) {
                 setInitialValues(ref_username, LocalStorage.Username)
             }
 
-            //cache images
-            let imageUrls:string[] = []
-            for(let i=0;i<ref_tweets.current.length;i++) {
-                let t = ref_tweets.current[i]
-                if (t.c_photo1 !== "") {imageUrls.push(t.c_photo1)}
-                if (t.c_photo2 !== "") {imageUrls.push(t.c_photo2)}
-                if (t.c_photo3 !== "") {imageUrls.push(t.c_photo3)}
-                if (t.c_photo4 !== "") {imageUrls.push(t.c_photo4)}
-            }
-            log('caching images')
-            imageUrls.forEach((picURL) => {
-                new Image().src = picURL
-            })
-            log(imageUrls.length + ' images cached!')
-        }
+            cacheImages()
+            createMatrix()
 
-        //set welcome chat messages
-        if (ref_chat.current.length === 0) {
-            addSysMsg(SysMsgType.welcome, '🎉🎉🎉 Welcome to the Match 🎉🎉🎉')
-            addSysMsg(SysMsgType.welcome, 'Set yourself ready and lets go!')
+            //set welcome chat messages
+            if (ref_chat.current.length === 0) {
+                addSysMsg(SysMsgType.welcome, '🎉🎉🎉 Welcome to the Match 🎉🎉🎉')
+                addSysMsg(SysMsgType.welcome, 'Set yourself ready and lets go!')
+            }
+
+            //retrieve & set pusherclient
+            if (ref_pusherClient.current === null) {
+                ref_pusherClient.current = props.pusherClient
+                log('match: retrieved and set pusher client')
+                joinGame()
+            }
         }
         
-        //retrieve & set pusherclient (once at beginning)
-        if (ref_pusherClient.current === null) {
-            ref_pusherClient.current = props.pusherClient
-            log('match: retrieved and set pusher client')
-            joinGame()
-        }
   	})
 
     /*
     ##################################
     ##################################
-                GENERAL
+                INIT
     ##################################
     ##################################
     */
@@ -240,6 +245,60 @@ export default function Match(props:MatchProps) {
             setStatus(Status.errorInitalValues, true)
         }
     }
+
+    const cacheImages = () => {
+        //cache images
+        let imageUrls:string[] = []
+        for(let i=0;i<ref_tweets.current.length;i++) {
+            let t = ref_tweets.current[i]
+            if (t.c_photo1 !== "") {imageUrls.push(t.c_photo1)}
+            if (t.c_photo2 !== "") {imageUrls.push(t.c_photo2)}
+            if (t.c_photo3 !== "") {imageUrls.push(t.c_photo3)}
+            if (t.c_photo4 !== "") {imageUrls.push(t.c_photo4)}
+        }
+        log('caching images')
+        imageUrls.forEach((picURL) => {
+            new Image().src = picURL
+        })
+        log(imageUrls.length + ' images cached!')
+    }
+
+    const createMatrix = () => {
+
+        if (ref_tweets.current.length === 0 || ref_players.current.length === 0) {
+            //CRITIAL ERROR -> could not set inital values
+            logErr('ref_tweets or ref_players not set! Inital Values from Setup not retrieved')
+            setStatus(Status.errorInitalValues, true)
+            return
+        }
+
+        //one row for each player
+        ref_players.current.forEach((player) => {
+            //create target array
+            let points:Point[] = []
+            for(let i=0;i<ref_settings_lobby.current.rounds;i++) {
+                let point:Point = {
+                    goal: ref_tweets.current[i].t_userTag,
+                    answer: '',
+                    correct: false,
+                    timeMS: -1
+                }
+                points.push(point)
+            }
+            //assign 
+            ref_matrix.current[player.name] = points
+        })
+        log('created matrix')
+        log(ref_matrix.current) 
+    }
+
+    /*
+    ##################################
+    ##################################
+                GENERAL
+    ##################################
+    ##################################
+    */
 
     const addSysMsg = (type:SysMsgType, inputMsg:string) => {
         Chat.addSysMsg(type, inputMsg, ref_chat)
@@ -292,6 +351,18 @@ export default function Match(props:MatchProps) {
         if (update) {forceUpdate()}
     }
 
+    const pictureClick = (newPic:string) => {
+        if (ref_HoverPic.current === "") {
+            //log('show')
+            ref_HoverPic.current = newPic
+        }
+        else {
+            //log('hide')
+            ref_HoverPic.current = ""
+        }
+        forceUpdate()
+    }
+
     /*
     ##################################
     ##################################
@@ -333,6 +404,9 @@ export default function Match(props:MatchProps) {
 
                 channel.bind(Pu.EventType.Match_State, 
                     (data:Pu.Event) => handleEvent_State(data)
+                )
+                channel.bind(Pu.EventType.Matrix, 
+                    (data:Event_Matrix) => handleEvent_Matrix(data)
                 )
                 channel.bind(Pu.EventType.Player, 
                     (data:Pu.Event) => handleEvent_Players(data)
@@ -493,13 +567,6 @@ export default function Match(props:MatchProps) {
         setStatus(Status.showRound, true)
     }
 
-
-
-    
-
-
-
-
     //4TH: SHOW OWN PICK
     const showOwnSelection = (pick:Profile) => {
 
@@ -511,7 +578,18 @@ export default function Match(props:MatchProps) {
         ref_tweets.current[ref_state.current.roundIndex].t_userPicURL = pick.profile_image_url_https
         ref_tweets.current[ref_state.current.roundIndex].t_tweetURL = ''
         
-        log('show own pick: ' + pick.name)
+        //calculate new point
+        let point:Point = ref_matrix.current[ref_username.current][ref_state.current.roundIndex]
+        point.answer = pick.screen_name
+        point.correct = (point.answer === point.goal)
+        point.timeMS = 12345 //@@@ TODO!!!
+        //set
+        //ref_matrix.current[ref_username.current][ref_state.current.roundIndex] = point
+        //broadcast
+        fireEvent_Matrix(point)
+
+        //update UI
+        log('show pick: ' + pick.name)
         setStatus(Status.showRound_OwnPick, true)
     }
 
@@ -577,6 +655,40 @@ export default function Match(props:MatchProps) {
         let event:Pu.Event = {
             type: Pu.EventType.Match_State,
             data: ref_state.current
+        }
+        //trigger
+        Pu.triggerEvent(getMatchName(), event.type, event)
+    }
+
+    /*
+    ##################################
+    ##################################
+            EVENT: Matrix
+    ##################################
+    ##################################
+    */
+    const handleEvent_Matrix = (event:Event_Matrix) => {
+        //security
+        if (event.type !== Pu.EventType.Matrix) {
+            log('EventType mismatch in handleEvent_Matrix:\n\n' + event)
+            return
+        }
+        //set new matrix point
+        ref_matrix.current[event.data.player][event.data.round] = event.data.point
+        log('new point:')
+        log(ref_matrix.current)
+    }
+
+    const fireEvent_Matrix = async (point:Point) => {
+        //prepare
+        let data:Event_Matrix_Data = {
+            player: ref_username.current,
+            round: ref_state.current.roundIndex,
+            point: point
+        }
+        let event:Event_Matrix = {
+            type: Pu.EventType.Matrix,
+            data: data
         }
         //trigger
         Pu.triggerEvent(getMatchName(), event.type, event)
@@ -828,18 +940,6 @@ export default function Match(props:MatchProps) {
         }
         
         return content
-    }
-
-    const pictureClick = (newPic:string) => {
-        if (ref_HoverPic.current === "") {
-            log('show')
-            ref_HoverPic.current = newPic
-        }
-        else {
-            log('hide')
-            ref_HoverPic.current = ""
-        }
-        forceUpdate()
     }
 
     const getNavComp = () => {

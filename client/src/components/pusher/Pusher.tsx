@@ -13,7 +13,8 @@ export enum EventType {
     Profile = 'Profile',
     Settings = 'Settings',
     Tweets = 'Tweets',
-    Match_State = 'Match_State'
+    Match_State = 'Match_State',
+    Matrix = 'Matrix'
 }
 
 //according to: https://pusher.com/docs/channels/using_channels/connection#available-states

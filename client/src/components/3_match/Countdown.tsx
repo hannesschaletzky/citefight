@@ -72,7 +72,7 @@ function Countdown(props:Props) {
             }
         }
         else {
-            log('ALREADY TRIGGERED')
+            //log('ALREADY TRIGGERED')
         }
     })
 

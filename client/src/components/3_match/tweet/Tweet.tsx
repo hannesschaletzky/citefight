@@ -87,7 +87,7 @@ function TweetLogic(props:Props) {
 
     const getContent = () => {
 
-        log(props.tweet)
+        //log(props.tweet)
 
         //determine if name contains emoji
         let userNameClass = st.UserName
@@ -130,7 +130,7 @@ function TweetLogic(props:Props) {
             });
         }
         let dec_tweetText = convertHTMLEntity(props.tweet.c_text)
-        log(dec_tweetText)
+        //log(dec_tweetText)
 
 
         /*
@@ -152,20 +152,20 @@ function TweetLogic(props:Props) {
             }
         }
 
-        log(props.tweet.c_text)
+        //log(props.tweet.c_text)
         //EXTRACT HASHTAGS
         let foundHastags:RegExpMatchArray = []
         let hashtags = findSpecialWords(dec_tweetText)
         if (hashtags) {foundHastags = hashtags}
-        log(hashtags)
+        //log(hashtags)
         //EXTRACT USERTAGS
         let foundTags:RegExpMatchArray = []
         let tags = findSpecialWords(dec_tweetText, true)
         if (tags) {foundTags = tags}
-        log(tags)
+        //log(tags)
         //split at line breaks
         let blocks = dec_tweetText.split(/\r?\n/)
-        log(blocks)
+        //log(blocks)
 
         function isHashtag(word:string):string {
             for(let i=0;i<foundHastags.length;i++) {
@@ -181,6 +181,11 @@ function TweetLogic(props:Props) {
             }
             return ""
         }
+        //get random key
+        let key = 0
+        function grk():string {
+            return '' + key++
+        }
 
         /*
             Wishing a very happy birthday to @Malala! 
@@ -189,7 +194,7 @@ function TweetLogic(props:Props) {
             Check out http://girlsopportunityalliance.org to learn more and get involved.
             -> split text into spans if it contains #hastags or @links
         */
-        let text = [<span></span>]
+        let text = [<span key="-1"></span>]
         text = []
         //loop each block
         for(let i=0;i<blocks.length;i++) {
@@ -205,33 +210,33 @@ function TweetLogic(props:Props) {
                 //check hashtag
                 if (hashtag !== "") {
                     text.push(  <a className={st.Link} href={"https://twitter.com/hashtag/" + word.substring(1)} target="_blank" rel="noreferrer" title="View hastag">
-                                    <span className={st.Text_Link}>{hashtag}</span>
+                                    <span className={st.Text_Link} key={grk()}>{hashtag}</span>
                                 </a>)
                     let rest = word.replace(hashtag, "") //like: '#MalalaDay,' -> ','
                     if (rest !== "") {
-                        text.push(<span className={st.Text}>{rest}</span>)
+                        text.push(<span className={st.Text} key={grk()}>{rest}</span>)
                     }
                 }
                 //check usertag
                 else if (usertag !== "") {
                     text.push(  <a className={st.Link} href={"https://twitter.com/" + word.substring(1)} target="_blank" rel="noreferrer" title="View profile">
-                                    <span className={st.Text_Link}>{usertag}</span>
+                                    <span className={st.Text_Link} key={grk()}>{usertag}</span>
                                 </a>)
                     let rest = word.replace(usertag, "") //like: '@Malala!' -> '!'
                     if (rest !== "") {
-                        text.push(<span className={st.Text}>{rest}</span>)
+                        text.push(<span className={st.Text} key={grk()}>{rest}</span>)
                     }
                 }
                 //normal word
                 else {
-                    text.push(<span className={st.Text}>{word}</span>)
+                    text.push(<span className={st.Text} key={grk()}>{word}</span>)
                 }
                 //insert space after each word
-                text.push(<span> </span>)
+                text.push(<span key={grk()}> </span>)
             }
             //line break after block -> not at last one
             if (i < blocks.length-1) {
-                text.push(<br/>)
+                text.push(<br key={grk()}></br>)
             }
         }
 
