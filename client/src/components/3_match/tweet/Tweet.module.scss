@@ -1,4 +1,4 @@
-$sdbg: true; //show debugging background = sdbg
+$sdbg: false; //show debugging background = sdbg
 @import "styles/app.global.scss";
 
 /*
@@ -19,7 +19,10 @@ $x: 40px;
 
 .Inside_Con {
   width: 100%;
-  margin: 10px;
+  margin-top: 10px;
+  margin-bottom: 10px;
+  margin-left: 15px;
+  margin-right: 15px;
 
   display: flex;
   flex-direction: column;
@@ -52,7 +55,7 @@ $x: 40px;
 
 .Names_Con {
   flex: 1;
-  margin-top: 5px;
+  margin-top: 8px;
 }
 
 .UserName_Con {
@@ -101,8 +104,6 @@ $x: 40px;
       CONTENT 
 #####################*/
 .Content_Con {
-  padding: 10px;
-
   flex: 1;
   @if $sdbg {
     background-color: rgba(112, 105, 173, 0.445);
@@ -140,7 +141,7 @@ $x: 40px;
 //PICTURES
 .Images_Con {
   width: 100%;
-  max-height: 250px;
+  height: 250px;
   margin-top: 10px;
   display: flex;
 }
@@ -242,6 +243,7 @@ $x: 40px;
 // 4
 .Four_Left_Con {
   @extend .Three_Right_Con;
+  padding-right: 1px;
 }
 
 .Four_Left_Top_Con {
@@ -253,9 +255,8 @@ $x: 40px;
 }
 
 .Four_Left_Top {
-  //one picture has to have no height property in flex box so it grows
-  width: 100%;
-  object-fit: cover;
+  @extend .Three_Right_Top;
+  border-top-right-radius: 0;
   border-top-left-radius: 8px;
 }
 
@@ -290,9 +291,10 @@ $x: 40px;
 #####################*/
 .Bot_Con {
   width: 100%;
+  margin-top: 5px;
 
   display: flex;
-  justify-content: space-evenly;
+  justify-content: flex-start;
   cursor: default;
 
   @if $sdbg {
@@ -300,14 +302,25 @@ $x: 40px;
   }
 }
 
+//base
 .Data_Con {
   display: flex;
   justify-content: center;
   align-items: center;
 }
 
-.Bot_Icon {
-  width: 18px;
+.Reply_Con {
+  @extend .Data_Con;
+}
+
+.Retweet_Con {
+  @extend .Data_Con;
+  margin-left: 17%;
+}
+
+.Like_Con {
+  @extend .Data_Con;
+  margin-left: 17%;
 }
 
 .Bot_Number {
@@ -316,11 +329,14 @@ $x: 40px;
 }
 
 //CUSTOM
+.Bot_Icon_Reply {
+  width: 19px;
+}
 .Bot_Icon_Retweet {
   height: 18px;
-  width: 19px;
+  width: 21px;
 }
 .Bot_Icon_Like {
   height: 18px;
-  width: 19px;
+  width: 21px;
 }

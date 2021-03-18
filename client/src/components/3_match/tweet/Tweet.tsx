@@ -10,6 +10,7 @@ import TwitterIcon from 'assets/tweet/Twitter_Icon.png'
 import Reply_Icon from 'assets/tweet/Reply.png'
 import Retweet_Icon from 'assets/tweet/Retweet.png'
 import Like_Icon from 'assets/tweet/Like.png'
+import { ClickAwayListener } from '@material-ui/core'
 
 
 /*
@@ -17,8 +18,16 @@ import Like_Icon from 'assets/tweet/Like.png'
             EXPORT
 ##################################
 */
-export const getComponent = (tweet:Tweet) => {
-    return React.createElement(TweetLogic, tweet)
+interface Props {
+    tweet: Tweet
+    onPicClick:(picURL:string) => void
+}
+export const getComponent = (tweet:Tweet, onPicClick:(picURL:string) => void) => {
+    let props:Props = {
+        tweet: tweet,
+        onPicClick: onPicClick
+    }
+    return React.createElement(TweetLogic, props)
 }
 
 /*
@@ -51,7 +60,7 @@ const nFormatter = (input: string, digits = 2) => {
     return (num / si[i].value).toFixed(digits).replace(rx, "$1") + si[i].symbol
 }
 
-function TweetLogic(tweet:Tweet) {
+function TweetLogic(props:Props) {
 
     const formatDate = (input:string):string => {
         //input: 2019-06-06T14:59:47.000Z
@@ -78,9 +87,11 @@ function TweetLogic(tweet:Tweet) {
 
     const getContent = () => {
 
+        log(props.tweet)
+
         //determine if name contains emoji
         let userNameClass = st.UserName
-        if (/\p{Extended_Pictographic}/u.test(tweet.t_userName) ) {
+        if (/\p{Extended_Pictographic}/u.test(props.tweet.t_userName) ) {
             userNameClass = st.UserName_Emoji
         }
 
@@ -100,13 +111,15 @@ function TweetLogic(tweet:Tweet) {
                 q
                 -> ampersand (&) is escaped to &amp; 
                 convert HTML codes into characters -> https://ascii.cl/htmlcodes.htm 
+
+                let htmlChars = {
+                    quot: '"',
+                    amp: '&',
+                    lt: '<',
+                    gt: '>',
+                }
         */
-        let htmlChars = {
-            quot: '"',
-            amp: '&',
-            lt: '<',
-            gt: '>',
-        }
+        
         //https://stackoverflow.com/a/43282001
         function convertHTMLEntity(text:string){
             const span = document.createElement('span')
@@ -116,10 +129,8 @@ function TweetLogic(tweet:Tweet) {
                 return span.innerText
             });
         }
-        let dec_tweetText = convertHTMLEntity(tweet.c_text)
+        let dec_tweetText = convertHTMLEntity(props.tweet.c_text)
         log(dec_tweetText)
-
-
 
 
         /*
@@ -141,7 +152,7 @@ function TweetLogic(tweet:Tweet) {
             }
         }
 
-        log(tweet.c_text)
+        log(props.tweet.c_text)
         //EXTRACT HASHTAGS
         let foundHastags:RegExpMatchArray = []
         let hashtags = findSpecialWords(dec_tweetText)
@@ -156,7 +167,6 @@ function TweetLogic(tweet:Tweet) {
         let blocks = dec_tweetText.split(/\r?\n/)
         log(blocks)
 
-       
         function isHashtag(word:string):string {
             for(let i=0;i<foundHastags.length;i++) {
                 //also detect: #MalalaDay,
@@ -231,95 +241,100 @@ function TweetLogic(tweet:Tweet) {
         ###########################
         */
 
-        let pictures = <div></div>
-        
+        const show = (picUrl:string) => {
+            props.onPicClick(picUrl)
+        }
+
+        let pic1 = props.tweet.c_photo1
+        let pic2 = props.tweet.c_photo2
+        let pic3 = props.tweet.c_photo3
+        let pic4 = props.tweet.c_photo4
+
         let count = 0
-        if (tweet.c_photo1 !== "") {count++}
-        if (tweet.c_photo2 !== "") {count++}
-        if (tweet.c_photo3 !== "") {count++}
-        if (tweet.c_photo4 !== "") {count++}
+        if (pic1 !== "") {count++}
+        if (pic2 !== "") {count++}
+        if (pic3 !== "") {count++}
+        if (pic4 !== "") {count++}
+
+        let picturesComponent = <div></div>
 
         //ONE
         if (count === 1) {
-            pictures = 
+            picturesComponent = 
             <div className={st.Images_Con}>
-                <img className={st.OnePic} src={tweet.c_photo1} alt=""/>
+                <img className={st.OnePic} src={pic1} alt="" onClick={() => {show(pic1)}}/>
             </div>
         }
         else if (count === 2) {
-            pictures = 
+            picturesComponent = 
             <div className={st.Images_Con}>
-                <img className={st.Two_Left} src={tweet.c_photo1} alt=""/>
-                <img className={st.Two_Right} src={tweet.c_photo2} alt=""/>
+                <img className={st.Two_Left} src={pic1} alt="" onClick={() => {show(pic1)}}/>
+                <img className={st.Two_Right} src={pic2} alt="" onClick={() => {show(pic2)}}/>
             </div>
         }
         else if (count === 3) {
 
             //<img className={st.Three_Right_Top} src={tweet.c_photo2} alt=""/>
             //<img className={st.Three_Right_Bottom} src={tweet.c_photo3} alt=""/>
-            pictures =  
+            picturesComponent =  
                 <div className={st.Images_Con}>
                     <div className={st.Three_Left_Con}>
-                        <img className={st.Three_Left} src={tweet.c_photo1} alt=""/>
+                        <img className={st.Three_Left} src={pic1} alt="" onClick={() => {show(pic1)}}/>
                     </div>
                     <div className={st.Three_Right_Con}>
                         <div className={st.Three_Right_Top_Con}>
-                            <img className={st.Three_Right_Top} src={tweet.c_photo2} alt=""/>
+                            <img className={st.Three_Right_Top} src={pic2} alt="" onClick={() => {show(pic2)}}/>
                         </div>
                         <div className={st.Three_Right_Bottom_Con}>
-                            <img className={st.Three_Right_Bottom} src={tweet.c_photo3} alt=""/>
+                            <img className={st.Three_Right_Bottom} src={pic3} alt="" onClick={() => {show(pic3)}}/>
                         </div>
                     </div>
                 </div>
         }
         else if (count === 4) {
-            pictures =  
+            picturesComponent =  
                 <div className={st.Images_Con}>
                     <div className={st.Four_Left_Con}>
                         <div className={st.Four_Left_Top_Con}>
-                            <img className={st.Four_Left_Top} src={tweet.c_photo1} alt=""/>
+                            <img className={st.Four_Left_Top} src={pic1} alt="" onClick={() => {show(pic1)}}/>
                         </div>
                         <div className={st.Four_Left_Bottom_Con}>
-                            <img className={st.Four_Left_Bottom} src={tweet.c_photo2} alt=""/>
+                            <img className={st.Four_Left_Bottom} src={pic2} alt="" onClick={() => {show(pic2)}}/>
                         </div>
                     </div>
                     <div className={st.Four_Right_Con}>
                         <div className={st.Four_Right_Top_Con}>
-                            <img className={st.Four_Right_Top} src={tweet.c_photo3} alt=""/>
+                            <img className={st.Four_Right_Top} src={pic3} alt="" onClick={() => {show(pic3)}}/>
                         </div>
                         <div className={st.Four_Right_Bottom_Con}>
-                            <img className={st.Four_Right_Bottom} src={tweet.c_photo4} alt=""/>
+                            <img className={st.Four_Right_Bottom} src={pic4} alt="" onClick={() => {show(pic4)}}/>
                         </div>
                     </div>
                 </div>
         }
 
-
-
-        
-        
-
+        //COMPOSE TWEET
         let content = 
         <div className ={st.Con}>
             <div className ={st.Inside_Con}>
                 {/*TOP*/}
                 <div className={st.Top_Con}>
-                    <a href={tweet.t_profileURL} target="_blank" rel="noreferrer" title="View twitter profile">
-                        <img className={st.Pic} src={tweet.t_userPicURL} alt="User"/>
+                    <a href={props.tweet.t_profileURL} target="_blank" rel="noreferrer" title="View twitter profile">
+                        <img className={st.Pic} src={props.tweet.t_userPicURL} alt="User"/>
                     </a>
                     <div className={st.UserCard_Con}>
                         <div className={st.Names_Con}>
                             <div className={st.UserName_Con}>
-                                <div className={userNameClass} title={tweet.t_userName}>
-                                    {tweet.t_userName}
+                                <div className={userNameClass} title={props.tweet.t_userName}>
+                                    {props.tweet.t_userName}
                                 </div>
-                                {tweet.t_userVerified && <img className={st.Verified_Icon} src={VerifiedIcon} title="Verified User" alt="Verified"/>}
+                                {props.tweet.t_userVerified && <img className={st.Verified_Icon} src={VerifiedIcon} title="Verified User" alt="Verified"/>}
                             </div>
                             <div className={st.UserTag}>
-                                @{tweet.t_userTag}
+                                @{props.tweet.t_userTag}
                             </div>
                         </div>
-                        <a href={tweet.t_tweetURL} target="_blank" rel="noreferrer" title="View tweet">
+                        <a href={props.tweet.t_tweetURL} target="_blank" rel="noreferrer" title="View tweet">
                             <img className={st.Twitter_Icon} src={TwitterIcon} alt="Tweet"/>
                         </a>
                     </div>
@@ -329,24 +344,24 @@ function TweetLogic(tweet:Tweet) {
                     <div className={st.Text_Con}>
                         <span>{text}</span>
                     </div>
-                    {pictures}
+                    {picturesComponent}
                     <div className={st.Date_Con}>
-                        {formatDate(tweet.b_date)}
+                        {formatDate(props.tweet.b_date)}
                     </div>
                 </div>
                 {/*BOTTOM*/}
                 <div className={st.Bot_Con}>
-                    <div className={st.Data_Con}>
-                        <img className={st.Bot_Icon} src={Reply_Icon} alt="Reply"/>
-                        <div className={st.Bot_Number}>{nFormatter(tweet.b_replyCount)}</div>
+                    <div className={st.Reply_Con}>
+                        <img className={st.Bot_Icon_Reply} src={Reply_Icon} alt="Reply"/>
+                        <div className={st.Bot_Number}>{nFormatter(props.tweet.b_replyCount)}</div>
                     </div>
-                    <div className={st.Data_Con}>
+                    <div className={st.Retweet_Con}>
                         <img className={st.Bot_Icon_Retweet} src={Retweet_Icon} alt="Retweet"/>
-                        <div className={st.Bot_Number}>{nFormatter(tweet.b_retweetCount)}</div>
+                        <div className={st.Bot_Number}>{nFormatter(props.tweet.b_retweetCount)}</div>
                     </div>
-                    <div className={st.Data_Con}>
+                    <div className={st.Like_Con}>
                         <img className={st.Bot_Icon_Like} src={Like_Icon} alt="Like"/>
-                        <div className={st.Bot_Number}>{nFormatter(tweet.b_likeCount)}</div>
+                        <div className={st.Bot_Number}>{nFormatter(props.tweet.b_likeCount)}</div>
                     </div>
                 </div>
             </div>

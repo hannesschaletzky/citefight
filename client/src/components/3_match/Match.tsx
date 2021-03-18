@@ -81,6 +81,7 @@ export default function Match(props:MatchProps) {
     const ref_notification = useRef(Not.init)
     const ref_players = useRef(init_players)
     const ref_chat = useRef(init_chat)
+    const ref_HoverPic = useRef('')
     //pusher refs
     const ref_pusherClient = useRef(Pu.init_pusherCient)
     const ref_pusherChannel = useRef(Pu.init_pusherChannel)
@@ -722,20 +723,32 @@ export default function Match(props:MatchProps) {
         else if (ref_state.current.status === Status.showRound) {
             return content = 
                 <div className={st.Tweet_Con}>
-                    {TweetComp.getComponent(ref_tweets.current[ref_state.current.roundIndex])}
+                    {TweetComp.getComponent(ref_tweets.current[ref_state.current.roundIndex], pictureClick)}
                 </div>
         }
         //SHOW SOLUTION 
         else if (ref_state.current.status === Status.showRound_Solution) {
             return content = 
                 <div className={st.Tweet_Con}>
-                    {TweetComp.getComponent(ref_tweets.current[ref_state.current.roundIndex])}
+                    {TweetComp.getComponent(ref_tweets.current[ref_state.current.roundIndex], pictureClick)}
                     <button onClick={() => {ref_state.current.roundIndex-=1;forceUpdate()}}>Prev Tweet</button>
                     <button onClick={() => {ref_state.current.roundIndex+=1;forceUpdate()}}>Next Tweet</button>
                 </div>
         }
         
         return content
+    }
+
+    const pictureClick = (newPic:string) => {
+        if (ref_HoverPic.current === "") {
+            log('show')
+            ref_HoverPic.current = newPic
+        }
+        else {
+            log('hide')
+            ref_HoverPic.current = ""
+        }
+        forceUpdate()
     }
 
     const getNavComp = () => {
@@ -774,6 +787,11 @@ export default function Match(props:MatchProps) {
                     {getNavComp()}
                 </div>
             </div>
+            {ref_HoverPic.current !== '' && 
+                <div className={st.HoverPic_Con} onClick={() => pictureClick('')}>
+                    <img className={st.HoverPic} src={ref_HoverPic.current} alt=""/>
+                </div>
+            }
         </div>
 	)
 }
