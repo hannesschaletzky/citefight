@@ -10,7 +10,7 @@ import TwitterIcon from 'assets/tweet/Twitter_Icon.png'
 import Reply_Icon from 'assets/tweet/Reply.png'
 import Retweet_Icon from 'assets/tweet/Retweet.png'
 import Like_Icon from 'assets/tweet/Like.png'
-import { ClickAwayListener } from '@material-ui/core'
+import QuestionMark from 'assets/tweet/QuestionMark.png'
 
 
 /*
@@ -313,30 +313,58 @@ function TweetLogic(props:Props) {
                 </div>
         }
 
+        //TOP COMPONENT ICONS
+        let userIconComp = <div></div>
+        let userVerifiedComp = <div></div>
+        let tweetIconComp = <div></div>
+        if (props.tweet.t_profileURL === '') {
+            userIconComp = 
+                <img className={st.Pic} src={QuestionMark} alt="User"/>
+            userVerifiedComp =
+                <img className={st.Verified_Icon_Disabled} src={VerifiedIcon} alt="Verified"/>
+        }
+        else {
+            userIconComp = 
+                <a href={props.tweet.t_profileURL} target="_blank" rel="noreferrer" title="View twitter profile">
+                    <img className={st.Pic} src={props.tweet.t_userPicURL} alt="User"/>
+                </a>
+            userVerifiedComp =
+                <img className={st.Verified_Icon} src={VerifiedIcon} title="Verified User" alt="Verified"/>
+        }
+
+        //only enable clicking on twitter icon when solution is here
+        if (props.tweet.t_tweetURL === '') {
+            tweetIconComp = 
+                <img className={st.Twitter_Icon_Disabled} src={TwitterIcon} alt="Tweet"/>
+        }
+        else {
+            tweetIconComp = 
+                <a href={props.tweet.t_tweetURL} target="_blank" rel="noreferrer" title="View tweet">
+                    <img className={st.Twitter_Icon} src={TwitterIcon} alt="Tweet"/>
+                </a>
+        }
+
+
         //COMPOSE TWEET
         let content = 
         <div className ={st.Con}>
             <div className ={st.Inside_Con}>
                 {/*TOP*/}
                 <div className={st.Top_Con}>
-                    <a href={props.tweet.t_profileURL} target="_blank" rel="noreferrer" title="View twitter profile">
-                        <img className={st.Pic} src={props.tweet.t_userPicURL} alt="User"/>
-                    </a>
+                    {userIconComp}
                     <div className={st.UserCard_Con}>
                         <div className={st.Names_Con}>
                             <div className={st.UserName_Con}>
                                 <div className={userNameClass} title={props.tweet.t_userName}>
                                     {props.tweet.t_userName}
                                 </div>
-                                {props.tweet.t_userVerified && <img className={st.Verified_Icon} src={VerifiedIcon} title="Verified User" alt="Verified"/>}
+                                {props.tweet.t_userVerified && userVerifiedComp}
                             </div>
                             <div className={st.UserTag}>
                                 @{props.tweet.t_userTag}
                             </div>
                         </div>
-                        <a href={props.tweet.t_tweetURL} target="_blank" rel="noreferrer" title="View tweet">
-                            <img className={st.Twitter_Icon} src={TwitterIcon} alt="Tweet"/>
-                        </a>
+                        {tweetIconComp}
                     </div>
                 </div>
                 {/*CONTENT*/}

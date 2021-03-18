@@ -87,14 +87,6 @@ class TwitterProfileList extends Component <any, any> {
             //construct twitter user url
             let profileUrl = "https://twitter.com/" + user.screen_name
 
-            //protected profile settings
-            let topClassName = st.userCard_Con
-            let topTitle = user.description
-            if (user.protected) {
-                topClassName = st.userCard_Con_Disabled
-                topTitle = 'This profile is not public. Currently only public profiles can be played'
-            }
-
             //determine action con to display
             let actionCon:ActionConType = ActionConType.init
             if (this.props.parentType === ProfilesUsage.Search) {
@@ -116,6 +108,21 @@ class TwitterProfileList extends Component <any, any> {
             let userNameClass = st.UserName
             if (/\p{Extended_Pictographic}/u.test(user.name) ) {
                 userNameClass = st.UserName_Emoji
+            }
+
+            //CHECK DISABLING OF CARD
+            //search -> protected profile settings
+            let topClassName = st.userCard_Con
+            let topTitle = user.description
+            if (user.protected) {
+                topClassName = st.userCard_Con_Disabled
+                topTitle = 'This profile is not public. Currently only public profiles can be played'
+            }
+            //match -> answer
+            if (this.props.parentType === ProfilesUsage.Answer && !this.props.roundActive) {
+                //topClassName = st.userCard_Con_Disabled
+                topTitle = 'Selecting your answer is only enabled during the round'
+                actionCon = ActionConType.init
             }
 
             cards.push(

@@ -36,6 +36,7 @@ interface State {
     roundStarts: Date
     roundEnds: Date
     roundCountdown: number
+    roundActive: boolean
 
 }
 enum Status {
@@ -45,6 +46,7 @@ enum Status {
     calcRound,
     startRoundcountdown,
     showRound,
+    showRound_OwnPick,
     showRound_Solution,
     
     //errors
@@ -57,7 +59,8 @@ const init_state:State = {
     roundIndex: -1,
     roundStarts: new Date(),
     roundEnds: new Date(),
-    roundCountdown: -1
+    roundCountdown: -1,
+    roundActive: false
 }
 
 //DATA
@@ -110,6 +113,7 @@ export default function Match(props:MatchProps) {
             if (ref_tweets.current === init_tweets) {
                 setInitialValues(ref_tweets, LocalStorage.Trans_Tweets)
                 
+                /*
                 //mock
                 for(let i=0;i<ref_tweets.current.length;i++) {
                     if (i===0) {
@@ -136,8 +140,8 @@ export default function Match(props:MatchProps) {
                         ref_tweets.current[i].c_photo3 = "https://pbs.twimg.com/media/EsWwrpmW8AALVuN.jpg" 
                         ref_tweets.current[i].c_photo4 = "https://pbs.twimg.com/media/EsWwrppW4AQrA4z.jpg" 
                     }
-                    
                 }
+                */
                 
             }
             if (ref_profiles.current === init_profiles) {
@@ -396,31 +400,44 @@ export default function Match(props:MatchProps) {
         fireEvent_State()
     }
 
+    interface RoundSolution {
+        t_userName: string
+        t_userTag: string
+        t_userVerified: boolean
+        t_profileURL: string
+        t_userPicURL: string
+        t_tweetURL: string
+    }
+    const init_roundSolution: RoundSolution = {
+        t_userName: '',
+        t_userTag: '',
+        t_userVerified: false,
+        t_profileURL: '',
+        t_userPicURL: '',
+        t_tweetURL: ''
+    } 
+    const ref_roundSolution = useRef(init_roundSolution) //maybe integrate into ref_state
+
+
+
     //3RD: SHOW ROUND
     const showRound = () => {
-        log(`show round with index ${ref_state.current.roundIndex}`)
-        setStatus(Status.showRound, true)
 
         //reset countdown
         ref_state.current.roundCountdown = ref_settings_lobby.current.roundtime
-
         //calc differnce until target date
         let diffS = ref_settings_lobby.current.roundtime
 
-
-
         //logic for decrease timeout
         const decrease = () => {
-            if (ref_state.current.status === Status.showRound) {
+            if (ref_state.current.status === Status.showRound || ref_state.current.status === Status.showRound_OwnPick) {
                 ref_state.current.roundCountdown -= 1
                 forceUpdate()
             }
         }
-
         /*
         FROM HERE INTO LOGIC MODULE
         */
-
         //last call
         setTimeout(() => {
             decrease()
@@ -435,15 +452,62 @@ export default function Match(props:MatchProps) {
             span += 1000
             diffS -= 1
         }
-
         /*
         UNTIL HERE
         */
+
+        //save solution of round
+        let cur = ref_tweets.current[ref_state.current.roundIndex]
+        ref_roundSolution.current.t_userName = cur.t_userName
+        ref_roundSolution.current.t_userTag = cur.t_userTag
+        ref_roundSolution.current.t_userVerified = cur.t_userVerified
+        ref_roundSolution.current.t_profileURL = cur.t_profileURL
+        ref_roundSolution.current.t_userPicURL = cur.t_userPicURL
+        ref_roundSolution.current.t_tweetURL = cur.t_tweetURL
+
+        //hide solution in current
+        ref_tweets.current[ref_state.current.roundIndex].t_userName = '???'
+        ref_tweets.current[ref_state.current.roundIndex].t_userTag = '???'
+        ref_tweets.current[ref_state.current.roundIndex].t_userVerified = true
+        ref_tweets.current[ref_state.current.roundIndex].t_profileURL = ''
+        ref_tweets.current[ref_state.current.roundIndex].t_userPicURL = ''
+        ref_tweets.current[ref_state.current.roundIndex].t_tweetURL = ''
+
+        log(`show round with index ${ref_state.current.roundIndex}`)
+        ref_state.current.roundActive = true
+        setStatus(Status.showRound, true)
     }
 
-    //4TH: SHOW ROUND SOLUTION
+    //4TH: SHOW OWN PICK
+    const showOwnSelection = (pick:Profile) => {
+
+        //set own pick in current
+        ref_tweets.current[ref_state.current.roundIndex].t_userName = pick.name
+        ref_tweets.current[ref_state.current.roundIndex].t_userTag = pick.screen_name
+        ref_tweets.current[ref_state.current.roundIndex].t_userVerified = pick.verified
+        ref_tweets.current[ref_state.current.roundIndex].t_profileURL = "https://twitter.com/" + pick.screen_name
+        ref_tweets.current[ref_state.current.roundIndex].t_userPicURL = pick.profile_image_url_https
+        ref_tweets.current[ref_state.current.roundIndex].t_tweetURL = ''
+        
+        log('show own pick: ' + pick.name)
+        setStatus(Status.showRound_OwnPick, true)
+    }
+
+    
+
+    //5TH: SHOW ROUND SOLUTION
     const showRoundSolution = () => {
-        log('finished round')
+
+        //set correct values in current
+        ref_tweets.current[ref_state.current.roundIndex].t_userName = ref_roundSolution.current.t_userName
+        ref_tweets.current[ref_state.current.roundIndex].t_userTag = ref_roundSolution.current.t_userTag
+        ref_tweets.current[ref_state.current.roundIndex].t_userVerified = ref_roundSolution.current.t_userVerified
+        ref_tweets.current[ref_state.current.roundIndex].t_profileURL = ref_roundSolution.current.t_profileURL
+        ref_tweets.current[ref_state.current.roundIndex].t_userPicURL = ref_roundSolution.current.t_userPicURL
+        ref_tweets.current[ref_state.current.roundIndex].t_tweetURL = ref_roundSolution.current.t_tweetURL
+
+        log('show solution')
+        ref_state.current.roundActive = false
         setStatus(Status.showRound_Solution, true)
     }
 
@@ -577,7 +641,7 @@ export default function Match(props:MatchProps) {
     }
 
     const onSelectAnswer = (profile:Profile) => {
-        log('selected answer: ' + profile.screen_name)
+        showOwnSelection(profile) 
     }
 
     const onNewChatMessage = (newMsg:ChatMsg) => {
@@ -726,6 +790,13 @@ export default function Match(props:MatchProps) {
                     {TweetComp.getComponent(ref_tweets.current[ref_state.current.roundIndex], pictureClick)}
                 </div>
         }
+        //SHOW OWN PICK 
+        else if (ref_state.current.status === Status.showRound_OwnPick) {
+            return content = 
+                <div className={st.Tweet_Con}>
+                    {TweetComp.getComponent(ref_tweets.current[ref_state.current.roundIndex], pictureClick)}
+                </div>
+        }
         //SHOW SOLUTION 
         else if (ref_state.current.status === Status.showRound_Solution) {
             return content = 
@@ -755,6 +826,7 @@ export default function Match(props:MatchProps) {
         let props:NavProps = {
             profiles: ref_profiles.current,
             onSelectAnswer: onSelectAnswer,
+            roundActive: ref_state.current.roundActive,
             chatmessages: ref_chat.current,
             onNewMessage: onNewChatMessage,
             settings: ref_settings_match.current,

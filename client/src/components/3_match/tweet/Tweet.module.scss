@@ -95,9 +95,19 @@ $x: 40px;
   height: 16px;
 }
 
+.Verified_Icon_Disabled {
+  @extend .Verified_Icon;
+  opacity: 0.3;
+}
+
 .Twitter_Icon {
   height: 50px;
   margin: 5px;
+}
+
+.Twitter_Icon_Disabled {
+  @extend .Twitter_Icon;
+  opacity: 0.3;
 }
 
 /*#####################
@@ -144,6 +154,7 @@ $x: 40px;
   height: 250px;
   margin-top: 10px;
   display: flex;
+  cursor: pointer;
 }
 // 1
 .OnePic {

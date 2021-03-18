@@ -24,7 +24,7 @@ $sdbg: false; //show debugging background = sdbg
 
 .userCard_Con_Disabled {
   @extend .userCard_Con;
-  opacity: 0.2 !important; //make it see through
+  opacity: 0.4 !important; //make it see through
 }
 
 .Actions_Con_Show {

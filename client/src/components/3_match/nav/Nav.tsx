@@ -21,6 +21,7 @@ import * as Settings from 'components/00_shared/settings/Settings'
 export interface NavProps {
     profiles: Profile[]
     onSelectAnswer: (profile:Profile) => void
+    roundActive: boolean
     chatmessages: ChatMsg[]
     onNewMessage: (newMsg:ChatMsg) => void
     settings: Settings.Settings_Match
@@ -39,6 +40,7 @@ export default function Nav(props:NavProps) {
             content = 
                 <TwitterProfileList
                     parentType={ProfilesUsage.Answer}
+                    roundActive={props.roundActive}
                     data={props.profiles}
                     onSelectAnswer={props.onSelectAnswer}
                 />
