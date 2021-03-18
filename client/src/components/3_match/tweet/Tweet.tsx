@@ -88,6 +88,41 @@ function TweetLogic(tweet:Tweet) {
         ###########################
                 TEXT
         ###########################
+        */
+
+         /*
+            TODO:
+                https://stackoverflow.com/a/27422629/6421228
+                https://dev.w3.org/html5/html-author/charref
+
+                -> https://ascii.cl/htmlcodes.htm !!!!!!
+
+                q
+                -> ampersand (&) is escaped to &amp; 
+                convert HTML codes into characters -> https://ascii.cl/htmlcodes.htm 
+        */
+        let htmlChars = {
+            quot: '"',
+            amp: '&',
+            lt: '<',
+            gt: '>',
+        }
+        //https://stackoverflow.com/a/43282001
+        function convertHTMLEntity(text:string){
+            const span = document.createElement('span')
+            return text
+            .replace(/&[#A-Za-z0-9]+;/gi, (entity,position,text)=> {
+                span.innerHTML = entity
+                return span.innerText
+            });
+        }
+        let dec_tweetText = convertHTMLEntity(tweet.c_text)
+        log(dec_tweetText)
+
+
+
+
+        /*
         Hashtags AND Usernames can only contain letters, numbers, and underscores (_) 
         -> no special characters
         */
@@ -106,35 +141,19 @@ function TweetLogic(tweet:Tweet) {
             }
         }
 
-        /*
-
-
-            TODO:
-                https://stackoverflow.com/a/27422629/6421228
-                https://dev.w3.org/html5/html-author/charref
-
-                -> https://ascii.cl/htmlcodes.htm !!!!!!
-
-                q
-                -> ampersand (&) is escaped to &amp; 
-
-
-        */
-
-
         log(tweet.c_text)
         //EXTRACT HASHTAGS
         let foundHastags:RegExpMatchArray = []
-        let hashtags = findSpecialWords(tweet.c_text)
+        let hashtags = findSpecialWords(dec_tweetText)
         if (hashtags) {foundHastags = hashtags}
         log(hashtags)
         //EXTRACT USERTAGS
         let foundTags:RegExpMatchArray = []
-        let tags = findSpecialWords(tweet.c_text, true)
+        let tags = findSpecialWords(dec_tweetText, true)
         if (tags) {foundTags = tags}
         log(tags)
         //split at line breaks
-        let blocks = tweet.c_text.split(/\r?\n/)
+        let blocks = dec_tweetText.split(/\r?\n/)
         log(blocks)
 
        
