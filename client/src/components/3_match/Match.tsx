@@ -63,6 +63,7 @@ interface State {
     status: Status
     statusMsg: string //for everyone joined
 
+    startCountdown: number
     roundIndex: number
     roundStarts: Date
     roundEnds: Date
@@ -74,6 +75,7 @@ const init_state:State = {
     matchID: '',
     status: Status.init,
     statusMsg: '',
+    startCountdown: -1,
     roundIndex: -1,
     roundStarts: new Date(),
     roundEnds: new Date(),
@@ -88,6 +90,7 @@ interface Point {
     answer: string      //chosen usertag
     correct: boolean    //evaluation
     timeMS: number      //answer time in Milliseconds
+    ready: boolean
 }
 const init_matrix:{[index:string] : Point[]} = {}
 interface Event_Matrix_Data {
@@ -199,7 +202,10 @@ export default function Match(props:MatchProps) {
                 setInitialValues(ref_username, LocalStorage.Username)
             }
 
-            cacheImages()
+            //dont cache images when set to Off
+            if (ref_settings_lobby.current.pictures !== Settings.Pictures.Off) {
+                cacheImages()
+            }
             createMatrix()
 
             //set welcome chat messages
@@ -281,7 +287,8 @@ export default function Match(props:MatchProps) {
                     goal: ref_tweets.current[i].t_userTag,
                     answer: '',
                     correct: false,
-                    timeMS: -1
+                    timeMS: -1,
+                    ready: false
                 }
                 points.push(point)
             }
@@ -408,9 +415,11 @@ export default function Match(props:MatchProps) {
                 channel.bind(Pu.EventType.Matrix, 
                     (data:Event_Matrix) => handleEvent_Matrix(data)
                 )
+                /*
                 channel.bind(Pu.EventType.Player, 
                     (data:Pu.Event) => handleEvent_Players(data)
                 )
+                */
                 channel.bind(Pu.EventType.Chat, 
                     (data:Pu.Event) => handleEvent_Chat(data)
                 )
@@ -509,23 +518,60 @@ export default function Match(props:MatchProps) {
         fireEvent_State()
     }
 
-    //3RD: SHOW ROUND
+    //3RD: Calculate start of new round and trigger countdown
+    const startRoundCountdown = () => {
+
+        log('start round countdown')
+        
+        //reset countdown
+        let diffS = 5
+        ref_state.current.startCountdown = diffS
+        forceUpdate()
+        
+        //logic for decrease timeout
+        const decrease = () => {
+            ref_state.current.startCountdown -= 1
+            forceUpdate()
+        }
+
+        /*
+        FROM HERE INTO LOGIC MODULE AND REMOVE COUNTDOWN COMPONENT
+        */
+        //last call
+        setTimeout(() => {
+            decrease()
+            showRound()
+        }, diffS*1000)
+        //intermediate calls
+        let span = 1000
+        while (diffS > 1) { //>1 -> skip last call
+            setTimeout(() => {
+                decrease()
+            }, span)
+            span += 1000
+            diffS -= 1
+        }
+        /*
+        UNTIL HERE
+        */
+    }
+
+    //4TH: SHOW ROUND
     const showRound = () => {
 
-        //reset countdown
-        ref_state.current.roundCountdown = ref_settings_lobby.current.roundtime
         //calc differnce until target date
         let diffS = ref_settings_lobby.current.roundtime
 
         //logic for decrease timeout
         const decrease = () => {
-            if (ref_state.current.status === Status.showRound || ref_state.current.status === Status.showRound_OwnPick) {
-                ref_state.current.roundCountdown -= 1
-                forceUpdate()
+            if (ref_state.current.status === Status.showRound || 
+                ref_state.current.status === Status.showRound_OwnPick) {
+                    ref_state.current.roundCountdown -= 1
+                    forceUpdate()
             }
         }
         /*
-        FROM HERE INTO LOGIC MODULE
+        FROM HERE INTO LOGIC MODULE AND REMOVE COUNTDOWN COMPONENT
         */
         //last call
         setTimeout(() => {
@@ -567,7 +613,7 @@ export default function Match(props:MatchProps) {
         setStatus(Status.showRound, true)
     }
 
-    //4TH: SHOW OWN PICK
+    //5TH: SHOW OWN PICK
     const showOwnSelection = (pick:Profile) => {
 
         //set own pick in current
@@ -593,10 +639,10 @@ export default function Match(props:MatchProps) {
         setStatus(Status.showRound_OwnPick, true)
     }
 
-    //5TH: SHOW ROUND SOLUTION
+    //6TH: SHOW ROUND SOLUTION
     const showRoundSolution = () => {
 
-        //set correct values in current
+        //set solution in current
         ref_tweets.current[ref_state.current.roundIndex].t_userName = ref_state.current.roundSolution.t_userName
         ref_tweets.current[ref_state.current.roundIndex].t_userTag = ref_state.current.roundSolution.t_userTag
         ref_tweets.current[ref_state.current.roundIndex].t_userVerified = ref_state.current.roundSolution.t_userVerified
@@ -604,22 +650,27 @@ export default function Match(props:MatchProps) {
         ref_tweets.current[ref_state.current.roundIndex].t_userPicURL = ref_state.current.roundSolution.t_userPicURL
         ref_tweets.current[ref_state.current.roundIndex].t_tweetURL = ref_state.current.roundSolution.t_tweetURL
 
+        //remove temp values in solution
+        ref_state.current.roundSolution.t_userName = ''
+        ref_state.current.roundSolution.t_userTag = ''
+        ref_state.current.roundSolution.t_userVerified = false
+        ref_state.current.roundSolution.t_profileURL = ''
+        ref_state.current.roundSolution.t_userPicURL = ''
+        ref_state.current.roundSolution.t_tweetURL = ''
+
+        //reset vars
+        ref_state.current.roundCountdown = ref_settings_lobby.current.roundtime ///WORKING???
+        //show solution
         log('show solution')
         ref_state.current.roundActive = false
         setStatus(Status.showRound_Solution, true)
     }
 
-
-
-    //helper function
+    //7TH: SET READY (-> next round if everyone ready)
     const setYourselfReady = () => {
-        //set yourself ready
-        ref_players.current.forEach((player) => {
-            if (player.name === ref_username.current) {
-                player.ready = true
-            }
-        })
-        fireEvent_Players()
+        let point:Point = ref_matrix.current[ref_username.current][ref_state.current.roundIndex]
+        point.ready = true
+        fireEvent_Matrix(point)
     }
 
     /*
@@ -642,7 +693,12 @@ export default function Match(props:MatchProps) {
         ref_state.current = newState
         forceUpdate()
 
-        //ADMIN EVENTS
+        //start round countdown
+        if (ref_state.current.status === Status.startRoundcountdown) {
+            startRoundCountdown()
+        }
+
+        //ADMIN calculates round
         if (isAdmin()) {
             if (ref_state.current.status === Status.calcRound) {
                 calculateRound()
@@ -674,9 +730,17 @@ export default function Match(props:MatchProps) {
             return
         }
         //set new matrix point
-        ref_matrix.current[event.data.player][event.data.round] = event.data.point
+        let d:Event_Matrix_Data = event.data
+        ref_matrix.current[d.player][d.round] = d.point
         log('new point:')
         log(ref_matrix.current)
+
+        //ADMIN starts next round if everyone is ready
+        if (isAdmin() && ref_state.current.status === Status.showRound_Solution) {
+            log('everyone ready -> next round')
+            setStatus(Status.calcRound)
+            fireEvent_State()
+        }
     }
 
     const fireEvent_Matrix = async (point:Point) => {
@@ -700,7 +764,7 @@ export default function Match(props:MatchProps) {
             EVENT: Players
     ##################################
     ##################################
-    */
+    
     const handleEvent_Players = (event:Pu.Event) => {
         //security
         if (event.type !== Pu.EventType.Player) {
@@ -722,6 +786,7 @@ export default function Match(props:MatchProps) {
         //trigger
         Pu.triggerEvent(getMatchName(), event.type, event)
     }
+    */
 
     /*
     ##################################
@@ -760,18 +825,10 @@ export default function Match(props:MatchProps) {
     /*
     ##################################
     ##################################
-                HANDLERS 
+        PASSED TO CHILD COMP 
     ##################################
     ##################################
     */
-    const onReadyClick = () => {
-        setYourselfReady()
-    }
-
-    const onNextRoundCountdownFinished = () => {
-        showRound()
-    }
-
     const onSelectAnswer = (profile:Profile) => {
         showOwnSelection(profile) 
     }
@@ -887,7 +944,7 @@ export default function Match(props:MatchProps) {
                         />
                     </div>
                     {!userIsReady() && 
-                        <button className={st.Button_Ready} onClick={() => onReadyClick()}>
+                        <button className={st.Button_Ready} onClick={() => setYourselfReady()}>
                             I am Ready
                         </button>
                     }
@@ -911,7 +968,7 @@ export default function Match(props:MatchProps) {
                         Round {ref_state.current.roundIndex + 1} starts in:
                     </div>
                     <div>
-                        {Countdown(ref_state.current.roundStarts, onNextRoundCountdownFinished)}
+                        {ref_state.current.startCountdown}
                     </div>
                 </div>
         }
@@ -942,6 +999,24 @@ export default function Match(props:MatchProps) {
         return content
     }
 
+    const getReadyCountdownComp = () => {
+
+        if (ref_state.current.status === Status.showRound_Solution) {
+
+            //CARE ABOUT LAST ROUND
+
+            //show roundtime when user is ready!
+            return  <button className={st.Button_Ready} onClick={() => setYourselfReady()}>
+                        Ready
+                    </button>
+        }
+        else {
+            return  <div className={st.Clock} title="Time">
+                        {ref_state.current.roundCountdown}
+                    </div>
+        }
+    }
+
     const getNavComp = () => {
         let props:NavProps = {
             profiles: ref_profiles.current,
@@ -968,9 +1043,7 @@ export default function Match(props:MatchProps) {
             </div>
             <div className={st.Right_Con}>
                 <div className={st.Info_Con}>
-                    <div className={st.Clock} title="Time">
-                        {ref_state.current.roundCountdown}
-                    </div>
+                    {getReadyCountdownComp()}
                     <div className={st.Round} title="Round">
                         {(ref_state.current.roundIndex + 1)+ '/' + ref_settings_lobby.current.rounds}
                     </div>

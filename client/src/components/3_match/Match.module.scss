@@ -117,18 +117,6 @@ $sdbg: false; //show debugging background = sdbg
   ################################
 */
 
-.AutoContinue_Con {
-  width: 50%;
-  margin-bottom: 15px;
-  text-align: center;
-  @extend .HelveticaNeueBoldFont;
-}
-
-.Players_Con {
-  width: 50%;
-  margin-bottom: 15px;
-}
-
 .Button_Ready {
   @extend .Button_Base;
   flex-shrink: 0;
@@ -136,6 +124,19 @@ $sdbg: false; //show debugging background = sdbg
   &:hover {
     background-color: rgba($ready_colour, 0.6);
   }
+}
+
+//OBSOLETE
+.AutoContinue_Con {
+  width: 50%;
+  margin-bottom: 15px;
+  text-align: center;
+  @extend .HelveticaNeueBoldFont;
+}
+//OBSOLETE
+.Players_Con {
+  width: 50%;
+  margin-bottom: 15px;
 }
 
 /*
