@@ -29,9 +29,10 @@ $sdbg: false; //show debugging background = sdbg
 }
 
 .Icon {
-  cursor: pointer;
   margin-left: 10px;
   margin-right: 10px;
+  display: flex;
+  cursor: pointer;
 }
 
 .Link {
@@ -39,11 +40,10 @@ $sdbg: false; //show debugging background = sdbg
   padding-right: 12px;
   cursor: pointer;
 
-  //font-family: Courier New;
-  font-family: STCaiyun;
+  font-family: Helvetica, Arial, sans-serif;
+  font-size: 10pt;
   text-align: center;
   font-weight: lighter;
   text-decoration: none;
   color: black;
-  font-size: calc(3px + 2vmin);
 }

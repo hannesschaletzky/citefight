@@ -521,6 +521,8 @@ export default function Match(props:MatchProps) {
     //3RD: Calculate start of new round and trigger countdown
     const startRoundCountdown = () => {
 
+        //ADJUST TO CALCULATE FOR ROUND START DATE FROM STATE ETC!!!!!!!!
+
         log('start round countdown')
         
         //reset countdown
@@ -737,6 +739,9 @@ export default function Match(props:MatchProps) {
 
         //ADMIN starts next round if everyone is ready
         if (isAdmin() && ref_state.current.status === Status.showRound_Solution) {
+
+            //CHECK IF EVERYONE IS READY MISSING!!!!
+
             log('everyone ready -> next round')
             setStatus(Status.calcRound)
             fireEvent_State()

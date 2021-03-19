@@ -17,6 +17,19 @@
   font-weight: normal;
 }
 
+/*CUSTOM*/
+@font-face {
+  font-family: "Test_1";
+  src: local("Test_1"), url("./assets/fonts/Test_1.ttf") format("truetype");
+  font-weight: normal;
+}
+
+@font-face {
+  font-family: "Test_2";
+  src: local("Test_2"), url("./assets/fonts/Test_2.ttf") format("truetype");
+  font-weight: normal;
+}
+
 /*system*/
 body {
   margin: 0;

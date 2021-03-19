@@ -3,6 +3,10 @@ $sdbg: false; //show debugging background = sdbg
 
 //full screen body functioning as base
 .Root_Body {
+  //CUSTOM
+  font-family: "Test_1";
+  font-size: 25pt;
+  //CUSTOM
   position: absolute;
   top: 0;
   right: 0;
