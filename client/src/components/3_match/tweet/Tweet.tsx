@@ -209,7 +209,7 @@ function TweetLogic(props:Props) {
                 let usertag = isUsertag(word)
                 //check hashtag
                 if (hashtag !== "") {
-                    text.push(  <a className={st.Link} href={"https://twitter.com/hashtag/" + word.substring(1)} target="_blank" rel="noreferrer" title="View hastag">
+                    text.push(  <a className={st.Link} key={grk()} href={"https://twitter.com/hashtag/" + word.substring(1)} target="_blank" rel="noreferrer" title="View hastag">
                                     <span className={st.Text_Link} key={grk()}>{hashtag}</span>
                                 </a>)
                     let rest = word.replace(hashtag, "") //like: '#MalalaDay,' -> ','
@@ -219,7 +219,7 @@ function TweetLogic(props:Props) {
                 }
                 //check usertag
                 else if (usertag !== "") {
-                    text.push(  <a className={st.Link} href={"https://twitter.com/" + word.substring(1)} target="_blank" rel="noreferrer" title="View profile">
+                    text.push(  <a className={st.Link} key={grk()} href={"https://twitter.com/" + word.substring(1)} target="_blank" rel="noreferrer" title="View profile">
                                     <span className={st.Text_Link} key={grk()}>{usertag}</span>
                                 </a>)
                     let rest = word.replace(usertag, "") //like: '@Malala!' -> '!'

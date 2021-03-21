@@ -1,5 +1,6 @@
 import {Profile} from 'components/Interfaces'
 import {ChatMsg} from 'components/Interfaces'
+import {Matrix} from 'components/Interfaces'
 import * as Not from 'components/00_shared/notification/Notification'
 
 
@@ -27,7 +28,7 @@ export interface MatchProps {
     NAVIGATION PANEL IN MATCH
 */
 export interface RankingProps {
-    test: string
+    matrix: Matrix
 }
 export interface ChatProps {
     messages: ChatMsg[]

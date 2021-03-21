@@ -19,95 +19,46 @@ $sdbg: false; //show debugging background = sdbg
   height: 20px;
   display: flex;
 
-  font-family: STCaiyun;
-  font-size: 20px;
+  @if $sdbg {
+    background-color: rgb(192, 192, 240);
+  }
+}
 
-  padding-left: 8px;
+.Cards_Con {
+  height: 100%;
+  width: 100%;
+  margin-top: 10px;
+  overflow-y: scroll;
+  @if $sdbg {
+    background-color: rgb(135, 22, 241);
+  }
+}
+
+.Card_Con {
+  height: 30px;
+  margin-bottom: 5px;
+  padding: 3px;
   padding-right: 8px;
-  margin-bottom: 4px;
-
-  @if $sdbg {
-    background-color: rgb(192, 192, 240);
-  }
-}
-
-.Headline_Place {
-  width: 15%;
-  @if $sdbg {
-    background-color: rgb(135, 22, 241);
-  }
-}
-
-.Headline_Name {
-  width: 60%;
-  @if $sdbg {
-    background-color: rgb(112, 103, 121);
-  }
-}
-
-.Headline_Points {
-  width: 10%;
-  @if $sdbg {
-    background-color: rgb(138, 133, 143);
-  }
-}
-
-.Headline_TotalTime {
-  width: 20%;
-  text-align: right;
-  padding-right: 2px;
-  @if $sdbg {
-    background-color: rgb(164, 102, 231);
-  }
-}
-
-.Icon {
-  width: 17px;
-}
-
-.User_Con {
-  height: 20px;
+  padding-left: 8px;
   display: flex;
+  align-items: center;
 
-  padding: 8px;
-  margin-bottom: 8px;
-
-  //border
-  border: 1.7px solid;
-  border-color: rgba(194, 192, 192, 0.75);
-  border-radius: 8px;
-
-  @if $sdbg {
-    background-color: rgb(192, 192, 240);
-  }
-}
-
-.Place {
-  width: 15%;
-  @if $sdbg {
-    background-color: rgb(135, 22, 241);
-  }
+  @extend .borderWithRoundedCorners;
 }
 
 .Name {
-  width: 60%;
-  overflow-x: hidden;
-  @if $sdbg {
-    background-color: rgb(112, 103, 121);
-  }
+  overflow: scroll;
+  flex: 2;
 }
 
 .Points {
-  width: 10%;
-  @if $sdbg {
-    background-color: rgb(138, 133, 143);
-  }
+  flex: 1;
+  display: flex;
+  justify-content: center;
 }
 
-.TotalTime {
-  width: 20%;
-  text-align: right;
-  @if $sdbg {
-    background-color: rgb(164, 102, 231);
-  }
+.Time {
+  flex: 1;
+  display: flex;
+  justify-content: flex-end;
 }

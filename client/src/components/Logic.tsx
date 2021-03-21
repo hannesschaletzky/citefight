@@ -26,6 +26,23 @@ export function isValidMatchID(url:string):string | null {
     return matchID
 }
 
+//countdown in seconds
+export function setCountdown(diffS:number, diffMS:number, decrease:() => void, finished:() => void) {
+    setTimeout(() => {
+        decrease()
+        finished()
+    }, diffMS)
+    //intermediate calls
+    let span = 1000
+    while (diffS > 1) { //>1 -> skip last call
+        setTimeout(() => {
+            decrease()
+        }, span)
+        span += 1000
+        diffS -= 1
+    }
+}
+
 
 export function log(item:any):void {
     if (process.env.NODE_ENV === 'development') {

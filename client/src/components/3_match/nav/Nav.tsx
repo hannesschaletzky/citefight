@@ -9,6 +9,7 @@ import Settings_Icon from 'assets/nav/Settings.png'
 import {ProfilesUsage} from 'components/Interfaces'
 import {Profile} from 'components/Interfaces'
 import {ChatMsg} from 'components/Interfaces'
+import {Matrix} from 'components/Interfaces'
 //functional-interface
 import {RankingProps} from 'components/Functional_Interfaces'
 //components
@@ -26,6 +27,7 @@ export interface NavProps {
     onNewMessage: (newMsg:ChatMsg) => void
     settings: Settings.Settings_Match
     onSettingsChanged: (newSettings:Settings.Settings_Match) => void
+    matrix: Matrix
     onNotfication: (msg:string, notType:Not.Type) => void
 }
 
@@ -47,10 +49,10 @@ export default function Nav(props:NavProps) {
         }
         //RANKING
         else if (lobbyIndex === 1) {
-            let newProps:RankingProps = {
-                test: ''
+            let props_:RankingProps = {
+                matrix: props.matrix
             }
-            const comp = React.createElement(Ranking, newProps)
+            const comp = React.createElement(Ranking, props_)
             content = comp
         }
         //CHAT

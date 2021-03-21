@@ -65,6 +65,15 @@ export interface ChatMsg {
     t: SysMsgType;  //type
 }
 
+export type Matrix = {[index:string] : Point[]}
+export interface Point {
+    goal: string        //target usertag
+    answer: string      //chosen usertag
+    correct: boolean    //evaluation
+    timeMS: number      //answer time in Milliseconds
+    ready: boolean
+}
+
 /*
     TWEET 
 */

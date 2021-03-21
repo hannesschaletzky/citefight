@@ -10,17 +10,17 @@ import {LocalStorage} from 'components/Interfaces'
 import {Player} from 'components/Interfaces'
 import {Profile} from 'components/Interfaces'
 import {Tweet} from 'components/Interfaces'
+import {Matrix, Point} from 'components/Interfaces'
 import {ChatMsg, SysMsgType} from 'components/Interfaces'
 //functional interfaces
 import {MatchProps} from 'components/Functional_Interfaces'
 //logic
-import {isValidMatchID} from 'components/Logic'
+import {isValidMatchID, setCountdown} from 'components/Logic'
 //pusher
 import * as Pu from 'components/pusher/Pusher'
 //components
 import Players from '../2_setup/players/Players'
 import Nav, {NavProps} from './nav/Nav'
-import Countdown from './Countdown'
 import * as Chat from 'components/00_shared/chat/Chat'
 import * as Settings from 'components/00_shared/settings/Settings'
 import * as Not from 'components/00_shared/notification/Notification'
@@ -66,7 +66,6 @@ interface State {
     startCountdown: number
     roundIndex: number
     roundStarts: Date
-    roundEnds: Date
     roundCountdown: number
     roundActive: boolean
     roundSolution: RoundSolution
@@ -78,21 +77,13 @@ const init_state:State = {
     startCountdown: -1,
     roundIndex: -1,
     roundStarts: new Date(),
-    roundEnds: new Date(),
     roundCountdown: -1,
     roundActive: false,
     roundSolution: init_roundSolution
 }
 
 //MATRIX
-interface Point {
-    goal: string        //target usertag
-    answer: string      //chosen usertag
-    correct: boolean    //evaluation
-    timeMS: number      //answer time in Milliseconds
-    ready: boolean
-}
-const init_matrix:{[index:string] : Point[]} = {}
+const init_matrix:Matrix = {}
 interface Event_Matrix_Data {
     player: string
     round: number
@@ -307,6 +298,10 @@ export default function Match(props:MatchProps) {
     ##################################
     */
 
+    const getPointFor = (playerName:string = ref_username.current):Point => {
+        return ref_matrix.current[playerName][ref_state.current.roundIndex]
+    }
+
     const addSysMsg = (type:SysMsgType, inputMsg:string) => {
         Chat.addSysMsg(type, inputMsg, ref_chat)
     }
@@ -415,11 +410,6 @@ export default function Match(props:MatchProps) {
                 channel.bind(Pu.EventType.Matrix, 
                     (data:Event_Matrix) => handleEvent_Matrix(data)
                 )
-                /*
-                channel.bind(Pu.EventType.Player, 
-                    (data:Pu.Event) => handleEvent_Players(data)
-                )
-                */
                 channel.bind(Pu.EventType.Chat, 
                     (data:Pu.Event) => handleEvent_Chat(data)
                 )
@@ -502,16 +492,10 @@ export default function Match(props:MatchProps) {
         //increment round
         ref_state.current.roundIndex += 1
 
-        //round start/end time
-        let startCountdown = 3
+        //set round start time
         let start = new Date()
-        let end = new Date()
-        //start
-        start.setSeconds(start.getSeconds() + startCountdown)
+        start.setSeconds(start.getSeconds() + 3)
         ref_state.current.roundStarts = start
-        //end
-        end.setSeconds(end.getSeconds() + startCountdown + ref_settings_lobby.current.roundtime)
-        ref_state.current.roundEnds = end
 
         //start round-countdown
         setStatus(Status.startRoundcountdown)
@@ -521,12 +505,15 @@ export default function Match(props:MatchProps) {
     //3RD: Calculate start of new round and trigger countdown
     const startRoundCountdown = () => {
 
-        //ADJUST TO CALCULATE FOR ROUND START DATE FROM STATE ETC!!!!!!!!
-
         log('start round countdown')
-        
+
+        //calc differnce until target date
+        let now = new Date()
+        let ref = new Date(ref_state.current.roundStarts)
+        let diffMS = ref.getTime() - now.getTime() //milliseconds 
+        let diffS = Math.round(diffMS/1000) //seconds -> rounded
+
         //reset countdown
-        let diffS = 5
         ref_state.current.startCountdown = diffS
         forceUpdate()
         
@@ -536,26 +523,7 @@ export default function Match(props:MatchProps) {
             forceUpdate()
         }
 
-        /*
-        FROM HERE INTO LOGIC MODULE AND REMOVE COUNTDOWN COMPONENT
-        */
-        //last call
-        setTimeout(() => {
-            decrease()
-            showRound()
-        }, diffS*1000)
-        //intermediate calls
-        let span = 1000
-        while (diffS > 1) { //>1 -> skip last call
-            setTimeout(() => {
-                decrease()
-            }, span)
-            span += 1000
-            diffS -= 1
-        }
-        /*
-        UNTIL HERE
-        */
+        setCountdown(diffS, diffMS, decrease, showRound)
     }
 
     //4TH: SHOW ROUND
@@ -572,26 +540,8 @@ export default function Match(props:MatchProps) {
                     forceUpdate()
             }
         }
-        /*
-        FROM HERE INTO LOGIC MODULE AND REMOVE COUNTDOWN COMPONENT
-        */
-        //last call
-        setTimeout(() => {
-            decrease()
-            showRoundSolution()
-        }, diffS*1000)
-        //intermediate calls
-        let span = 1000
-        while (diffS > 1) { //>1 -> skip last call
-            setTimeout(() => {
-                decrease()
-            }, span)
-            span += 1000
-            diffS -= 1
-        }
-        /*
-        UNTIL HERE
-        */
+        
+        setCountdown(diffS, diffS*1000, decrease, showRoundSolution)
 
         //save solution of round
         let cur = ref_tweets.current[ref_state.current.roundIndex]
@@ -627,10 +577,10 @@ export default function Match(props:MatchProps) {
         ref_tweets.current[ref_state.current.roundIndex].t_tweetURL = ''
         
         //calculate new point
-        let point:Point = ref_matrix.current[ref_username.current][ref_state.current.roundIndex]
+        let point:Point = getPointFor()
         point.answer = pick.screen_name
         point.correct = (point.answer === point.goal)
-        point.timeMS = 12345 //@@@ TODO!!!
+        point.timeMS = 0 //@@@ TODO!!!
         //set
         //ref_matrix.current[ref_username.current][ref_state.current.roundIndex] = point
         //broadcast
@@ -661,7 +611,7 @@ export default function Match(props:MatchProps) {
         ref_state.current.roundSolution.t_tweetURL = ''
 
         //reset vars
-        ref_state.current.roundCountdown = ref_settings_lobby.current.roundtime ///WORKING???
+        ref_state.current.roundCountdown = ref_settings_lobby.current.roundtime
         //show solution
         log('show solution')
         ref_state.current.roundActive = false
@@ -670,9 +620,13 @@ export default function Match(props:MatchProps) {
 
     //7TH: SET READY (-> next round if everyone ready)
     const setYourselfReady = () => {
-        let point:Point = ref_matrix.current[ref_username.current][ref_state.current.roundIndex]
+        //broadcast point
+        let point:Point = getPointFor()
         point.ready = true
         fireEvent_Matrix(point)
+        //manually adjust UI
+        ref_matrix.current[ref_username.current][ref_state.current.roundIndex].ready = true
+        forceUpdate()
     }
 
     /*
@@ -739,9 +693,15 @@ export default function Match(props:MatchProps) {
 
         //ADMIN starts next round if everyone is ready
         if (isAdmin() && ref_state.current.status === Status.showRound_Solution) {
-
-            //CHECK IF EVERYONE IS READY MISSING!!!!
-
+            
+            //check if everyone is ready
+            for(let i=0;i<ref_players.current.length;i++) {
+                let player = ref_players.current[i]
+                if (!getPointFor(player.name).ready) {
+                    return
+                }
+            }
+            
             log('everyone ready -> next round')
             setStatus(Status.calcRound)
             fireEvent_State()
@@ -762,36 +722,6 @@ export default function Match(props:MatchProps) {
         //trigger
         Pu.triggerEvent(getMatchName(), event.type, event)
     }
-
-    /*
-    ##################################
-    ##################################
-            EVENT: Players
-    ##################################
-    ##################################
-    
-    const handleEvent_Players = (event:Pu.Event) => {
-        //security
-        if (event.type !== Pu.EventType.Player) {
-            log('EventType mismatch in handleEvent_Player:\n\n' + event)
-            return
-        }
-        //set new players
-        let newPlayers:Player[] = event.data
-        ref_players.current = newPlayers
-        forceUpdate()
-    }
-
-    const fireEvent_Players = async () => {
-        //prepare
-        let event:Pu.Event = {
-            type: Pu.EventType.Player,
-            data: ref_players.current
-        }
-        //trigger
-        Pu.triggerEvent(getMatchName(), event.type, event)
-    }
-    */
 
     /*
     ##################################
@@ -996,8 +926,6 @@ export default function Match(props:MatchProps) {
             return content = 
                 <div className={st.Tweet_Con}>
                     {TweetComp.getComponent(ref_tweets.current[ref_state.current.roundIndex], pictureClick)}
-                    <button onClick={() => {ref_state.current.roundIndex-=1;forceUpdate()}}>Prev Tweet</button>
-                    <button onClick={() => {ref_state.current.roundIndex+=1;forceUpdate()}}>Next Tweet</button>
                 </div>
         }
         
@@ -1006,7 +934,8 @@ export default function Match(props:MatchProps) {
 
     const getReadyCountdownComp = () => {
 
-        if (ref_state.current.status === Status.showRound_Solution) {
+        if (ref_state.current.status === Status.showRound_Solution &&
+            !getPointFor().ready) {
 
             //CARE ABOUT LAST ROUND
 
@@ -1031,6 +960,7 @@ export default function Match(props:MatchProps) {
             onNewMessage: onNewChatMessage,
             settings: ref_settings_match.current,
             onSettingsChanged: onSettingsChanged,
+            matrix: ref_matrix.current,
             onNotfication: showNotification
         }
         return React.createElement(Nav, props)

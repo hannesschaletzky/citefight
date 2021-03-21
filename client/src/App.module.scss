@@ -4,8 +4,8 @@ $sdbg: false; //show debugging background = sdbg
 //full screen body functioning as base
 .Root_Body {
   //CUSTOM
-  font-family: "Test_1";
-  font-size: 25pt;
+  //font-family: "Test_1";
+  //font-size: 25pt;
   //CUSTOM
   position: absolute;
   top: 0;
@@ -35,7 +35,7 @@ $sdbg: false; //show debugging background = sdbg
 .Root_Content {
   margin-top: $header_height;
   margin-bottom: $footer_height;
-  height: -webkit-fill-available;
+  height: 78%;
   overflow-y: scroll;
   //indent content from all sides
   padding: 20px;
