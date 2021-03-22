@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+/* eslint-disable react-hooks/exhaustive-deps */
+import React, { useState, useEffect } from 'react';
 import st from './Nav.module.scss';
 //ui-elements
 import Answer_Icon from 'assets/nav/Answer.png'
@@ -35,7 +36,16 @@ export interface NavProps {
 
 export default function Nav(props:NavProps) {
     const [lobbyIndex, setLobbyIndex] = useState(0) //default to search
-    
+    const [lastRound, setLastRound] = useState(-1)
+
+    useEffect(() => {
+        //when round starts, go to answers (once)
+        if (props.roundActive && lastRound !== props.roundUntil) {
+            setLastRound(props.roundUntil)
+            setLobbyIndex(0)
+        }
+    })
+
     const getLobbyContent = () => {
         
         let content = <div></div>

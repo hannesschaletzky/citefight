@@ -6,7 +6,6 @@ import {log} from 'components/Logic'
 import TwitterProfileList from 'components/00_shared/profiles/TwitterProfileList'
 import CircularProgress from '@material-ui/core/CircularProgress';
 import TwitterIcon from 'assets/footer/Twitter_Icon.png'
-import TwitterIconBlack from 'assets/user/Twitter_Black.png'
 //logic
 import {didUserExceedLimit} from 'components/Logic'
 //interfaces
@@ -54,7 +53,7 @@ export default function Search(props:SearchProps) {
     const [lastSearchString, setLastSearchString] = useState("");
     const [searchEnabled, setSearchEnabled] = useState(false);
     const [loading, setLoading] = useState(false);
-    const [twitterStatus, setTwitterStatus] = useState(TwitterStatus.none)
+    const [twitterStatus,] = useState(TwitterStatus.none)
     //const [tokenStatus, setTokenStatus] = useState(TokenStatus.init)
     //const [tokenVerifyStatus, setTokenVerifyStatus] = useState(TokenVerify.init)
     //const [redirectURL, setRedirectURL] = useState('')
@@ -458,10 +457,6 @@ export default function Search(props:SearchProps) {
                         <div className={st.Empty_Caption}>
                             Search for public Twitter profiles and add them by clicking the card.
                         </div>
-                        <img className={st.Empty_Icon} 
-                            src={TwitterIconBlack} 
-                            alt="Twitter"
-                        />
                     </div>
                 }
                 {userObjects.length !== 0  && 

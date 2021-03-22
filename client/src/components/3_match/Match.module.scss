@@ -56,6 +56,18 @@ $sdbg: false; //show debugging background = sdbg
   justify-content: center;
 }
 
+.StartCountdown_Caption {
+  @extend .HelveticaNeueBoldFont;
+  text-align: center;
+}
+
+.StartCountdown_Number {
+  margin-top: 10px;
+  @extend .HelveticaNeueBoldFont;
+  font-size: 30px;
+  text-align: center;
+}
+
 .Tweet_Con {
   width: 95%;
   //height: 60%;
@@ -83,6 +95,7 @@ $sdbg: false; //show debugging background = sdbg
   height: 10%;
   display: flex;
   justify-content: space-between;
+  align-items: center;
 }
 
 .Info_Base {

@@ -526,7 +526,7 @@ export default function Match(props:MatchProps) {
             ref_state.current.startCountdown -= 1
             forceUpdate()
         }
-
+        
         setCountdown(diffS, diffMS, decrease, showRound)
     }
 
@@ -655,16 +655,14 @@ export default function Match(props:MatchProps) {
         ref_state.current = newState
         forceUpdate()
 
-        //start round countdown
+        //start round countdown for everyone
         if (ref_state.current.status === Status.startRoundcountdown) {
             startRoundCountdown()
         }
 
         //ADMIN calculates round
-        if (isAdmin()) {
-            if (ref_state.current.status === Status.calcRound) {
-                calculateRound()
-            }
+        if (isAdmin() && ref_state.current.status === Status.calcRound) {
+            calculateRound()
         }
     }
 
@@ -696,7 +694,7 @@ export default function Match(props:MatchProps) {
         ref_matrix.current[d.player][d.round] = d.point
         log('new point:')
         log(ref_matrix.current)
-        
+
         //update UI -> see how answered already
         if (ref_state.current.status === Status.showRound) {
             forceUpdate()
@@ -914,10 +912,10 @@ export default function Match(props:MatchProps) {
         else if (ref_state.current.status === Status.startRoundcountdown) {
             return content = 
                 <div className={st.Content_Con}>
-                    <div>
+                    <div className={st.StartCountdown_Caption}>
                         Round {ref_state.current.roundIndex + 1} starts in:
                     </div>
-                    <div>
+                    <div className={st.StartCountdown_Number}>
                         {ref_state.current.startCountdown}
                     </div>
                 </div>

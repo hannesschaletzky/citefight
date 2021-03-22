@@ -4,7 +4,7 @@ import st from './Ranking.module.scss'
 import {RankingProps} from 'components/Functional_Interfaces'
 //import {Matrix, Point} from 'components/Interfaces'
 //interfaces
-import * as Sorting from './Sorting'
+import * as Sorting from './Ranking_Sorting'
 
 export default function Ranking(props:RankingProps) {
     
@@ -34,6 +34,13 @@ export default function Ranking(props:RankingProps) {
             gP('GOAL', '____', 1000),
         ]
         matrix["Bea"] = [
+            gP('GOAL', 'GOAL', 1000),
+            gP('GOAL', 'GOAL', 1000),
+            gP('GOAL', 'GOAL', 1000),
+            gP('GOAL', 'GOAL', 1000),
+            gP('GOAL', 'GOAL', 1000),
+        ]
+        matrix["Bea1233"] = [
             gP('GOAL', 'GOAL', 1000),
             gP('GOAL', 'GOAL', 1000),
             gP('GOAL', 'GOAL', 1000),
@@ -89,6 +96,13 @@ export default function Ranking(props:RankingProps) {
             gP('GOAL', 'GOAL', 1000),
             gP('GOAL', 'GOAL', 1000),
         ]
+        matrix["Tobi123"] = [
+            gP('GOAL', 'GOAL', 500),
+            gP('GOAL', 'GOAL', 500),
+            gP('GOAL', 'GOAL', 500),
+            gP('GOAL', '____', 500),
+            gP('GOAL', '____', 500),
+        ]
         matrix["Tor34213"] = [
             gP('GOAL', 'GOAL', 500),
             gP('GOAL', 'GOAL', 1000),
@@ -112,6 +126,7 @@ export default function Ranking(props:RankingProps) {
         ]
         //MOCK END
         */
+        
 
         const keys = Object.keys(matrix)
 
@@ -160,7 +175,7 @@ export default function Ranking(props:RankingProps) {
             }
 
             cards.push(
-                <div className={ className} key={user.name}>
+                <div className={className} key={user.name}>
                     <div className={st.Name}>{user.name}</div>
                     <div className={st.Points} title="Correct Answers">{user.points}</div>
                     <div className={st.Time} title="Time Taken">{user.time/1000}</div>

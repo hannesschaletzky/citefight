@@ -36,8 +36,7 @@ $sdbg: false; //show debugging background = sdbg
 .Caption {
   text-align: center;
 
-  //@extend .HelveticaNeueBoldFont;
-  @extend .HelveticaNeueRegularFont;
+  @extend .HelveticaNeueBoldFont;
   font-size: calc(8px + 2vmin);
 }
 

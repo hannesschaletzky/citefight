@@ -102,6 +102,10 @@ export function insertIntoRanking(input: User, ranking:User[]) {
                 ranking.splice(timeTopIndex, 0, input) 
                 return
             }
+            //custom for first round
+            else if (timeTopIndex === -1 && timeBottomIndex === -1) {
+                ranking.splice(bottomIndex, 0, input) 
+            }
         }
 
     }

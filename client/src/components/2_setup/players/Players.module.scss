@@ -41,7 +41,9 @@ $sdbg: false; //show debugging background = sdbg
   cursor: default;
 }
 
+$font_size: 17pt;
 .IsAdmin_Con {
+  font-size: $font_size;
   @extend .Icon_Base;
   @if $sdbg {
     background-color: rgb(25, 57, 160);
@@ -49,6 +51,7 @@ $sdbg: false; //show debugging background = sdbg
 }
 
 .IsYou_Con {
+  font-size: $font_size;
   @extend .Icon_Base;
   @if $sdbg {
     background-color: lawngreen;
@@ -56,6 +59,7 @@ $sdbg: false; //show debugging background = sdbg
 }
 
 .Ready_Con {
+  font-size: $font_size;
   @extend .Icon_Base;
   @if $sdbg {
     background-color: lightpink;
