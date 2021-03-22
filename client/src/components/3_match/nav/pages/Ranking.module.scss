@@ -3,26 +3,48 @@ $sdbg: false; //show debugging background = sdbg
 
 //general outside container
 .Con {
-  padding-top: 10px;
-  padding-bottom: 10px;
-  padding-left: 5px;
-  padding-right: 5px;
-
-  width: auto;
+  padding: 10px;
 
   @if $sdbg {
     background-color: rgba(156, 156, 160, 0.418);
   }
 }
 
+/*
+  ################################
+  HEADLINE
+  ################################
+*/
+
 .Headline_Con {
   height: 20px;
   display: flex;
+  align-items: center;
 
   @if $sdbg {
     background-color: rgb(192, 192, 240);
   }
 }
+
+.Headline_Name {
+  @extend .Name;
+}
+
+.Headline_Points {
+  @extend .Points;
+}
+
+.Headline_Time {
+  @extend .Time;
+  margin-left: 5px;
+  justify-content: center !important;
+}
+
+/*
+  ################################
+  CARDS
+  ################################
+*/
 
 .Cards_Con {
   height: 100%;
@@ -44,6 +66,11 @@ $sdbg: false; //show debugging background = sdbg
   align-items: center;
 
   @extend .borderWithRoundedCorners;
+}
+
+.Card_Con_Ready {
+  @extend .Card_Con;
+  background-color: rgba($ready_colour, 0.2);
 }
 
 .Name {

@@ -212,7 +212,7 @@ export default function Match(props:MatchProps) {
                 joinGame()
             }
         }
-        
+
   	})
 
     /*
@@ -278,7 +278,7 @@ export default function Match(props:MatchProps) {
                     goal: ref_tweets.current[i].t_userTag,
                     answer: '',
                     correct: false,
-                    timeMS: -1,
+                    timeMS: 0,
                     ready: false
                 }
                 points.push(point)
@@ -580,9 +580,11 @@ export default function Match(props:MatchProps) {
         let point:Point = getPointFor()
         point.answer = pick.screen_name
         point.correct = (point.answer === point.goal)
-        point.timeMS = 0 //@@@ TODO!!!
-        //set
-        //ref_matrix.current[ref_username.current][ref_state.current.roundIndex] = point
+        //time diff
+        let now = new Date()
+        let ref = new Date(ref_state.current.roundStarts)
+        let diffMS = now.getTime() - ref.getTime() //milliseconds 
+        point.timeMS = diffMS
         //broadcast
         fireEvent_Matrix(point)
 
@@ -690,6 +692,11 @@ export default function Match(props:MatchProps) {
         ref_matrix.current[d.player][d.round] = d.point
         log('new point:')
         log(ref_matrix.current)
+
+        //update UI -> see how is ready
+        if (ref_state.current.status === Status.showRound_Solution) {
+            forceUpdate()
+        }
 
         //ADMIN starts next round if everyone is ready
         if (isAdmin() && ref_state.current.status === Status.showRound_Solution) {
@@ -952,6 +959,11 @@ export default function Match(props:MatchProps) {
     }
 
     const getNavComp = () => {
+
+        //only include current round in scoreboard when solution was displayed
+        let roundUntil = ref_state.current.roundIndex
+        if (ref_state.current.status === Status.showRound_Solution) {roundUntil++}
+
         let props:NavProps = {
             profiles: ref_profiles.current,
             onSelectAnswer: onSelectAnswer,
@@ -961,6 +973,7 @@ export default function Match(props:MatchProps) {
             settings: ref_settings_match.current,
             onSettingsChanged: onSettingsChanged,
             matrix: ref_matrix.current,
+            roundUntil: roundUntil,
             onNotfication: showNotification
         }
         return React.createElement(Nav, props)

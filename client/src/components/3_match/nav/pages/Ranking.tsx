@@ -2,7 +2,7 @@ import React from 'react'
 import st from './Ranking.module.scss'
 //functional-interface
 import {RankingProps} from 'components/Functional_Interfaces'
-import {Matrix, Point} from 'components/Interfaces'
+//import {Matrix, Point} from 'components/Interfaces'
 //interfaces
 import * as Sorting from './Sorting'
 
@@ -10,10 +10,10 @@ export default function Ranking(props:RankingProps) {
     
     const getCards = () => {
 
-        //let matrix = props.matrix
-
+        let matrix = props.matrix
 
         //MOCK MATRIX
+        /*
         let matrix:Matrix = {}
         function gP(goal:string, answer: string, timeMS:number):Point {
             let p:Point = {
@@ -25,18 +25,6 @@ export default function Ranking(props:RankingProps) {
             }
             return p
         }
-
-        /*
-            Tor     5       4500
-            Bea     5       5000
-            Tom     5       6000
-            Gabi    4       5000
-            Tobi    3       2500
-            Mod     2       5000
-            Franz   2       8000
-            Vera    0       9000
-
-        */
 
         matrix["ModDWADWADWADWADWADAWDWADWADWADWA"] = [
             gP('GOAL', 'GOAL', 1000),
@@ -123,6 +111,7 @@ export default function Ranking(props:RankingProps) {
             gP('GOAL', 'GOAL', 1000),
         ]
         //MOCK END
+        */
 
         const keys = Object.keys(matrix)
 
@@ -137,10 +126,13 @@ export default function Ranking(props:RankingProps) {
             let correct = 0
             let timeMS = 0
             let arr = matrix[player]
-            arr.forEach((point) => {
-                if (point.correct) {correct++}
-                timeMS += point.timeMS
-            })
+            for(let i=0;i<arr.length;i++) {
+                //check if max given round reached
+                if (i === props.roundUntil) {break}
+                //calc
+                if (arr[i].correct) {correct++}
+                timeMS += arr[i].timeMS
+            }
 
             //insert into sorted array
             let user:Sorting.User = {
@@ -151,14 +143,20 @@ export default function Ranking(props:RankingProps) {
             Sorting.insertIntoRanking(user, calcArr)
         })
 
+        /*
+            @@TODO:
+            -> display ready for next round only in solution screen
+            -> add who already gave an answer
+        */
+
         //create cards (-> loop backwards)
         for(let i=calcArr.length-1;i>=0;i--) {
             let user = calcArr[i]
             cards.push(
-                <div className={st.Card_Con} key={user.name}>
+                <div className={matrix[user.name][props.roundUntil-1].ready ? st.Card_Con_Ready : st.Card_Con} key={user.name}>
                     <div className={st.Name}>{user.name}</div>
-                    <div className={st.Points}>{user.points}</div>
-                    <div className={st.Time}>{user.time}</div>
+                    <div className={st.Points} title="Correct Answers">{user.points}</div>
+                    <div className={st.Time} title="Time Taken">{user.time/1000}</div>
                 </div>
             )
         }
@@ -170,8 +168,9 @@ export default function Ranking(props:RankingProps) {
     return (
         <div className={st.Con}>
             <div className={st.Headline_Con}>
-                👍
-                ⏱️
+                <div className={st.Headline_Name}></div>
+                <div className={st.Headline_Points} title="Correct Answers">👍</div>
+                <div className={st.Headline_Time} title="Time Taken">⏱️</div>
             </div>
             <div className={st.Cards_Con}>
                 {getCards()}

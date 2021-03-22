@@ -3,7 +3,6 @@ $sdbg: false; //show debugging background = sdbg
 
 .Con {
   height: 100%;
-  width: 100%;
   display: flex;
   flex-direction: column;
 }
@@ -46,6 +45,5 @@ $sdbg: false; //show debugging background = sdbg
 .Content {
   flex: 1;
   height: 1px; //set to a value -> wont grow
-  margin: 5px;
   overflow-y: scroll;
 }

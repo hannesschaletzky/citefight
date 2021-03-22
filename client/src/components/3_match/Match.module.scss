@@ -105,7 +105,7 @@ $sdbg: false; //show debugging background = sdbg
 }
 
 .Nav_Con {
-  width: 100%;
+  height: 1px; //to not grow over
   flex: 1;
   margin-top: 15px;
   @extend .borderWithRoundedCorners;
