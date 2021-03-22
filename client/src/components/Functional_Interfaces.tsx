@@ -29,6 +29,7 @@ export interface MatchProps {
 */
 export interface RankingProps {
     matrix: Matrix
+    userName: string
     roundUntil: number //calc scoreboard until this round
     readyEnabled: boolean
 }

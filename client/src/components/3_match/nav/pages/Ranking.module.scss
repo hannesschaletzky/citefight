@@ -3,6 +3,7 @@ $sdbg: false; //show debugging background = sdbg
 
 //general outside container
 .Con {
+  cursor: default;
   padding: 10px;
 
   @if $sdbg {
@@ -24,6 +25,10 @@ $sdbg: false; //show debugging background = sdbg
   @if $sdbg {
     background-color: rgb(192, 192, 240);
   }
+}
+
+.Headline_Answer {
+  margin-left: 8px;
 }
 
 .Headline_Name {
@@ -78,9 +83,18 @@ $sdbg: false; //show debugging background = sdbg
   background-color: rgba($unready_colour, 0.2);
 }
 
+.Answer {
+  margin-right: 5px;
+}
+
 .Name {
   overflow: scroll;
   flex: 2;
+}
+
+.Name_IsYou {
+  @extend .Name;
+  font-weight: bold;
 }
 
 .Points {

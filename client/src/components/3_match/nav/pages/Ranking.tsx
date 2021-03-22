@@ -162,23 +162,42 @@ export default function Ranking(props:RankingProps) {
         for(let i=calcArr.length-1;i>=0;i--) {
             let user = calcArr[i]
 
-            //check ready -> when round finished -> true
+            //correct/false answer 
+            let answer = <div className={st.Answer}>❓</div>
+
             let className = st.Card_Con
+            //-> when round finished -> check ready & correct/false
             if (props.readyEnabled) {
-                if (matrix[user.name][props.roundUntil-1].ready) {
+                let point = matrix[user.name][props.roundUntil-1]
+                //ready
+                if (point.ready) {
                     className = st.Card_Con_Ready
                 }
+                //correct/false
+                if (point.answer === '') {
+                    answer = <div className={st.Answer} title='No answer was given'>❓</div>
+                }
+                else {
+                    const text = 'Solution: ' + point.goal + ', Answer: ' + point.answer
+                    if (point.correct) {
+                        answer = <div className={st.Answer} title={text}>✅</div>
+                    }
+                    else {
+                        answer = <div className={st.Answer} title={text}>⭕</div>
+                    }
+                }
             }
-            //check answer given
+            //-> during round -> check if answer was given
             else if (matrix[user.name][props.roundUntil].answer !== '') {
                 className = st.Card_Con_AnswerGiven
             }
 
             cards.push(
                 <div className={className} key={user.name}>
-                    <div className={st.Name}>{user.name}</div>
-                    <div className={st.Points} title="Correct Answers">{user.points}</div>
-                    <div className={st.Time} title="Time Taken">{user.time/1000}</div>
+                    {answer}
+                    <div className={props.userName === user.name ? st.Name_IsYou : st.Name}>{user.name}</div>
+                    <div className={st.Points} title="Total correct answers">{user.points}</div>
+                    <div className={st.Time} title="Total time taken">{user.time/1000}</div>
                 </div>
             )
         }
@@ -190,9 +209,10 @@ export default function Ranking(props:RankingProps) {
     return (
         <div className={st.Con}>
             <div className={st.Headline_Con}>
+                <div className={st.Headline_Answer} title='Correct Answer?'>❓</div>
                 <div className={st.Headline_Name}></div>
-                <div className={st.Headline_Points} title="Correct Answers">👍</div>
-                <div className={st.Headline_Time} title="Time Taken">⏱️</div>
+                <div className={st.Headline_Points} title="Total correct answers">👍</div>
+                <div className={st.Headline_Time} title="Total time taken">⏱️</div>
             </div>
             <div className={st.Cards_Con}>
                 {getCards()}

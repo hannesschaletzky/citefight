@@ -302,10 +302,6 @@ export default function Match(props:MatchProps) {
         return ref_matrix.current[playerName][ref_state.current.roundIndex]
     }
 
-    const setPointFor = (point:Point, playerName:string = ref_username.current) => { 
-        ref_matrix.current[playerName][ref_state.current.roundIndex] = point
-    }
-
     const addSysMsg = (type:SysMsgType, inputMsg:string) => {
         Chat.addSysMsg(type, inputMsg, ref_chat)
     }
@@ -526,7 +522,7 @@ export default function Match(props:MatchProps) {
             ref_state.current.startCountdown -= 1
             forceUpdate()
         }
-        
+
         setCountdown(diffS, diffMS, decrease, showRound)
     }
 
@@ -984,6 +980,7 @@ export default function Match(props:MatchProps) {
             settings: ref_settings_match.current,
             onSettingsChanged: onSettingsChanged,
             matrix: ref_matrix.current,
+            userName: ref_username.current,
             roundUntil: roundUntil,
             readyEnabled: readyEnabled,
             onNotfication: showNotification

@@ -29,17 +29,18 @@ export interface NavProps {
     settings: Settings.Settings_Match
     onSettingsChanged: (newSettings:Settings.Settings_Match) => void
     matrix: Matrix
+    userName: string
     roundUntil: number
     readyEnabled: boolean
     onNotfication: (msg:string, notType:Not.Type) => void
 }
 
 export default function Nav(props:NavProps) {
-    const [lobbyIndex, setLobbyIndex] = useState(0) //default to search
-    const [lastRound, setLastRound] = useState(-1)
+    const [lobbyIndex, setLobbyIndex] = useState(0) //default to answers
+    const [lastRound, setLastRound] = useState(-1) 
 
     useEffect(() => {
-        //when round starts, go to answers (once)
+        //jump to answers once the round starts
         if (props.roundActive && lastRound !== props.roundUntil) {
             setLastRound(props.roundUntil)
             setLobbyIndex(0)
@@ -63,6 +64,7 @@ export default function Nav(props:NavProps) {
         else if (lobbyIndex === 1) {
             let props_:RankingProps = {
                 matrix: props.matrix,
+                userName: props.userName,
                 roundUntil: props.roundUntil,
                 readyEnabled: props.readyEnabled
             }
