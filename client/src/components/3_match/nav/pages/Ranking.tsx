@@ -158,14 +158,15 @@ export default function Ranking(props:RankingProps) {
             Sorting.insertIntoRanking(user, calcArr)
         })
 
+        
+
         //create cards (-> loop backwards)
         for(let i=calcArr.length-1;i>=0;i--) {
             let user = calcArr[i]
 
-            //correct/false answer 
-            let answer = <div className={st.Answer}>❓</div>
-
+            let status = <div className={st.Answer} title='No Action yet'>❓</div>
             let className = st.Card_Con
+
             //-> when round finished -> check ready & correct/false
             if (props.readyEnabled) {
                 let point = matrix[user.name][props.roundUntil-1]
@@ -175,26 +176,26 @@ export default function Ranking(props:RankingProps) {
                 }
                 //correct/false
                 if (point.answer === '') {
-                    answer = <div className={st.Answer} title='No answer was given'>❓</div>
+                    status = <div className={st.Answer} title='No answer was given'>❓</div>
                 }
                 else {
                     const text = 'Solution: ' + point.goal + ', Answer: ' + point.answer
                     if (point.correct) {
-                        answer = <div className={st.Answer} title={text}>✅</div>
+                        status = <div className={st.Answer} title={text}>✅</div>
                     }
                     else {
-                        answer = <div className={st.Answer} title={text}>⭕</div>
+                        status = <div className={st.Answer} title={text}>⭕</div>
                     }
                 }
             }
             //-> during round -> check if answer was given
             else if (matrix[user.name][props.roundUntil].answer !== '') {
-                className = st.Card_Con_AnswerGiven
+                status = <div className={st.Answer} title='Answer submitted'>✔️</div>
             }
 
             cards.push(
                 <div className={className} key={user.name}>
-                    {answer}
+                    {status}
                     <div className={props.userName === user.name ? st.Name_IsYou : st.Name}>{user.name}</div>
                     <div className={st.Points} title="Total correct answers">{user.points}</div>
                     <div className={st.Time} title="Total time taken">{user.time/1000}</div>

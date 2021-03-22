@@ -37,15 +37,29 @@ export interface NavProps {
 
 export default function Nav(props:NavProps) {
     const [lobbyIndex, setLobbyIndex] = useState(0) //default to answers
+    //vars for displaying content depending on flow
     const [lastRound, setLastRound] = useState(-1) 
+    const [showSolution, setShowSolution] = useState(false)
 
     useEffect(() => {
-        //jump to answers once the round starts
+        //jump to answers once the round started
         if (props.roundActive && lastRound !== props.roundUntil) {
             setLastRound(props.roundUntil)
+            setShowSolution(false)
             setLobbyIndex(0)
         }
+        //jump to solution once the round ended
+        else if (!props.roundActive && !showSolution && props.roundUntil > 0) {
+            setShowSolution(true)
+            setLobbyIndex(1)
+        }
     })
+
+    const onSelectAnswer = (profile:Profile) => {
+        //jump to ranking when answer selected
+        setLobbyIndex(1)
+        props.onSelectAnswer(profile)
+    }
 
     const getLobbyContent = () => {
         
@@ -57,7 +71,7 @@ export default function Nav(props:NavProps) {
                     parentType={ProfilesUsage.Answer}
                     roundActive={props.roundActive}
                     data={props.profiles}
-                    onSelectAnswer={props.onSelectAnswer}
+                    onSelectAnswer={onSelectAnswer}
                 />
         }
         //RANKING
