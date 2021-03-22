@@ -73,6 +73,11 @@ $sdbg: false; //show debugging background = sdbg
   background-color: rgba($ready_colour, 0.2);
 }
 
+.Card_Con_AnswerGiven {
+  @extend .Card_Con;
+  background-color: rgba($unready_colour, 0.2);
+}
+
 .Name {
   overflow: scroll;
   flex: 2;

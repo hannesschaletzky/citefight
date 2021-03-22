@@ -143,17 +143,24 @@ export default function Ranking(props:RankingProps) {
             Sorting.insertIntoRanking(user, calcArr)
         })
 
-        /*
-            @@TODO:
-            -> display ready for next round only in solution screen
-            -> add who already gave an answer
-        */
-
         //create cards (-> loop backwards)
         for(let i=calcArr.length-1;i>=0;i--) {
             let user = calcArr[i]
+
+            //check ready -> when round finished -> true
+            let className = st.Card_Con
+            if (props.readyEnabled) {
+                if (matrix[user.name][props.roundUntil-1].ready) {
+                    className = st.Card_Con_Ready
+                }
+            }
+            //check answer given
+            else if (matrix[user.name][props.roundUntil].answer !== '') {
+                className = st.Card_Con_AnswerGiven
+            }
+
             cards.push(
-                <div className={matrix[user.name][props.roundUntil-1].ready ? st.Card_Con_Ready : st.Card_Con} key={user.name}>
+                <div className={ className} key={user.name}>
                     <div className={st.Name}>{user.name}</div>
                     <div className={st.Points} title="Correct Answers">{user.points}</div>
                     <div className={st.Time} title="Time Taken">{user.time/1000}</div>

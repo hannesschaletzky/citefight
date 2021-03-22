@@ -29,6 +29,7 @@ export interface NavProps {
     onSettingsChanged: (newSettings:Settings.Settings_Match) => void
     matrix: Matrix
     roundUntil: number
+    readyEnabled: boolean
     onNotfication: (msg:string, notType:Not.Type) => void
 }
 
@@ -52,7 +53,8 @@ export default function Nav(props:NavProps) {
         else if (lobbyIndex === 1) {
             let props_:RankingProps = {
                 matrix: props.matrix,
-                roundUntil: props.roundUntil
+                roundUntil: props.roundUntil,
+                readyEnabled: props.readyEnabled
             }
             const comp = React.createElement(Ranking, props_)
             content = comp

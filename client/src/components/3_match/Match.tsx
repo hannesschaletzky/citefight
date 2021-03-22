@@ -278,7 +278,7 @@ export default function Match(props:MatchProps) {
                     goal: ref_tweets.current[i].t_userTag,
                     answer: '',
                     correct: false,
-                    timeMS: 0,
+                    timeMS: ref_settings_lobby.current.roundtime*1000,
                     ready: false
                 }
                 points.push(point)
@@ -300,6 +300,10 @@ export default function Match(props:MatchProps) {
 
     const getPointFor = (playerName:string = ref_username.current):Point => {
         return ref_matrix.current[playerName][ref_state.current.roundIndex]
+    }
+
+    const setPointFor = (point:Point, playerName:string = ref_username.current) => { 
+        ref_matrix.current[playerName][ref_state.current.roundIndex] = point
     }
 
     const addSysMsg = (type:SysMsgType, inputMsg:string) => {
@@ -692,12 +696,16 @@ export default function Match(props:MatchProps) {
         ref_matrix.current[d.player][d.round] = d.point
         log('new point:')
         log(ref_matrix.current)
-
-        //update UI -> see how is ready
-        if (ref_state.current.status === Status.showRound_Solution) {
+        
+        //update UI -> see how answered already
+        if (ref_state.current.status === Status.showRound) {
             forceUpdate()
         }
-
+        //update UI -> see how is ready
+        else if (ref_state.current.status === Status.showRound_Solution) {
+            forceUpdate()
+        }
+        
         //ADMIN starts next round if everyone is ready
         if (isAdmin() && ref_state.current.status === Status.showRound_Solution) {
             
@@ -960,9 +968,14 @@ export default function Match(props:MatchProps) {
 
     const getNavComp = () => {
 
-        //only include current round in scoreboard when solution was displayed
+        //roundUntil: only include current round in scoreboard when solution was displayed
+        //readyEnabled: only display ready changes (enable) when solution is displayed
         let roundUntil = ref_state.current.roundIndex
-        if (ref_state.current.status === Status.showRound_Solution) {roundUntil++}
+        let readyEnabled = false
+        if (ref_state.current.status === Status.showRound_Solution) {
+            roundUntil++
+            readyEnabled = true
+        }
 
         let props:NavProps = {
             profiles: ref_profiles.current,
@@ -974,6 +987,7 @@ export default function Match(props:MatchProps) {
             onSettingsChanged: onSettingsChanged,
             matrix: ref_matrix.current,
             roundUntil: roundUntil,
+            readyEnabled: readyEnabled,
             onNotfication: showNotification
         }
         return React.createElement(Nav, props)

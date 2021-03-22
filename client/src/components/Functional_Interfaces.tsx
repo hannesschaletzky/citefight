@@ -30,6 +30,7 @@ export interface MatchProps {
 export interface RankingProps {
     matrix: Matrix
     roundUntil: number //calc scoreboard until this round
+    readyEnabled: boolean
 }
 export interface ChatProps {
     messages: ChatMsg[]
