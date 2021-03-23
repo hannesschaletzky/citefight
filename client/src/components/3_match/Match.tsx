@@ -621,6 +621,11 @@ export default function Match(props:MatchProps) {
         ref_state.current.roundActive = false
         setStatus(Status.showRound_Solution, true)
 
+        //game finished
+        if (ref_state.current.roundIndex+1 === ref_settings_lobby.current.rounds) {
+            return
+        }
+
         //handle autoready
         if (ref_settings_match.current.autoready || ref_settings_lobby.current.autoContinue) {
             const decrease = () => {
@@ -650,6 +655,11 @@ export default function Match(props:MatchProps) {
         //manually adjust UI
         ref_matrix.current[ref_username.current][ref_state.current.roundIndex].ready = true
         forceUpdate()
+    }
+
+    //8TH: SHOW RESULTS WHEN GAME FINISHED
+    const showResults = () => {
+        log('show results')
     }
 
     /*
@@ -981,6 +991,12 @@ export default function Match(props:MatchProps) {
 
         //show ready button only on solution and when user is not ready
         if (ref_state.current.status === Status.showRound_Solution && !getPointFor().ready) {
+            //game finished
+            if (ref_state.current.roundIndex+1 === ref_settings_lobby.current.rounds) {
+                return <button className={st.Button_Ready} onClick={() => showResults()}>
+                            Show Results
+                        </button>
+            }
             return  <button className={st.Button_Ready} onClick={() => setYourselfReady()}>
                         Ready {ref_state.current.readyCountdown > 0 && ref_state.current.readyCountdown}
                     </button>

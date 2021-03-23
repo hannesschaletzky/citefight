@@ -212,7 +212,7 @@ function SettingsLogic(props:Props) {
                     Rounds
                 </div>
                 <div className={st.Row}>
-                    <button className={getClass(Type.l_rounds, 5)} onClick={() => {newSettings(Type.l_rounds, 5)}}>5</button>
+                    <button className={getClass(Type.l_rounds, 2)} onClick={() => {newSettings(Type.l_rounds, 2)}}>2</button>
                     <button className={getClass(Type.l_rounds, 10)} onClick={() => {newSettings(Type.l_rounds, 10)}}>10</button>
                     <button className={getClass(Type.l_rounds, 25)} onClick={() => {newSettings(Type.l_rounds, 25)}}>25</button>
                     <button className={getClass(Type.l_rounds, 50)} onClick={() => {newSettings(Type.l_rounds, 50)}}>50</button>
