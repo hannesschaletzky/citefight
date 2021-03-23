@@ -194,6 +194,17 @@ function TweetLogic(props:Props) {
             Check out http://girlsopportunityalliance.org to learn more and get involved.
             -> split text into spans if it contains #hastags or @links
         */
+
+        //determine images included 
+        let textConClass = st.Text_Con
+        let textClass = st.Text
+        let textLinkClass = st.Text_Link
+        if (props.tweet.c_photo1 !== '') {
+            textConClass = st.Text_Con_Pictures
+            textClass = st.Text_Pictures
+            textLinkClass = st.Text_Link_Pictures
+        }
+
         let text = [<span key="-1"></span>]
         text = []
         //loop each block
@@ -210,26 +221,26 @@ function TweetLogic(props:Props) {
                 //check hashtag
                 if (hashtag !== "") {
                     text.push(  <a className={st.Link} key={grk()} href={"https://twitter.com/hashtag/" + word.substring(1)} target="_blank" rel="noreferrer" title="View hastag">
-                                    <span className={st.Text_Link} key={grk()}>{hashtag}</span>
+                                    <span className={textLinkClass} key={grk()}>{hashtag}</span>
                                 </a>)
                     let rest = word.replace(hashtag, "") //like: '#MalalaDay,' -> ','
                     if (rest !== "") {
-                        text.push(<span className={st.Text} key={grk()}>{rest}</span>)
+                        text.push(<span className={textClass} key={grk()}>{rest}</span>)
                     }
                 }
                 //check usertag
                 else if (usertag !== "") {
                     text.push(  <a className={st.Link} key={grk()} href={"https://twitter.com/" + word.substring(1)} target="_blank" rel="noreferrer" title="View profile">
-                                    <span className={st.Text_Link} key={grk()}>{usertag}</span>
+                                    <span className={textLinkClass} key={grk()}>{usertag}</span>
                                 </a>)
                     let rest = word.replace(usertag, "") //like: '@Malala!' -> '!'
                     if (rest !== "") {
-                        text.push(<span className={st.Text} key={grk()}>{rest}</span>)
+                        text.push(<span className={textClass} key={grk()}>{rest}</span>)
                     }
                 }
                 //normal word
                 else {
-                    text.push(<span className={st.Text} key={grk()}>{word}</span>)
+                    text.push(<span className={textClass} key={grk()}>{word}</span>)
                 }
                 //insert space after each word
                 text.push(<span key={grk()}> </span>)
@@ -318,17 +329,27 @@ function TweetLogic(props:Props) {
                 </div>
         }
 
-        //TOP COMPONENT ICONS
+        /*
+        ##############################
+                COMPOSE TWEET
+        ##############################
+        */
+
+        //TOP COMPONENT + ICONS
+        let topClass = st.Top_Con
         let userIconComp = <div></div>
         let userVerifiedComp = <div></div>
         let tweetIconComp = <div></div>
+        //disable
         if (props.tweet.t_profileURL === '') {
             userIconComp = 
                 <img className={st.Pic} src={QuestionMark} alt="User"/>
             userVerifiedComp =
                 <img className={st.Verified_Icon_Disabled} src={VerifiedIcon} alt="Verified"/>
         }
+        //own pick OR solution
         else {
+            topClass = st.Top_Con_Fade_In
             userIconComp = 
                 <a href={props.tweet.t_profileURL} target="_blank" rel="noreferrer" title="View twitter profile">
                     <img className={st.Pic} src={props.tweet.t_userPicURL} alt="User"/>
@@ -337,25 +358,28 @@ function TweetLogic(props:Props) {
                 <img className={st.Verified_Icon} src={VerifiedIcon} title="Verified User" alt="Verified"/>
         }
 
-        //only enable clicking on twitter icon when solution is here
+        //Twitter Icon
+        //disable
         if (props.tweet.t_tweetURL === '') {
             tweetIconComp = 
                 <img className={st.Twitter_Icon_Disabled} src={TwitterIcon} alt="Tweet"/>
         }
+        //ONLY solution
         else {
+            //-> only enable clicking on twitter icon when solution is here
+            console.log('SHOW SOLUTION')
+            topClass = st.Top_Con_Fade_In_Solution
             tweetIconComp = 
                 <a href={props.tweet.t_tweetURL} target="_blank" rel="noreferrer" title="View tweet">
                     <img className={st.Twitter_Icon} src={TwitterIcon} alt="Tweet"/>
                 </a>
         }
 
-
-        //COMPOSE TWEET
         let content = 
         <div className ={st.Con}>
             <div className ={st.Inside_Con}>
                 {/*TOP*/}
-                <div className={st.Top_Con}>
+                <div className={topClass}>
                     {userIconComp}
                     <div className={st.UserCard_Con}>
                         <div className={st.Names_Con}>
@@ -374,7 +398,7 @@ function TweetLogic(props:Props) {
                 </div>
                 {/*CONTENT*/}
                 <div className={st.Content_Con}>
-                    <div className={st.Text_Con}>
+                    <div className={textConClass}>
                         <span>{text}</span>
                     </div>
                     {picturesComponent}

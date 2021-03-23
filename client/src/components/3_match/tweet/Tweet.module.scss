@@ -40,6 +40,41 @@ $x: 40px;
     background-color: rgba(66, 150, 10, 0.445);
   }
 }
+.Top_Con_Animation_Base {
+  -webkit-animation: fadeIn 1s linear forwards;
+  -moz-animation: fadeIn 1s linear forwards;
+  -o-animation: fadeIn 1s linear forwards;
+  -ms-animation: fadeIn 1s linear forwards;
+  animation: fadeIn 1s linear forwards;
+}
+.Top_Con_Fade_In {
+  @extend .Top_Con;
+  @extend .Top_Con_Animation_Base;
+}
+.Top_Con_Fade_In_Solution {
+  @extend .Top_Con;
+  -webkit-animation: fadeIn_1 1s linear forwards;
+  -moz-animation: fadeIn_1 1s linear forwards;
+  -o-animation: fadeIn_1 1s linear forwards;
+  -ms-animation: fadeIn_1 1s linear forwards;
+  animation: fadeIn_1 1s linear forwards;
+}
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+@keyframes fadeIn_1 {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
 
 .UserCard_Con {
   width: 100%;
@@ -120,28 +155,43 @@ $x: 40px;
   }
 }
 
-//TEXT
+.Text_Con_Base {
+  width: 100%;
+  @extend .HelveticaNeueBoldFont;
+}
+
+//WITHOUT PICTURES
+$font_size: 14pt;
+$link_col: rgb(27, 149, 224);
+.Text_Con {
+  @extend .Text_Con_Base;
+  line-height: 24px;
+}
+.Text {
+  font-size: $font_size;
+}
+.Text_Link {
+  font-size: $font_size;
+  color: $link_col;
+}
+//WITH PICTURES
+$font_size_pics: 12pt;
+.Text_Con_Pictures {
+  @extend .Text_Con_Base;
+  line-height: 20px;
+}
+.Text_Pictures {
+  font-size: $font_size_pics;
+}
+.Text_Link_Pictures {
+  font-size: $font_size_pics;
+  color: $link_col;
+}
+
+//REST
 .Link {
   text-decoration: none;
 }
-
-.Text_Con {
-  width: 100%;
-}
-
-.Text_Base {
-  @extend .HelveticaNeueBoldFont;
-  font-size: 14pt;
-}
-
-.Text {
-  @extend .Text_Base;
-}
-.Text_Link {
-  @extend .Text_Base;
-  color: rgb(27, 149, 224);
-}
-
 .Date_Con {
   margin-top: 10px;
   margin-bottom: 10px;
