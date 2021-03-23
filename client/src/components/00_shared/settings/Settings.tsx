@@ -238,7 +238,7 @@ function SettingsLogic(props:Props) {
                     <button className={getClass(Type.l_autoContinue, true)} onClick={() => {newSettings(Type.l_autoContinue, true)}}>On</button>
                 </div>
 
-                {/*DRINKING*/}
+                {/*TWEET PICTURES*/}
                 <div className={st.Header}>
                     Show Tweet Pictures
                 </div>
@@ -265,16 +265,18 @@ function SettingsLogic(props:Props) {
             rtn = 
             <div className={props.isAdmin ? st.Con : st.Con_NoAdmin}>
 
-                {/*DRINKING*/}
+                {/*AUTOREADY*/}
                 <div className={st.Header}>
-                    Automatically set ready
+                    Automatically set myself ready
                 </div>
                 <div className={st.Row}>
                     <button className={getClass(Type.m_autoready, false)} onClick={() => {newSettings(Type.m_autoready, false)}}>Off</button>
                     <button className={getClass(Type.m_autoready, true)} onClick={() => {newSettings(Type.m_autoready, true)}}>On</button>
                 </div>
+                
+                {/*JUMP TO RANKING AFTER ANSWERING*/}
                 <div className={st.Header}>
-                    Jump to Ranking after selecting answer
+                    Jump to Ranking after answer was selected
                 </div>
                 <div className={st.Row}>
                     <button className={getClass(Type.m_jumpToRankingAfterSelecting, false)} onClick={() => {newSettings(Type.m_jumpToRankingAfterSelecting, false)}}>Off</button>

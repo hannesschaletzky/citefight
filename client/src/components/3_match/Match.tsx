@@ -44,17 +44,17 @@ const init_roundSolution: RoundSolution = {
 } 
 
 enum Status {
-    init,
-    everyoneJoined,
-    everyoneReady,
-    calcRound,
-    startRoundcountdown,
-    showRound,
-    showRound_OwnPick,
-    showRound_Solution,
+    init = 'init',
+    everyoneJoined = 'everyoneJoined',
+    everyoneReady = 'everyoneReady',
+    calcRound = 'calcRound',
+    startRoundcountdown = 'startRoundcountdown',
+    showRound = 'showRound',
+    showRound_OwnPick = 'showRound_OwnPick',
+    showRound_Solution = 'showRound_Solution',
     
     //errors
-    errorInitalValues
+    errorInitalValues = 'errorInitalValues'
 }
 
 //STATE
@@ -616,6 +616,7 @@ export default function Match(props:MatchProps) {
 
         //reset vars
         ref_state.current.roundCountdown = ref_settings_lobby.current.roundtime
+        ref_HoverPic.current = ""
         //show solution
         log('show solution')
         ref_state.current.roundActive = false
@@ -1003,7 +1004,7 @@ export default function Match(props:MatchProps) {
         }
         //for the rest -> show countdown
         else {
-            return  <div className={st.Clock} title="Time">
+            return  <div className={st.Clock} title="Answering time left">
                         {ref_state.current.roundCountdown}
                     </div>
         }
@@ -1018,6 +1019,10 @@ export default function Match(props:MatchProps) {
         if (ref_state.current.status === Status.showRound_Solution) {
             roundUntil++
             readyEnabled = true
+        }
+        if (ref_state.current.status === Status.calcRound) {
+            //this is due to that the round index will be increased after calc round has finished
+            roundUntil++
         }
 
         let props:NavProps = {
