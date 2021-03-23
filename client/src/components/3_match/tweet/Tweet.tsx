@@ -1,6 +1,5 @@
 import React from 'react'
 import st from './Tweet.module.scss'
-import {log} from 'components/Logic'
 
 //interfaces
 import {Tweet} from 'components/Interfaces'
@@ -20,11 +19,13 @@ import QuestionMark from 'assets/tweet/QuestionMark.png'
 */
 interface Props {
     tweet: Tweet
+    showImages: boolean
     onPicClick:(picURL:string) => void
 }
-export const getComponent = (tweet:Tweet, onPicClick:(picURL:string) => void) => {
+export const getComponent = (tweet:Tweet, showImages:boolean, onPicClick:(picURL:string) => void) => {
     let props:Props = {
         tweet: tweet,
+        showImages: showImages,
         onPicClick: onPicClick
     }
     return React.createElement(TweetLogic, props)
@@ -401,7 +402,7 @@ function TweetLogic(props:Props) {
                     <div className={textConClass}>
                         <span>{text}</span>
                     </div>
-                    {picturesComponent}
+                    {props.showImages && picturesComponent}
                     <div className={st.Date_Con}>
                         {formatDate(props.tweet.b_date)}
                     </div>

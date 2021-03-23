@@ -57,7 +57,9 @@ export default function Nav(props:NavProps) {
 
     const onSelectAnswer = (profile:Profile) => {
         //jump to ranking when answer selected
-        setLobbyIndex(1)
+        if (props.settings.jumpToRankingAfterSelecting) {
+            setLobbyIndex(1)
+        }
         props.onSelectAnswer(profile)
     }
 

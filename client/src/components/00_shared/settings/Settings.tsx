@@ -35,17 +35,19 @@ export interface Settings_Lobby {
 }
 export interface Settings_Match {
     autoready: boolean
+    jumpToRankingAfterSelecting: boolean
 }
 //INIT
 export const initSettings_Lobby:Settings_Lobby = {
     rounds: 25,
     roundtime: Roundtime.Regular,
-    autoContinue: true,
-    pictures: Pictures.AtHalftime,
+    autoContinue: false,
+    pictures: Pictures.Instantly,
     drinking: DrinkingMode.Off
 }
 export const initSettings_Match:Settings_Match = {
-    autoready: false
+    autoready: false,
+    jumpToRankingAfterSelecting: true
 }
 
 
@@ -93,7 +95,8 @@ enum Type {
     l_autoContinue,
     l_pictures,
     //MATCH
-    m_autoready
+    m_autoready,
+    m_jumpToRankingAfterSelecting
 }
 
 let messageTimestamps:string[] = []
@@ -128,6 +131,9 @@ function SettingsLogic(props:Props) {
         //MATCH
         else if (type === Type.m_autoready) {
             props.settings.autoready = value
+        }
+        else if (type === Type.m_jumpToRankingAfterSelecting) {
+            props.settings.jumpToRankingAfterSelecting = value
         }
 
         //give to parent
@@ -178,6 +184,11 @@ function SettingsLogic(props:Props) {
         //MATCH
         else if (type === Type.m_autoready) {
             if (value === props.settings.autoready) {
+                return act
+            }
+        }
+        else if (type === Type.m_jumpToRankingAfterSelecting) {
+            if (value === props.settings.jumpToRankingAfterSelecting) {
                 return act
             }
         }
@@ -256,11 +267,18 @@ function SettingsLogic(props:Props) {
 
                 {/*DRINKING*/}
                 <div className={st.Header}>
-                    Autoready
+                    Automatically set ready
                 </div>
                 <div className={st.Row}>
                     <button className={getClass(Type.m_autoready, false)} onClick={() => {newSettings(Type.m_autoready, false)}}>Off</button>
                     <button className={getClass(Type.m_autoready, true)} onClick={() => {newSettings(Type.m_autoready, true)}}>On</button>
+                </div>
+                <div className={st.Header}>
+                    Jump to Ranking after selecting answer
+                </div>
+                <div className={st.Row}>
+                    <button className={getClass(Type.m_jumpToRankingAfterSelecting, false)} onClick={() => {newSettings(Type.m_jumpToRankingAfterSelecting, false)}}>Off</button>
+                    <button className={getClass(Type.m_jumpToRankingAfterSelecting, true)} onClick={() => {newSettings(Type.m_jumpToRankingAfterSelecting, true)}}>On</button>
                 </div>
                 
             </div>

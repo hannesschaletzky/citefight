@@ -162,6 +162,10 @@ export default function Join(props:JoinProps) {
     }
 
     const executeJoin = (userName:string) => {
+        if (!ref_status.current.IsLobby) {
+            alert('Match is already ongoing, you cannot join.')
+            return
+        }
         localStorage.setItem(LocalStorage.Username, userName)
         setJoinStatus(JoinStatus.connecting)
     }

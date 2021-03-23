@@ -63,6 +63,7 @@ interface State {
     status: Status
     statusMsg: string //for everyone joined
 
+    readyCountdown: number
     startCountdown: number
     roundIndex: number
     roundStarts: Date
@@ -74,6 +75,7 @@ const init_state:State = {
     matchID: '',
     status: Status.init,
     statusMsg: '',
+    readyCountdown: -1,
     startCountdown: -1,
     roundIndex: -1,
     roundStarts: new Date(),
@@ -618,6 +620,25 @@ export default function Match(props:MatchProps) {
         log('show solution')
         ref_state.current.roundActive = false
         setStatus(Status.showRound_Solution, true)
+
+        //handle autoready
+        if (ref_settings_match.current.autoready || ref_settings_lobby.current.autoContinue) {
+            const decrease = () => {
+                if (ref_state.current.status === Status.showRound_Solution) {
+                    ref_state.current.readyCountdown -= 1
+                    forceUpdate()
+                }
+            }
+            const finished = () => {
+                if (ref_state.current.status === Status.showRound_Solution) {
+                    setYourselfReady()
+                }
+            }
+            let diffS = 5
+            ref_state.current.readyCountdown = diffS
+            forceUpdate()
+            setCountdown(diffS, diffS*1000, decrease, finished)
+        }
     }
 
     //7TH: SET READY (-> next round if everyone ready)
@@ -865,6 +886,21 @@ export default function Match(props:MatchProps) {
     //OPERATIONAL MATCH LOGIC
     const getContent = () => {
 
+        //calculate display of images
+        let showImages = false
+        if (ref_settings_lobby.current.pictures === Settings.Pictures.Instantly) {
+            showImages = true
+        }
+        else if (ref_settings_lobby.current.pictures === Settings.Pictures.AtHalftime && 
+                 ref_state.current.roundCountdown <= ref_settings_lobby.current.roundtime/2) {
+            showImages = true
+        }
+        //-> always show at solution
+        if (ref_settings_lobby.current.pictures !== Settings.Pictures.Off &&
+            ref_state.current.status === Status.showRound_Solution) {
+            showImages = true
+        }
+
         let content = <div></div>
 
         //IS EVERYONE READY?
@@ -920,21 +956,21 @@ export default function Match(props:MatchProps) {
         else if (ref_state.current.status === Status.showRound) {
             return content = 
                 <div className={st.Tweet_Con}>
-                    {TweetComp.getComponent(ref_tweets.current[ref_state.current.roundIndex], pictureClick)}
+                    {TweetComp.getComponent(ref_tweets.current[ref_state.current.roundIndex], showImages, pictureClick)}
                 </div>
         }
         //SHOW OWN PICK 
         else if (ref_state.current.status === Status.showRound_OwnPick) {
             return content = 
                 <div className={st.Tweet_Con}>
-                    {TweetComp.getComponent(ref_tweets.current[ref_state.current.roundIndex], pictureClick)}
+                    {TweetComp.getComponent(ref_tweets.current[ref_state.current.roundIndex], showImages, pictureClick)}
                 </div>
         }
         //SHOW SOLUTION 
         else if (ref_state.current.status === Status.showRound_Solution) {
             return content = 
                 <div className={st.Tweet_Con}>
-                    {TweetComp.getComponent(ref_tweets.current[ref_state.current.roundIndex], pictureClick)}
+                    {TweetComp.getComponent(ref_tweets.current[ref_state.current.roundIndex], showImages, pictureClick)}
                 </div>
         }
         
@@ -943,16 +979,13 @@ export default function Match(props:MatchProps) {
 
     const getReadyCountdownComp = () => {
 
-        if (ref_state.current.status === Status.showRound_Solution &&
-            !getPointFor().ready) {
-
-            //CARE ABOUT LAST ROUND
-
-            //show roundtime when user is ready!
+        //show ready button only on solution and when user is not ready
+        if (ref_state.current.status === Status.showRound_Solution && !getPointFor().ready) {
             return  <button className={st.Button_Ready} onClick={() => setYourselfReady()}>
-                        Ready
+                        Ready {ref_state.current.readyCountdown > 0 && ref_state.current.readyCountdown}
                     </button>
         }
+        //for the rest -> show countdown
         else {
             return  <div className={st.Clock} title="Time">
                         {ref_state.current.roundCountdown}
