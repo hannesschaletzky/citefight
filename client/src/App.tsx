@@ -4,21 +4,18 @@ import React, { useState , useEffect } from 'react';
 import { BrowserRouter, Route, Switch } from 'react-router-dom'
 import st from './App.module.scss';
 import {log} from 'components/Logic'
-
 //functional-interfaces
 import {JoinProps} from 'components/Functional_Interfaces'
 import {SetupProps} from 'components/Functional_Interfaces'
 import {MatchProps} from 'components/Functional_Interfaces'
-
-//components
+//main components
 import Root_Header from 'components/0_root/Header'
-import Landing from 'components/pages/Landing'
-
+import Root_Footer from 'components/0_root/Footer'
+import Landing from 'components/1_landing/Landing'
 import Join from 'components/2_join/Join'
 import Setup from 'components/3_setup/Setup'
 import Match from 'components/4_match/Match'
-
-import Root_Footer from 'components/0_root/Footer'
+//pages
 import Legal from 'components/pages/Legal'
 import About from 'components/pages/About'
 import Donate from 'components/pages/donate/Donate'
@@ -26,7 +23,7 @@ import DonateThankYou from 'components/pages/donate/Donate_ThankYou'
 import Credits from 'components/pages/Credits'
 import TwitterRedirect from 'components/pages/TwitterRedirect'
 import TwitterCallback from 'components/pages/TwitterCallback'
-
+//error pages
 import NotFound from 'components/pages/errorpages/NotFound'
 
 

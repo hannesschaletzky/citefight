@@ -17,9 +17,3 @@ export default function DonationThankYou() {
 }
 
 
-
-
-
-
-
-

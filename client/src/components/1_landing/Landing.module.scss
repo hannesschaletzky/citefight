@@ -1,0 +1,84 @@
+@import "styles/app.global.scss";
+
+.Con {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+/*
+  ################################
+    HEADLINE
+  ################################
+*/
+
+.Headline {
+  text-align: center;
+  font-family: "Test_1";
+  font-size: 30px;
+  //@extend .HelveticaNeueBoldFont;
+  margin-bottom: 20px;
+}
+
+/*
+  ################################
+    PICTURE FLOW
+  ################################
+*/
+
+.PicFlow_Con {
+  height: 60%;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+}
+
+.Search_Con {
+  height: 100%;
+}
+
+.Search {
+  height: 100%;
+  object-fit: contain;
+}
+
+.Tweet_Con {
+  height: 100%;
+}
+
+.Tweet {
+  height: 100%;
+  object-fit: contain;
+}
+
+.Answers_Con {
+  height: 40%;
+}
+
+.Answers {
+  height: 100%;
+  object-fit: contain;
+}
+
+/*
+  ################################
+    BOTTOM INTERACTION
+  ################################
+*/
+
+.Bottom_Con {
+  margin-top: 20px;
+}
+
+.Button_Ready {
+  @extend .Button_Base;
+  flex-shrink: 0;
+  background-color: rgba($ready_colour, 0.8);
+  &:hover {
+    background-color: rgba($ready_colour, 0.6);
+  }
+}
