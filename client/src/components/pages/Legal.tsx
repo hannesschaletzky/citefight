@@ -16,13 +16,6 @@ export default function Legal() {
             </span>
 
             <h3>
-                Unabhängigkeit
-            </h3>
-            <span>
-                Diese Webseite ist ein privates Projekt und wurde unentgeltlich von mir selber in meiner Freizeit programmiert.
-            </span>
-
-            <h3>
                 Haftungshinweis / Externe Links
             </h3>
             

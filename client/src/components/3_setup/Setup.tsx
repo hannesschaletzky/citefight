@@ -969,8 +969,6 @@ export default function Setup(props:SetupProps) {
                 fireEvent_Players() 
             }, 8500)
         }
-
-        
     }
 
 

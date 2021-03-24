@@ -213,8 +213,13 @@ export default function Match(props:MatchProps) {
                 log('match: retrieved and set pusher client')
                 joinGame()
             }
-        }
 
+            //double ask user before leaving
+            window.addEventListener("beforeunload", (ev) => {
+                ev.preventDefault()
+                return ev.returnValue = 'Are you sure you want to close?'
+            })
+        }
   	})
 
     /*
