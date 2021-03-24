@@ -64,29 +64,10 @@ const nFormatter = (input: string, digits = 2) => {
 function TweetLogic(props:Props) {
 
     const formatDate = (input:string):string => {
-        console.log(input)
-        console.log(new Date(input))
-        //input: 2019-06-06T14:59:47.000Z
-        let parsed = new Date(input).toLocaleDateString() 
-        console.log(parsed)
-        //parsed: 06/06/2019
-        let elements = parsed.split('/')
-        let m = ""
-        let nr:number = +elements[1]
-        if      (nr === 1) {m='Jan'}
-        else if (nr === 2) {m='Feb'}
-        else if (nr === 3) {m='Mar'}
-        else if (nr === 4) {m='Apr'}
-        else if (nr === 5) {m='May'}
-        else if (nr === 6) {m='Jun'}
-        else if (nr === 7) {m='Jul'}
-        else if (nr === 8) {m='Aug'}
-        else if (nr === 9) {m='Sep'}
-        else if (nr === 10) {m='Oct'}
-        else if (nr === 11) {m='Nov'}
-        else if (nr === 12) {m='Dec'}
-        let d = `${+elements[0]} ${m} ${elements[2]}`
-        return d
+        let parsed = new Date(input).toDateString() 
+        //parsed: Fri Feb 21 2017
+        let parts = parsed.split(' ')
+        return `${parts[2]} ${parts[1]} ${parts[3]}`
     }
 
     const getContent = () => {
