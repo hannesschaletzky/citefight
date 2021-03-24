@@ -1,19 +1,35 @@
-//import React, { useState } from 'react';
+import { useState } from 'react';
+import  { Redirect } from 'react-router-dom'
 import st from './Landing.module.scss'
-import {log} from 'components/Logic'
+import {log, getRandomInt} from 'components/Logic'
 
 import Intro_Search from 'assets/landing/Intro_Search.png'
 import Intro_Tweet from 'assets/landing/Intro_Tweet.png'
 import Intro_Answers from 'assets/landing/Intro_Answers.png'
+import { match } from 'assert';
 
 export default function Landing() {
 
+    const [toJoin, setToJoin] = useState(false)
+
     const createMatchroom = () => {
         log('create matchroom')
+        setToJoin(true)
+    }
+
+    const getRedirect = () => {
+        if (toJoin) {
+            let dt = new Date()
+            let matchID = `${dt.getHours()}${dt.getMinutes()}${dt.getSeconds()}`
+            matchID += getRandomInt(10)
+            log(matchID)
+            let redirectURL = '/join/' + matchID
+            return <Redirect to={redirectURL}/> 
+        }
+        return <div></div>
     }
 
     return (
-        
         <div className={st.Con}>
             <div className={st.Headline}>
                 Citefight is a Twitter guessing game. Choose public Twitter profiles and invite your friends to play! <br></br>
@@ -35,6 +51,7 @@ export default function Landing() {
                     Create Matchroom 🎉
                 </button>
             </div>
+            {getRedirect()}
         </div>
     )
 }

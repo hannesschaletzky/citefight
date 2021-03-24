@@ -1,4 +1,4 @@
-import {log} from 'components/Logic'
+import {log, getRandomInt} from 'components/Logic'
 const Pusher = require('pusher-js');
 
 //EVENTS
@@ -47,7 +47,7 @@ export const getNewPusherClient = () => {
 
         //create random userid
         let rndID = new Date().toISOString()
-        rndID += Math.floor(Math.random() * Math.floor(10))
+        rndID += getRandomInt(10)
         
         //init pusher client
         let appKey = process.env.REACT_APP_PUSHER_KEY

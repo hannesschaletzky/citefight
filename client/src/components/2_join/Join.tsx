@@ -122,11 +122,11 @@ export default function Join(props:JoinProps) {
         channel.bind(Pu.Channel_Sub_Success, () => {
             log('Check match status:')
             if (channel.members.count === 1) {
-                log(' -> active setup!')
+                log(' -> setup!')
                 setGameInfoStatus(GameInfoStatus.success)
             }
             else {
-                log(' -> active match!')
+                log(' -> match!')
                 ref_status.current.IsLobby = false
                 setGameInfoStatus(GameInfoStatus.success)
             }
@@ -275,7 +275,7 @@ export default function Join(props:JoinProps) {
                 content = 
                 <div className={st.Join_Con}>
                     <div className={st.Caption}>
-                        Type your name and join in!
+                        Choose a name!
                     </div>
                     <input  className={st.Input}
                                 type="search" 

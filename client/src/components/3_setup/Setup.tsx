@@ -20,7 +20,7 @@ import {SysMsgType} from 'components/Interfaces'
 import {SetupProps} from 'components/Functional_Interfaces'
 
 //logic
-import {isValidMatchID} from 'components/Logic'
+import {isValidMatchID, isDevEnv, isProdEnv} from 'components/Logic'
 
 //puhser
 import * as Pu from 'components/pusher/Pusher'
@@ -483,7 +483,14 @@ export default function Setup(props:SetupProps) {
                     ref_state.current.state = Status.getTweets
                     fireEvent_Players()
                 }
-                timeouts.push(setTimeout(() => startGame(), 1)) //5200
+                if (isDevEnv()) {
+                    timeouts.push(setTimeout(() => startGame(), 1))
+                }
+                else if (isProdEnv()) {
+                    timeouts.push(setTimeout(() => startGame(), 6000))
+                }
+
+                
             }
         }
         /*  
@@ -491,8 +498,8 @@ export default function Setup(props:SetupProps) {
         START GETTING TWEETS
         ################
         */
-        else if (isAdmin() &&
-                ref_state.current.state === Status.getTweets &&
+        else if (ref_state.current.state === Status.getTweets &&
+                isAdmin() &&
                 ref_state.current.stateTexts.length === 0) { 
             //first user starts and only call when not called already (stateTexts.length === 0)
             triggerMatchSetup()
@@ -802,8 +809,8 @@ export default function Setup(props:SetupProps) {
         }
         log(`${totalTweets} tweets from ${profileTweets.length} profiles for ${ref_settings.current.rounds} rounds available`)
         if (totalTweets < ref_settings.current.rounds) {
-            addStateMsg(`Set rounds to ${totalTweets}`)
-            log(`Set rounds to ${totalTweets} because there are not enough tweets to play`)
+            addStateMsg(`Set rounds to ${totalTweets}, because there are not enough own tweets to play`)
+            log(`Set rounds to ${totalTweets} because there are not enough own tweets to play`)
             ref_settings.current.rounds = totalTweets
         }
 
@@ -947,13 +954,23 @@ export default function Setup(props:SetupProps) {
         REDIRECT TO MATCH
         ###################
         */
-        setTimeout(() => {
-            ref_state.current.state = Status.redirectToMatch
-            ref_tweets.current = finalTweets //TEST
-            setTimeout(() => fireEvent_Players(), 3000) //TEST
-            forceUpdate() //TEST
-            //fireEvent_Players() //ORIGINAL
-        }, 1)
+        if (isDevEnv()) {
+            //-> immediately redirect!
+            setTimeout(() => {
+                ref_state.current.state = Status.redirectToMatch
+                ref_tweets.current = finalTweets 
+                setTimeout(() => fireEvent_Players(), 3000) //give other players time to retrieve the tweets
+                forceUpdate() 
+            }, 1)
+        }
+        else if (isProdEnv()) {
+            setTimeout(() => {
+                ref_state.current.state = Status.redirectToMatch
+                fireEvent_Players() 
+            }, 8500)
+        }
+
+        
     }
 
 

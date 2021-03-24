@@ -43,9 +43,27 @@ export function setCountdown(diffS:number, diffMS:number, decrease:() => void, f
     }
 }
 
+export function getRandomInt(max:number) {
+    return Math.floor(Math.random() * Math.floor(max))
+}
+
+export function isDevEnv():boolean {
+    if (process.env.NODE_ENV === 'development') {
+        return true
+    }
+    return false
+}
+
+export function isProdEnv():boolean {
+    if (process.env.NODE_ENV === 'production') {
+        return true
+    }
+    return false
+}
+
 
 export function log(item:any):void {
-    if (process.env.NODE_ENV === 'development') {
+    if (isDevEnv()) {
         console.log(item)
     }
 }
