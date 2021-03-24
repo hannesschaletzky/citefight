@@ -64,8 +64,11 @@ const nFormatter = (input: string, digits = 2) => {
 function TweetLogic(props:Props) {
 
     const formatDate = (input:string):string => {
+        console.log(input)
+        console.log(new Date(input))
         //input: 2019-06-06T14:59:47.000Z
         let parsed = new Date(input).toLocaleDateString() 
+        console.log(parsed)
         //parsed: 06/06/2019
         let elements = parsed.split('/')
         let m = ""

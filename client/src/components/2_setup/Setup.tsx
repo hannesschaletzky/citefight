@@ -325,10 +325,11 @@ export default function Setup(props:SetupProps) {
             log('you are the only person in the room')
             //insert welcome first
             let currentUrl = window.location.href
-            addSysMsg(SysMsgType.welcome,   '🎉 Welcome to your matchroom!') 
-            addSysMsg(SysMsgType.welcome,   '🎉 Invite the people you wanna play by sending them the match-link (Browser-URL).' +
-                                            ' You can also let others scan the QR Code.' +
-                                            ' The game will start when everyone is ready.') 
+            addSysMsg(SysMsgType.welcome,   '🎉 Welcome to your matchroom! 🎉') 
+            addSysMsg(SysMsgType.welcome,   '🔥 Invite the people you wanna play by sending them the URL.' +
+                                            ' You can also let others scan the QR Code,' +
+                                            ' or pass them the ID: ' + ref_state.current.matchID + 
+                                            ' - The game will start when you have chosen Twitter profiles and everyone is ready.') 
             addSysMsg(SysMsgType.welcome,   currentUrl) 
             joinPlayer()
             setPusherState(Pu.State.connected) //force update incl.
