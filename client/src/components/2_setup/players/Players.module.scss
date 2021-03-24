@@ -26,7 +26,6 @@ $sdbg: false; //show debugging background = sdbg
 
 .Name_Con {
   flex: 4;
-  overflow-y: auto;
 
   @if $sdbg {
     background-color: khaki;

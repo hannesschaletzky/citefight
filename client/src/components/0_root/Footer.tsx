@@ -19,7 +19,7 @@ class Root_Footer extends Component {
     render() { 
         return (  
             <div className={st.Con}>
-                <div className={st.Icon_Container}>
+                <div className={st.Icon_Con}>
                     <a className={st.Icon} href="https://www.twitter.com/" target="_blank" rel="noreferrer">
                         <img src={twitterIcon} alt="Twitter" width="22" height="22"/>
                     </a>
@@ -36,7 +36,7 @@ class Root_Footer extends Component {
                         <img src={PostmanIcon} alt="Postman" width="20" height="20"/>
                     </a>
                 </div>
-                <div className={st.Link_Container}>
+                <div className={st.Link_Con}>
                     <a className={st.Link} href="/legal">Legal</a>
                     <a className={st.Link} href="/about">About</a>
                     <a className={st.Link} href="/donate">Donate</a>

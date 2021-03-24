@@ -11,12 +11,10 @@ class Root_Header extends Component {
 
     render() { 
         return (  
-            <div>
-                <div className={st.Headline_Container}>
-                    <a className={st.Headline} href="/start">citefight</a>
-                </div>
+            <div className={st.Headline_Container}>
+                <a className={st.Headline} href="/start">citefight</a>
             </div>
-        );
+        )
     }
 
 }

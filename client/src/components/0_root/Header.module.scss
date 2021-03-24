@@ -2,7 +2,8 @@
 $sdbg: false; //show debugging background = sdbg
 
 .Headline_Container {
-  padding-top: 6px;
+  height: 100%;
+  width: 100%;
   //center content
   display: flex;
   justify-content: center;
@@ -14,16 +15,9 @@ $sdbg: false; //show debugging background = sdbg
 }
 
 .Headline {
-  text-align: center;
-  font-weight: lighter;
   text-decoration: none;
   color: black;
 
-  //CUSTOM
   font-family: "Test_2";
-  font-size: 40pt;
-  //CUSTOM
-
-  //font-family: STCaiyun;
-  //font-size: calc(20px + 2vmin);
+  font-size: 35pt;
 }
