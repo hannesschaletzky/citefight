@@ -1,5 +1,10 @@
 @import "styles/app.global.scss";
 
-.Legal_Container {
-  height: 2000px; //just for testing reasons
+.Con {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: flex-start;
 }
