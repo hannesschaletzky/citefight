@@ -12,9 +12,9 @@ class Credits extends Component {
     render() { 
         return (  
             <div>
-                Navigation Icons by 
+                <span>Icons by </span>
                 <a href="https://freeicons.io/profile/714" target="_blank" rel="noreferrer">Raj Dev</a> 
-                 on 
+                <span> from here: </span>
                 <a href="https://freeicons.io" target="_blank" rel="noreferrer">freeicons.io</a>
             </div>
             

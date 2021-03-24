@@ -1,0 +1,18 @@
+$sdbg: false; //show debugging background = sdbg
+@import "styles/app.global.scss";
+
+.Con {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.Caption {
+  margin-bottom: 10px;
+  @extend .HelveticaNeueBoldFont;
+  font-size: 25px;
+  text-align: center;
+}

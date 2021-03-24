@@ -21,7 +21,8 @@ import Match from 'components/3_match/Match'
 import Root_Footer from 'components/0_root/Footer'
 import Legal from 'components/pages/Legal'
 import About from 'components/pages/About'
-import Donate from 'components/pages/Donate'
+import Donate from 'components/pages/donate/Donate'
+import DonateThankYou from 'components/pages/donate/Donate_ThankYou'
 import Credits from 'components/pages/Credits'
 import TwitterRedirect from 'components/pages/TwitterRedirect'
 import TwitterCallback from 'components/pages/TwitterCallback'
@@ -107,7 +108,8 @@ export default function App() {
                     <Route exact path="/start" component={Landing}/>
                     <Route exact path="/legal" component={Legal}/>
                     <Route exact path="/about" component={About}/>
-                    <Route exact path="/donate" component={Donate}/>
+                    <Route exact path="/donate" component={Donate}/> 
+                    <Route exact path="/donate/thankyou" component={DonateThankYou}/> 
                     <Route exact path="/credits" component={Credits}/>
 
                     <Route exact path="/match/setup/twittercallback" component={TwitterCallback}/> 
