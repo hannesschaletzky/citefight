@@ -14,9 +14,9 @@ import {MatchProps} from 'components/Functional_Interfaces'
 import Root_Header from 'components/0_root/Header'
 import Landing from 'components/pages/Landing'
 
-import Join from 'components/1_join/Join'
-import Setup from 'components/2_setup/Setup'
-import Match from 'components/3_match/Match'
+import Join from 'components/2_join/Join'
+import Setup from 'components/3_setup/Setup'
+import Match from 'components/4_match/Match'
 
 import Root_Footer from 'components/0_root/Footer'
 import Legal from 'components/pages/Legal'

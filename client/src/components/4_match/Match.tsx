@@ -19,7 +19,7 @@ import {isValidMatchID, setCountdown} from 'components/Logic'
 //pusher
 import * as Pu from 'components/pusher/Pusher'
 //components
-import Players from '../2_setup/players/Players'
+import Players from '../3_setup/players/Players'
 import Nav, {NavProps} from './nav/Nav'
 import * as Chat from 'components/00_shared/chat/Chat'
 import * as Settings from 'components/00_shared/settings/Settings'
