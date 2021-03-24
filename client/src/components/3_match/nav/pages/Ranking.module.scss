@@ -55,7 +55,7 @@ $sdbg: false; //show debugging background = sdbg
   height: 100%;
   width: 100%;
   margin-top: 10px;
-  overflow-y: scroll;
+  overflow-y: auto;
   @if $sdbg {
     background-color: rgb(135, 22, 241);
   }
@@ -83,7 +83,7 @@ $sdbg: false; //show debugging background = sdbg
 }
 
 .Name {
-  overflow: scroll;
+  overflow: hidden;
   flex: 2;
 }
 

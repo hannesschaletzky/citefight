@@ -26,17 +26,10 @@ $sdbg: false; //show debugging background = sdbg
 
 .Name_Con {
   flex: 4;
-  overflow-x: scroll;
+  overflow-y: auto;
 
   @if $sdbg {
     background-color: khaki;
-  }
-
-  //CUSTOM!
-  //hide scrollbar in windows
-  -ms-overflow-style: none;
-  ::-webkit-scrollbar {
-    display: none;
   }
 }
 

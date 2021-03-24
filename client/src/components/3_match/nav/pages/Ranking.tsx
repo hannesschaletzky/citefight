@@ -201,7 +201,7 @@ export default function Ranking(props:RankingProps) {
             cards.push(
                 <div className={className} key={user.name}>
                     {status}
-                    <div className={props.userName === user.name ? st.Name_IsYou : st.Name}>{user.name}</div>
+                    <div className={props.userName === user.name ? st.Name_IsYou : st.Name} title={user.name}>{user.name}</div>
                     <div className={st.Points} title="Total correct answers">{user.points}</div>
                     <div className={st.Time} title={"Total time taken: " + user.time/1000}>{round(user.time/1000, 1)}s</div>
                 </div>

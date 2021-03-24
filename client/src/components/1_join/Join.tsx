@@ -51,7 +51,7 @@ export default function Join(props:JoinProps) {
     const [,forceUpdate] = useReducer(x => x + 1, 0);
 
     //other
-    const maxNameChars = 25
+    const maxNameChars = 15
 
     useEffect(() => {
 

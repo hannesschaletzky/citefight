@@ -36,7 +36,7 @@ $sdbg: false; //show debugging background = sdbg
   margin-top: $header_height;
   margin-bottom: $footer_height;
   height: 78%;
-  overflow-y: scroll;
+  overflow-y: auto;
   //indent content from all sides
   padding: 20px;
 

@@ -100,7 +100,7 @@ $sdbg: false; //show debugging background = sdbg
 .Players_Con {
   height: 30%;
   margin-top: 10px;
-  overflow: scroll;
+  overflow-x: auto;
 
   @extend .borderWithRoundedCorners;
 

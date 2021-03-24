@@ -4,7 +4,6 @@ $sdbg: false; //show debugging background = sdbg
 .Con {
   flex: 1;
   padding-bottom: 10px;
-  overflow-y: scroll; //THIS CAN BE REMOVED ANYWAY
 
   @if $sdbg {
     background-color: rgba(43, 40, 78, 0.5);

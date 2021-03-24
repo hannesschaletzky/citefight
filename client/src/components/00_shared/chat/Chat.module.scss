@@ -10,7 +10,7 @@ $sdbg: false; //show debugging background = sdbg
 .Messages_Con {
   padding: 5px;
   flex: 1; //fill
-  overflow-y: scroll;
+  overflow-y: auto;
 }
 
 .Message_Con {
