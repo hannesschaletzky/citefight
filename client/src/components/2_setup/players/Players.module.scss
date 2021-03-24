@@ -31,6 +31,12 @@ $sdbg: false; //show debugging background = sdbg
   @if $sdbg {
     background-color: khaki;
   }
+
+  //hide scrollbar in windows
+  -ms-overflow-style: none;
+  ::-webkit-scrollbar {
+    display: none;
+  }
 }
 
 .Icon_Base {

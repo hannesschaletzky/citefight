@@ -8,6 +8,11 @@ import * as Sorting from './Ranking_Sorting'
 
 export default function Ranking(props:RankingProps) {
     
+    function round(value: number, precision: number) {
+        var multiplier = Math.pow(10, precision || 0);
+        return Math.round(value * multiplier) / multiplier;
+    }
+
     const getCards = () => {
 
         let matrix = props.matrix
@@ -198,7 +203,7 @@ export default function Ranking(props:RankingProps) {
                     {status}
                     <div className={props.userName === user.name ? st.Name_IsYou : st.Name}>{user.name}</div>
                     <div className={st.Points} title="Total correct answers">{user.points}</div>
-                    <div className={st.Time} title="Total time taken">{user.time/1000}</div>
+                    <div className={st.Time} title={"Total time taken: " + user.time/1000}>{round(user.time/1000, 1)}s</div>
                 </div>
             )
         }
