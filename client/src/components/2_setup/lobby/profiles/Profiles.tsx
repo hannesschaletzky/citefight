@@ -3,7 +3,6 @@ import st from './Profiles.module.scss';
 //interfaces
 import {Profile} from 'components/Interfaces'
 import {ProfilesUsage} from 'components/Interfaces'
-import {TwitterStatus} from 'components/Interfaces'
 //components
 import TwitterProfileList from 'components/00_shared/profiles/TwitterProfileList'
 

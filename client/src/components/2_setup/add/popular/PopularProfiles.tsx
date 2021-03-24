@@ -2,7 +2,6 @@ import st from './PopularProfiles.module.scss';
 
 //interfaces
 import {ProfilesUsage} from 'components/Interfaces'
-import {TwitterStatus} from 'components/Interfaces'
 //functional-interfaces
 import {PopularProfilesProps} from 'components/Functional_Interfaces'
 //components

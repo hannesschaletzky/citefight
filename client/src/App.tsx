@@ -1,6 +1,6 @@
 /* eslint-disable react/jsx-pascal-case */
 /* eslint-disable no-lone-blocks */
-import React, { useState } from 'react';
+import React, { useState , useEffect } from 'react';
 import { BrowserRouter, Route, Switch } from 'react-router-dom'
 import st from './App.module.scss';
 import {log} from 'components/Logic'
@@ -32,6 +32,14 @@ import NotFound from 'components/pages/errorpages/NotFound'
 export default function App() {
     //state
     const [pusherClient,setPusherClient] = useState(null)
+    const [logInfo, setLogInfo] = useState(false)
+
+    useEffect(() => {
+        if (!logInfo) {
+            console.log('Hi there! Nice that you wanna have a technical look 🎉🎉🎉 Let me know if you find any game-related issues that could be improved. I am keen on enhancing the user experience in any way. Feel free to connect on LinkedIn: https://www.linkedin.com/in/hannesschaletzky/')
+            setLogInfo(true)
+        }
+    }, [logInfo])
 
     const onNewPusherClient = (newClient:any) => {
         log('set pusher client in app:')
