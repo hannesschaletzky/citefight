@@ -1,6 +1,7 @@
 export interface User {
     name: string
     points: number
+    ratio: number
     time: number
 }
 export function insertIntoRanking(input: User, ranking:User[]) {

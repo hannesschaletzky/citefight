@@ -6,7 +6,6 @@ import {log, getRandomInt} from 'components/Logic'
 import Intro_Search from 'assets/landing/Intro_Search.png'
 import Intro_Tweet from 'assets/landing/Intro_Tweet.png'
 import Intro_Answers from 'assets/landing/Intro_Answers.png'
-import { match } from 'assert';
 
 export default function Landing() {
 

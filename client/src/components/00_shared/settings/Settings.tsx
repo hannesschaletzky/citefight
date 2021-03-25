@@ -11,9 +11,9 @@ import * as Not from 'components/00_shared/notification/Notification'
 ##################################
 */
 export enum Roundtime {
-    Fast = 3,
-    Regular = 5,
-    Slow = 10 
+    Fast = 5,
+    Regular = 20,
+    Slow = 40 
 }
 export enum DrinkingMode {
     Off,
@@ -26,6 +26,11 @@ export enum Pictures {
     Instantly,
     AtHalftime
 }
+/*
+##################################
+        INTERFACES
+##################################
+*/
 export interface Settings_Lobby {
     rounds: number
     roundtime: Roundtime
@@ -40,14 +45,14 @@ export interface Settings_Match {
 //INIT
 export const initSettings_Lobby:Settings_Lobby = {
     rounds: 25,
-    roundtime: Roundtime.Regular,
+    roundtime: Roundtime.Fast,
     autoContinue: false,
     pictures: Pictures.Instantly,
     drinking: DrinkingMode.Off
 }
 export const initSettings_Match:Settings_Match = {
     autoready: false,
-    jumpToRankingAfterSelecting: true
+    jumpToRankingAfterSelecting: false
 }
 
 
@@ -224,9 +229,9 @@ function SettingsLogic(props:Props) {
                     Roundtime
                 </div>
                 <div className={st.Row}>
-                    <button className={getClass(Type.l_roundtime, Roundtime.Fast)} onClick={() => {newSettings(Type.l_roundtime, Roundtime.Fast)}}>Fast</button>
-                    <button className={getClass(Type.l_roundtime, Roundtime.Regular)} onClick={() => {newSettings(Type.l_roundtime, Roundtime.Regular)}}>Regular</button>
-                    <button className={getClass(Type.l_roundtime, Roundtime.Slow)} onClick={() => {newSettings(Type.l_roundtime, Roundtime.Slow)}}>Slow</button>
+                    <button className={getClass(Type.l_roundtime, Roundtime.Fast)} title={`${Roundtime.Fast}`} onClick={() => {newSettings(Type.l_roundtime, Roundtime.Fast)}}>Fast</button>
+                    <button className={getClass(Type.l_roundtime, Roundtime.Regular)} title={`${Roundtime.Regular}`} onClick={() => {newSettings(Type.l_roundtime, Roundtime.Regular)}}>Regular</button>
+                    <button className={getClass(Type.l_roundtime, Roundtime.Slow)} title={`${Roundtime.Slow}`} onClick={() => {newSettings(Type.l_roundtime, Roundtime.Slow)}}>Slow</button>
                 </div>
                 
                 {/*AUTO CONTINUE*/}
@@ -273,7 +278,7 @@ function SettingsLogic(props:Props) {
                     <button className={getClass(Type.m_autoready, false)} onClick={() => {newSettings(Type.m_autoready, false)}}>Off</button>
                     <button className={getClass(Type.m_autoready, true)} onClick={() => {newSettings(Type.m_autoready, true)}}>On</button>
                 </div>
-                
+
                 {/*JUMP TO RANKING AFTER ANSWERING*/}
                 <div className={st.Header}>
                     Jump to Ranking after answer was selected

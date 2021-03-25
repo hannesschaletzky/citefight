@@ -2,6 +2,7 @@
 import React, { useRef, useEffect, useState, useReducer } from 'react';
 import  { Redirect } from 'react-router-dom'
 import st from './Match.module.scss'
+import st_tweet from './tweet/Tweet.module.scss'
 import {log, logErr, logObjectPretty} from 'components/Logic'
 //UI Elements
 import CircularProgress from '@material-ui/core/CircularProgress'
@@ -70,6 +71,7 @@ interface State {
     roundCountdown: number
     roundActive: boolean
     roundSolution: RoundSolution
+    fadeInClass: string //used to manage fade in of top con in tweet component
 }
 const init_state:State = {
     matchID: '',
@@ -81,7 +83,8 @@ const init_state:State = {
     roundStarts: new Date(),
     roundCountdown: -1,
     roundActive: false,
-    roundSolution: init_roundSolution
+    roundSolution: init_roundSolution,
+    fadeInClass: st_tweet.Top_Con_Fade_In_1
 }
 
 //MATRIX
@@ -304,6 +307,16 @@ export default function Match(props:MatchProps) {
     ##################################
     ##################################
     */
+    
+    //toggle fade in class for answer in tweet component
+    const toggleFadeInClass = () => {
+        if (ref_state.current.fadeInClass === st_tweet.Top_Con_Fade_In_2) {
+            ref_state.current.fadeInClass = st_tweet.Top_Con_Fade_In_1
+        }
+        else if (ref_state.current.fadeInClass === st_tweet.Top_Con_Fade_In_1) {
+            ref_state.current.fadeInClass = st_tweet.Top_Con_Fade_In_2
+        }
+    }
 
     const getPointFor = (playerName:string = ref_username.current):Point => {
         return ref_matrix.current[playerName][ref_state.current.roundIndex]
@@ -575,6 +588,11 @@ export default function Match(props:MatchProps) {
     //5TH: SHOW OWN PICK
     const showOwnSelection = (pick:Profile) => {
 
+        if (pick.screen_name === ref_tweets.current[ref_state.current.roundIndex].t_userTag) {
+            log('answer already logged in')
+            return
+        }
+
         //set own pick in current
         ref_tweets.current[ref_state.current.roundIndex].t_userName = pick.name
         ref_tweets.current[ref_state.current.roundIndex].t_userTag = pick.screen_name
@@ -595,8 +613,9 @@ export default function Match(props:MatchProps) {
         //broadcast
         fireEvent_Matrix(point)
 
-        //update UI
+        //manage UI
         log('show pick: ' + pick.name)
+        toggleFadeInClass()
         setStatus(Status.showRound_OwnPick, true)
     }
 
@@ -624,6 +643,7 @@ export default function Match(props:MatchProps) {
         ref_HoverPic.current = ""
         //show solution
         log('show solution')
+        toggleFadeInClass()
         ref_state.current.roundActive = false
         setStatus(Status.showRound_Solution, true)
 
@@ -917,6 +937,8 @@ export default function Match(props:MatchProps) {
             showImages = true
         }
 
+        let fadeInClass = ref_state.current.fadeInClass
+
         let content = <div></div>
 
         //IS EVERYONE READY?
@@ -972,21 +994,21 @@ export default function Match(props:MatchProps) {
         else if (ref_state.current.status === Status.showRound) {
             return content = 
                 <div className={st.Tweet_Con}>
-                    {TweetComp.getComponent(ref_tweets.current[ref_state.current.roundIndex], showImages, pictureClick)}
+                    {TweetComp.getComponent(ref_tweets.current[ref_state.current.roundIndex], showImages, fadeInClass, pictureClick)}
                 </div>
         }
         //SHOW OWN PICK 
         else if (ref_state.current.status === Status.showRound_OwnPick) {
             return content = 
                 <div className={st.Tweet_Con}>
-                    {TweetComp.getComponent(ref_tweets.current[ref_state.current.roundIndex], showImages, pictureClick)}
+                    {TweetComp.getComponent(ref_tweets.current[ref_state.current.roundIndex], showImages, fadeInClass, pictureClick)}
                 </div>
         }
         //SHOW SOLUTION 
         else if (ref_state.current.status === Status.showRound_Solution) {
             return content = 
                 <div className={st.Tweet_Con}>
-                    {TweetComp.getComponent(ref_tweets.current[ref_state.current.roundIndex], showImages, pictureClick)}
+                    {TweetComp.getComponent(ref_tweets.current[ref_state.current.roundIndex], showImages, fadeInClass, pictureClick)}
                 </div>
         }
         

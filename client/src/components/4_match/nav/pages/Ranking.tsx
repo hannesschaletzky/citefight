@@ -145,19 +145,28 @@ export default function Ranking(props:RankingProps) {
             //calc total points/time
             let correct = 0
             let timeMS = 0
+            let answersCount = 0 
             let arr = matrix[player]
             for(let i=0;i<arr.length;i++) {
                 //check if max given round reached
                 if (i === props.roundUntil) {break}
-                //calc
+                //calc measures
                 if (arr[i].correct) {correct++}
+                if (arr[i].answer !== '') {answersCount++}
                 timeMS += arr[i].timeMS
+            }
+
+            //calc ratio
+            let ratio = 0
+            if (answersCount !== 0) {
+                ratio = round((correct/answersCount)*100,0)
             }
 
             //insert into sorted array
             let user:Sorting.User = {
                 name: player,
                 points: correct,
+                ratio: ratio,
                 time: timeMS
             }
             Sorting.insertIntoRanking(user, calcArr)
@@ -181,7 +190,7 @@ export default function Ranking(props:RankingProps) {
                 }
                 //correct/false
                 if (point.answer === '') {
-                    status = <div className={st.Answer} title='No answer was given'>❓</div>
+                    status = <div className={st.Answer} title='No answer was given'>⭕</div>
                 }
                 else {
                     const text = 'Solution: ' + point.goal + ', Answer: ' + point.answer
@@ -189,7 +198,7 @@ export default function Ranking(props:RankingProps) {
                         status = <div className={st.Answer} title={text}>✅</div>
                     }
                     else {
-                        status = <div className={st.Answer} title={text}>⭕</div>
+                        status = <div className={st.Answer} title={text}>❌</div>
                     }
                 }
             }
@@ -202,8 +211,8 @@ export default function Ranking(props:RankingProps) {
                 <div className={className} key={user.name}>
                     {status}
                     <div className={props.userName === user.name ? st.Name_IsYou : st.Name} title={user.name}>{user.name}</div>
-                    <div className={st.Points} title="Total correct answers">{user.points}</div>
-                    <div className={st.Time} title={"Total time taken: " + user.time/1000}>{round(user.time/1000, 1)}s</div>
+                    <div className={st.Points} title="Total correct/ratio correct">{user.points}/{user.ratio}%</div>
+                    <div className={st.Time} title={"Total time: " + user.time/1000}>{round(user.time/1000, 1)}s</div>
                 </div>
             )
         }

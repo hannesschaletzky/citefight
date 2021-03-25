@@ -7,6 +7,7 @@ export enum LocalStorage {
     MatchID = 'MatchID',
     TwitterLoginSuccess = 'TwitterLoginSuccess',
     Username = 'Username',
+    FadeInClass = 'FadeInClass',
     //used to enter game
     JoinGame = 'JoinGame',
     //Redirect Storage Vars from setup to match

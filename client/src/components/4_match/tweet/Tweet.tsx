@@ -20,12 +20,14 @@ import QuestionMark from 'assets/tweet/QuestionMark.png'
 interface Props {
     tweet: Tweet
     showImages: boolean
+    fadeInClass: string
     onPicClick:(picURL:string) => void
 }
-export const getComponent = (tweet:Tweet, showImages:boolean, onPicClick:(picURL:string) => void) => {
+export const getComponent = (tweet:Tweet, showImages:boolean, fadeInClass:string, onPicClick:(picURL:string) => void) => {
     let props:Props = {
         tweet: tweet,
         showImages: showImages,
+        fadeInClass: fadeInClass,
         onPicClick: onPicClick
     }
     return React.createElement(TweetLogic, props)
@@ -184,7 +186,8 @@ function TweetLogic(props:Props) {
         let textConClass = st.Text_Con
         let textClass = st.Text
         let textLinkClass = st.Text_Link
-        if (props.tweet.c_photo1 !== '') {
+        //-> only adjust to image css when image is finally shown
+        if (props.tweet.c_photo1 !== '' && props.showImages) {
             textConClass = st.Text_Con_Pictures
             textClass = st.Text_Pictures
             textLinkClass = st.Text_Link_Pictures
@@ -325,6 +328,7 @@ function TweetLogic(props:Props) {
         let userIconComp = <div></div>
         let userVerifiedComp = <div></div>
         let tweetIconComp = <div></div>
+
         //disable
         if (props.tweet.t_profileURL === '') {
             userIconComp = 
@@ -332,9 +336,14 @@ function TweetLogic(props:Props) {
             userVerifiedComp =
                 <img className={st.Verified_Icon_Disabled} src={VerifiedIcon} alt="Verified"/>
         }
-        //own pick OR solution
+        //own pick OR Solution
         else {
-            topClass = st.Top_Con_Fade_In
+
+            //toggle fade in when given 
+            if (props.fadeInClass !== '') {
+                topClass = props.fadeInClass
+            }
+
             userIconComp = 
                 <a href={props.tweet.t_profileURL} target="_blank" rel="noreferrer" title="View twitter profile">
                     <img className={st.Pic} src={props.tweet.t_userPicURL} alt="User"/>
@@ -344,15 +353,14 @@ function TweetLogic(props:Props) {
         }
 
         //Twitter Icon
-        //disable
+        //disable always 
         if (props.tweet.t_tweetURL === '') {
             tweetIconComp = 
                 <img className={st.Twitter_Icon_Disabled} src={TwitterIcon} alt="Tweet"/>
         }
-        //ONLY solution
+        //except when solution is displayed
         else {
             //-> only enable clicking on twitter icon when solution is here
-            console.log('SHOW SOLUTION')
             topClass = st.Top_Con_Fade_In_Solution
             tweetIconComp = 
                 <a href={props.tweet.t_tweetURL} target="_blank" rel="noreferrer" title="View tweet">

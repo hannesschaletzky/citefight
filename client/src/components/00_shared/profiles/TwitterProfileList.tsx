@@ -25,15 +25,21 @@ class TwitterProfileList extends Component <any, any> {
         };
     }
 
-    toogleActiveCard(newKey:string, profileProtected:boolean, actionCon:ActionConType) {
+    toogleActiveCard(newKey:string, user:Profile, actionCon:ActionConType) {
         if (this.state.activeCard === newKey) {
             //deselect
             this.setState({activeCard: ''})
         }
         else {
             if (actionCon !== ActionConType.init) {
-                //select
-                this.setState({activeCard: newKey})
+                if (actionCon === ActionConType.answer) {
+                    //select answer with only one click
+                    this.selectAnswer(user)
+                }
+                else {
+                    //select
+                    this.setState({activeCard: newKey})
+                }
             }
         }
     }
@@ -140,7 +146,7 @@ class TwitterProfileList extends Component <any, any> {
 
             //COMPOSE
             cards.push(
-                <div className={topClassName} key={user.screen_name} title={topTitle} onClick={() => this.toogleActiveCard(user.screen_name, user.protected, actionCon)}>
+                <div className={topClassName} key={user.screen_name} title={topTitle} onClick={() => this.toogleActiveCard(user.screen_name, user, actionCon)}>
                     {profilePicComp}
                     <div className={st.UserCard_DataCon}>
                         <div className={st.Names_Con}>
@@ -162,7 +168,7 @@ class TwitterProfileList extends Component <any, any> {
                                 {numberWithThousandSep(user.followers_count)}
                             </div>
                         </div>
-                        <div className={this.checkActive(user.screen_name)} onClick={() => this.toogleActiveCard(user.screen_name, user.protected, actionCon)}>
+                        <div className={this.checkActive(user.screen_name)} onClick={() => this.toogleActiveCard(user.screen_name, user, actionCon)}>
                             {(actionCon === ActionConType.add) &&
                                 <div className={st.Actions_Con}>
                                     <button className={st.Button_Add} onClick={() => this.addUser(user)}>

@@ -12,7 +12,7 @@ $sdbg: false; //show debugging background = sdbg
 
 .Con_NoAdmin {
   @extend .Con;
-  opacity: 0.2;
+  opacity: 0.5;
   pointer-events: none; //disable clicking
   user-select: none; //disable selecting
 }

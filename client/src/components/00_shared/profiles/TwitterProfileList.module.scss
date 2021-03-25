@@ -19,7 +19,9 @@ $sdbg: false; //show debugging background = sdbg
   //shadow
   box-shadow: 2px 2px rgba(5, 19, 19, 0.267);
 
-  //background-color: rgb(245, 248, 250);
+  &:active {
+    box-shadow: 0 0px transparent;
+  }
 }
 
 .userCard_Con_Disabled {

@@ -40,18 +40,7 @@ $x: 40px;
     background-color: rgba(66, 150, 10, 0.445);
   }
 }
-.Top_Con_Animation_Base {
-  -webkit-animation: fadeIn 1s linear forwards;
-  -moz-animation: fadeIn 1s linear forwards;
-  -o-animation: fadeIn 1s linear forwards;
-  -ms-animation: fadeIn 1s linear forwards;
-  animation: fadeIn 1s linear forwards;
-}
-.Top_Con_Fade_In {
-  @extend .Top_Con;
-  @extend .Top_Con_Animation_Base;
-}
-.Top_Con_Fade_In_Solution {
+.Top_Con_Fade_In_1 {
   @extend .Top_Con;
   -webkit-animation: fadeIn_1 1s linear forwards;
   -moz-animation: fadeIn_1 1s linear forwards;
@@ -59,7 +48,23 @@ $x: 40px;
   -ms-animation: fadeIn_1 1s linear forwards;
   animation: fadeIn_1 1s linear forwards;
 }
-@keyframes fadeIn {
+.Top_Con_Fade_In_2 {
+  @extend .Top_Con;
+  -webkit-animation: fadeIn_2 1s linear forwards;
+  -moz-animation: fadeIn_2 1s linear forwards;
+  -o-animation: fadeIn_2 1s linear forwards;
+  -ms-animation: fadeIn_2 1s linear forwards;
+  animation: fadeIn_2 1s linear forwards;
+}
+.Top_Con_Fade_In_Solution {
+  @extend .Top_Con;
+  -webkit-animation: fadeIn_Sol 1s linear forwards;
+  -moz-animation: fadeIn_Sol 1s linear forwards;
+  -o-animation: fadeIn_Sol 1s linear forwards;
+  -ms-animation: fadeIn_Sol 1s linear forwards;
+  animation: fadeIn_Sol 1s linear forwards;
+}
+@keyframes fadeIn_1 {
   0% {
     opacity: 0;
   }
@@ -67,7 +72,15 @@ $x: 40px;
     opacity: 1;
   }
 }
-@keyframes fadeIn_1 {
+@keyframes fadeIn_2 {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+@keyframes fadeIn_Sol {
   0% {
     opacity: 0;
   }
