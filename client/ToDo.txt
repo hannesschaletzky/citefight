@@ -1,0 +1,3 @@
+remove event listener for leaving page when game ended! 
+stop round when everyone gave answer
+remove monkey icon at players
