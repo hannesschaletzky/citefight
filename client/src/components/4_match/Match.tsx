@@ -450,7 +450,10 @@ export default function Match(props:MatchProps) {
         //member id -> e.g. 2021-03-09T01:38:42.941Z7
         ref_players.current.forEach((item:Player, i) => {
             if (item.pusherID === memberID) {
+                //remove player
                 ref_players.current.splice(i,1)
+                delete ref_matrix.current[item.name]
+                addSysMsg(SysMsgType.userLeft, item.name)
                 forceUpdate()
                 return
             }
