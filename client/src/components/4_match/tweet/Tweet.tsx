@@ -206,7 +206,13 @@ function TweetLogic(props:Props) {
                 //determine word category
                 let hashtag = isHashtag(word)
                 let usertag = isUsertag(word)
-                //check hashtag
+                let link = false
+
+                //links are displayed like this: https://t.co/cGyWghlVcH
+                if (word.indexOf('https://t.co/') === 0) {
+                    link = true
+                }
+                //hashtag
                 if (hashtag !== "") {
                     text.push(  <a className={st.Link} key={grk()} href={"https://twitter.com/hashtag/" + word.substring(1)} target="_blank" rel="noreferrer" title="View hastag">
                                     <span className={textLinkClass} key={grk()}>{hashtag}</span>
@@ -216,7 +222,7 @@ function TweetLogic(props:Props) {
                         text.push(<span className={textClass} key={grk()}>{rest}</span>)
                     }
                 }
-                //check usertag
+                //usertag
                 else if (usertag !== "") {
                     text.push(  <a className={st.Link} key={grk()} href={"https://twitter.com/" + word.substring(1)} target="_blank" rel="noreferrer" title="View profile">
                                     <span className={textLinkClass} key={grk()}>{usertag}</span>
@@ -225,6 +231,11 @@ function TweetLogic(props:Props) {
                     if (rest !== "") {
                         text.push(<span className={textClass} key={grk()}>{rest}</span>)
                     }
+                }
+                else if (link) {
+                    text.push(  <a className={st.Link} key={grk()} href={word} target="_blank" rel="noreferrer" title="View content">
+                                    <span className={textLinkClass} key={grk()}>{word}</span>
+                                </a>)
                 }
                 //normal word
                 else {
@@ -277,9 +288,6 @@ function TweetLogic(props:Props) {
             </div>
         }
         else if (count === 3) {
-
-            //<img className={st.Three_Right_Top} src={tweet.c_photo2} alt=""/>
-            //<img className={st.Three_Right_Bottom} src={tweet.c_photo3} alt=""/>
             picturesComponent =  
                 <div className={st.Images_Con}>
                     <div className={st.Three_Left_Con}>

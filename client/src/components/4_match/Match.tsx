@@ -53,6 +53,7 @@ enum Status {
     showRound = 'showRound',
     showRound_OwnPick = 'showRound_OwnPick',
     showRound_Solution = 'showRound_Solution',
+    finishMatch = 'finishMatch',
     
     //errors
     errorInitalValues = 'errorInitalValues'
@@ -693,9 +694,10 @@ export default function Match(props:MatchProps) {
         forceUpdate()
     }
 
-    //8TH: SHOW RESULTS WHEN GAME FINISHED
-    const showResults = () => {
-        log('show results')
+    //8TH: FINISH MATCH
+    const finishMatch = () => {
+        log('finish match')
+        setStatus(Status.finishMatch, true)
     }
 
     /*
@@ -1041,6 +1043,19 @@ export default function Match(props:MatchProps) {
                     {TweetComp.getComponent(ref_tweets.current[ref_state.current.roundIndex], showImages, fadeInClass, pictureClick)}
                 </div>
         }
+        //FINISH MATCH 
+        else if (ref_state.current.status === Status.finishMatch) {
+            return content = 
+                <div className={st.Tweet_Con}>
+                    <div className={st.Content_Con}>
+                        <div className={st.StartCountdown_Caption}>
+                            Thanks for playing! If you like the game, consider a <a href="/donate">donation</a> :) <br></br><br></br>
+                            If you have any suggestions for improvements, let me know. 
+                        </div>
+                        
+                    </div>
+                </div>
+        }
         
         return content
     }
@@ -1051,8 +1066,8 @@ export default function Match(props:MatchProps) {
         if (ref_state.current.status === Status.showRound_Solution && !getPointFor().ready) {
             //game finished
             if (ref_state.current.roundIndex+1 === ref_settings_lobby.current.rounds) {
-                return <button className={st.Button_Ready} onClick={() => showResults()}>
-                            Show Results
+                return <button className={st.Button_Ready} onClick={() => finishMatch()}>
+                            Finish!
                         </button>
             }
             return  <button className={st.Button_Ready} onClick={() => setYourselfReady()}>

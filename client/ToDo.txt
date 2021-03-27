@@ -2,13 +2,11 @@ _________
 PRIO 1:
 insert history in ranking cards
 let ready button jump in setup screen (also in match but here only in first round)
-make links in tweet blue as well
 Encrypt sharing tweets and matrix points
 
 _________
 PRIO 2:
 add drinking mode
-add match ended screen after last round
 
 _________
 PRIO 3:
@@ -16,10 +14,10 @@ add big results matrix
 create categories
 create history -> users can just use the profiles from a recent match
 
-
-
 ___________________________________________________________________________________________
 DONE:
+add match ended screen after last round
+make links in tweet blue as well
 implement what happens when user leaves match
 implement chat symbol with other colour in nav when new message arrived
 --> PUT CHECK FOR MATCH WHEN USER CLICKED JOIN BUTTON! 
