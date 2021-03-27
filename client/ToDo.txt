@@ -1,8 +1,12 @@
 _________
 PRIO 1:
+care for the 1.5 seconds when everyone gave answer and showSolution 
+    -> maybe insert status round closed!
+    -> EVEN BETTER: integrate check if everyone is ready in decrease timeout call
+
 insert history in ranking cards
-let ready button jump in setup screen (also in match but here only in first round)
 Encrypt sharing tweets and matrix points
+
 
 _________
 PRIO 2:
@@ -10,9 +14,10 @@ add drinking mode
 
 _________
 PRIO 3:
-add big results matrix 
+add big results matrix
 create categories
 create history -> users can just use the profiles from a recent match
+let ready button jump in setup screen (also in match but here only in first round)
 
 ___________________________________________________________________________________________
 DONE:

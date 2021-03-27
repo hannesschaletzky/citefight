@@ -29,6 +29,34 @@ $sdbg: false; //show debugging background = sdbg
   }
 }
 
+/*
+.Button_Ready_Wiggle {
+  @extend .Button_Ready;
+  -webkit-animation: wiggle 0.3s linear forwards infinite !important;
+  -moz-animation: wiggle 0.3s linear forwards infinite !important;
+  -o-animation: wiggle 0.3s linear forwards infinite !important;
+  -ms-animation: wiggle 0.3s linear forwards infinite !important;
+  animation: wiggle 0.3s linear forwards infinite !important;
+}
+@keyframes wiggle {
+  0% {
+    transform: rotate(10deg);
+  }
+  25% {
+    transform: rotate(-10deg);
+  }
+  50% {
+    transform: rotate(10deg);
+  }
+  75% {
+    transform: rotate(-5deg);
+  }
+  100% {
+    transform: rotate(0deg);
+  }
+}
+*/
+
 .Button_Unready {
   @extend .Button_Base;
   flex-shrink: 0;
