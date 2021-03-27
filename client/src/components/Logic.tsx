@@ -27,20 +27,26 @@ export function isValidMatchID(url:string):string | null {
 }
 
 //countdown in seconds
-export function setCountdown(diffS:number, diffMS:number, decrease:() => void, finished:() => void) {
-    setTimeout(() => {
-        decrease()
-        finished()
-    }, diffMS)
+export function setCountdown(diffS:number, diffMS:number, decrease:() => void, finished:() => void):NodeJS.Timeout[] {
+    let timeouts:NodeJS.Timeout[] = [] 
+    let timeout = 
+        setTimeout(() => {
+            decrease()
+            finished()
+        }, diffMS)
+    timeouts.push(timeout)
     //intermediate calls
     let span = 1000
     while (diffS > 1) { //>1 -> skip last call
-        setTimeout(() => {
-            decrease()
-        }, span)
+        timeout = 
+            setTimeout(() => {
+                decrease()
+            }, span)
         span += 1000
         diffS -= 1
+        timeouts.push(timeout)
     }
+    return timeouts
 }
 
 export function getRandomInt(max:number) {

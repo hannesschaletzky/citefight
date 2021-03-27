@@ -105,6 +105,7 @@ const init_profiles:Profile[] = []
 const init_players:Player[] = []
 const init_tweets:Tweet[] = []
 const init_chat:ChatMsg[] = []
+const init_timeouts:NodeJS.Timeout[] = []
 
 export default function Match(props:MatchProps) {
     //state
@@ -122,6 +123,7 @@ export default function Match(props:MatchProps) {
     const ref_players = useRef(init_players)
     const ref_chat = useRef(init_chat)
     const ref_HoverPic = useRef('')
+    const ref_timeouts = useRef(init_timeouts)
     //pusher refs
     const ref_pusherClient = useRef(Pu.init_pusherCient)
     const ref_pusherChannel = useRef(Pu.init_pusherChannel)
@@ -216,12 +218,6 @@ export default function Match(props:MatchProps) {
                 log('match: retrieved and set pusher client')
                 joinGame()
             }
-
-            //double ask user before leaving
-            window.addEventListener("beforeunload", (ev) => {
-                ev.preventDefault()
-                return ev.returnValue = 'Are you sure you want to close?'
-            })
         }
   	})
 
@@ -300,6 +296,12 @@ export default function Match(props:MatchProps) {
         log(ref_matrix.current) 
     }
 
+    //double ask user before leaving, but not when game finished
+    const handleBeforeUnloadEvent = (ev:BeforeUnloadEvent) => {
+        ev.preventDefault()
+        return ev.returnValue = ''
+    }
+
     /*
     ##################################
     ##################################
@@ -307,7 +309,7 @@ export default function Match(props:MatchProps) {
     ##################################
     ##################################
     */
-    
+
     //toggle fade in class for answer in tweet component
     const toggleFadeInClass = () => {
         if (ref_state.current.fadeInClass === st_tweet.Top_Con_Fade_In_2) {
@@ -549,19 +551,24 @@ export default function Match(props:MatchProps) {
     //4TH: SHOW ROUND
     const showRound = () => {
 
+        //add/remove event listener when user refreshes
+        if (ref_state.current.roundIndex+1 < ref_settings_lobby.current.rounds) {
+            window.addEventListener("beforeunload", handleBeforeUnloadEvent)
+        }  
+        else {
+            //-> remove at last round
+            window.removeEventListener("beforeunload", handleBeforeUnloadEvent)
+        }
+
         //calc differnce until target date
         let diffS = ref_settings_lobby.current.roundtime
-
         //logic for decrease timeout
         const decrease = () => {
-            if (ref_state.current.status === Status.showRound || 
-                ref_state.current.status === Status.showRound_OwnPick) {
-                    ref_state.current.roundCountdown -= 1
-                    forceUpdate()
-            }
+            ref_state.current.roundCountdown -= 1
+            forceUpdate()
         }
-        
-        setCountdown(diffS, diffS*1000, decrease, showRoundSolution)
+        //start countdown and store timeouts
+        ref_timeouts.current = setCountdown(diffS, diffS*1000, decrease, showRoundSolution)
 
         //save solution of round
         let cur = ref_tweets.current[ref_state.current.roundIndex]
@@ -756,10 +763,31 @@ export default function Match(props:MatchProps) {
         else if (ref_state.current.status === Status.showRound_Solution) {
             forceUpdate()
         }
+
+        //finish round when everyone answered
+        if (ref_state.current.status === Status.showRound_OwnPick) {
+            //check if everyone answered
+            let finishRound = true
+            ref_players.current.forEach((player) => {
+                if (ref_matrix.current[player.name][ref_state.current.roundIndex].answer === '') {
+                    finishRound = false
+                }
+            })
+            if (finishRound) {
+                log('everyone answered -> show solution!')
+                //stop countdown by clearing timeouts
+                ref_timeouts.current.forEach((timeout) => {
+                    clearTimeout(timeout)
+                })
+                ref_timeouts.current = []
+                //show solution after small timeout so animation can finish
+                setTimeout(() => showRoundSolution(),1000)
+                return
+            }
+        }
         
         //ADMIN starts next round if everyone is ready
         if (isAdmin() && ref_state.current.status === Status.showRound_Solution) {
-            
             //check if everyone is ready
             for(let i=0;i<ref_players.current.length;i++) {
                 let player = ref_players.current[i]
@@ -767,7 +795,6 @@ export default function Match(props:MatchProps) {
                     return
                 }
             }
-            
             log('everyone ready -> next round')
             setStatus(Status.calcRound)
             fireEvent_State()

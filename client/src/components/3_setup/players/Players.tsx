@@ -29,17 +29,12 @@ class Players extends Component <any, any> {
             //create user cards
             let card = 
             <div className={(item.ready ? st.PlayerCard_Ready : st.PlayerCard)} key={i}>
-                <div className={st.Name_Con}>
+                <div className={currentUser === item.name ? st.Name_Con_Bold : st.Name_Con}>
                     {item.name}
                 </div>
                 <div className={st.IsAdmin_Con}>
                     {(item.name === players[0].name) &&
                         <div title={item.name + " is Admin"}>👑</div>
-                    }
-                </div>
-                <div className={st.IsYou_Con}>
-                    {(currentUser === item.name) &&
-                        <div title="You">🐵</div>
                     }
                 </div>
                 <div className={st.Ready_Con}>

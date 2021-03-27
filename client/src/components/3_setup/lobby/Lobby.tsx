@@ -57,7 +57,7 @@ export default function Lobby(isAdmin:boolean, //first user is admin
             <div className={st.Content}>
                 {!isAdmin && lobbyIndex === 1 &&
                     <div className={st.No_Admin_Caption}>
-                        Only first player can edit settings
+                        Only the admin 👑 can edit settings 
                     </div>
                 }
                 {getLobbyContent()}

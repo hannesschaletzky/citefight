@@ -76,11 +76,9 @@ export default function Join(props:JoinProps) {
                 })
         }
 
-        //retrieve gameinfo
-        if (ref_status.current.Join === JoinStatus.pusherConnected &&
-            ref_status.current.GameInfo === GameInfoStatus.init) {
-            setGameInfoStatus(GameInfoStatus.loading)
-            retrieveGameInfo()
+        //trigger join when game info is here
+        if (ref_status.current.GameInfo === GameInfoStatus.success) {
+            executeJoin()
         }
     })
 
@@ -105,11 +103,58 @@ export default function Join(props:JoinProps) {
     /*
     ##################################
     ##################################
+                JOIN GAME 
+    ##################################
+    ##################################
+    */
+    //1ST: JOIN CLICK
+    const onJoinClick = (name:string) =>  {
+        //check enabled
+        if (!joinEnabled) {
+            return
+        }
+        //is trying
+        if (ref_status.current.Join === JoinStatus.connecting) {
+            log('already trying')
+            return
+        }
+        triggerJoin(name)
+    }
+    //1ST: QUICK JOIN CLICK
+    const onQuickJoinClick = () => {
+        let userName = localStorage.getItem(LocalStorage.Username)
+        if (userName !== null) {
+            triggerJoin(userName)
+        }
+    }
+
+    //2ND: CHECK IF GAME IS LOBBY OR MATCH
+    const triggerJoin = (userName:string) => {
+        //retrieve gameinfo 
+        if (ref_status.current.Join === JoinStatus.pusherConnected && ref_status.current.GameInfo === GameInfoStatus.init) {
+            localStorage.setItem(LocalStorage.Username, userName)
+            setGameInfoStatus(GameInfoStatus.loading)
+            retrieveGameInfo()
+        }
+    }
+
+    //3RD: GAME INFO RECEIVED -> JOIN IF GAME IS STILL IN LOBBY
+    const executeJoin = () => {
+        if (!ref_status.current.IsLobby) {
+            setGameInfoStatus(GameInfoStatus.init)
+            alert('Match is already ongoing, you cannot join.')
+            return
+        }
+        setJoinStatus(JoinStatus.connecting)
+    }
+
+    /*
+    ##################################
+    ##################################
             RETRIEVE GAME INFO 
     ##################################
     ##################################
     */
-
     const retrieveGameInfo = () => {
 
         //sub to match channel -> check if you are only one: yes -> still in lobby phase
@@ -132,42 +177,6 @@ export default function Join(props:JoinProps) {
             }
             props.pusherClient.unsubscribe(name) //unsubscribe from match channel
         })
-    }
-
-    /*
-    ##################################
-    ##################################
-                JOIN GAME 
-    ##################################
-    ##################################
-    */
-    const onJoinClick = (name:string) =>  {
-        //check enabled
-        if (!joinEnabled) {
-            return
-        }
-        //is trying
-        if (ref_status.current.Join === JoinStatus.connecting) {
-            log('already trying')
-            return
-        }
-        executeJoin(name)
-    }
-
-    const onQuickJoinClick = () => {
-        let userName = localStorage.getItem(LocalStorage.Username)
-        if (userName !== null) {
-            executeJoin(userName)
-        }
-    }
-
-    const executeJoin = (userName:string) => {
-        if (!ref_status.current.IsLobby) {
-            alert('Match is already ongoing, you cannot join.')
-            return
-        }
-        localStorage.setItem(LocalStorage.Username, userName)
-        setJoinStatus(JoinStatus.connecting)
     }
 
     /*
@@ -252,26 +261,8 @@ export default function Join(props:JoinProps) {
         else if (ref_status.current.Join === JoinStatus.pusherConnected) {
 
             //DETERMINE GAME INFO STATUS
-            if (ref_status.current.GameInfo === GameInfoStatus.init ||
-                ref_status.current.GameInfo === GameInfoStatus.loading) {
-                content  = 
-                <div className={st.State_Con}>
-                    <div className={st.State_Caption}>
-                        Retrieving Game Info...
-                    </div>
-                    <CircularProgress/>
-                </div>
-            }
-            else if (ref_status.current.GameInfo === GameInfoStatus.error) {
-                content  = 
-                <div className={st.State_Con}>
-                    <div className={st.State_Caption}>
-                        Could not retrieve mandatory game info for {ref_status.current.MatchID}. Please try again.
-                    </div>
-                </div>
-            }
-            else if (ref_status.current.GameInfo === GameInfoStatus.success) {
-                
+            if (ref_status.current.GameInfo === GameInfoStatus.init) {
+
                 content = 
                 <div className={st.Join_Con}>
                     <div className={st.Caption}>
@@ -300,6 +291,35 @@ export default function Join(props:JoinProps) {
                     }
                 </div>
             }
+            //LOADING
+            else if (ref_status.current.GameInfo === GameInfoStatus.loading) {
+                content  = 
+                <div className={st.State_Con}>
+                    <div className={st.State_Caption}>
+                        Retrieving Game Info...
+                    </div>
+                    <CircularProgress/>
+                </div>
+            }
+            //ERROR
+            else if (ref_status.current.GameInfo === GameInfoStatus.error) {
+                content  = 
+                <div className={st.State_Con}>
+                    <div className={st.State_Caption}>
+                        Could not retrieve mandatory game info for {ref_status.current.MatchID}. Please try again.
+                    </div>
+                </div>
+            }
+            else if (ref_status.current.GameInfo === GameInfoStatus.success) {
+                content  = 
+                <div className={st.State_Con}>
+                    <div className={st.State_Caption}>
+                        Joining...
+                    </div>
+                    <CircularProgress/>
+                </div>
+            }
+            
 
         }
         //JOINING -> redirect user

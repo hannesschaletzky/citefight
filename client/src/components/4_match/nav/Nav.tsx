@@ -35,11 +35,20 @@ export interface NavProps {
     onNotfication: (msg:string, notType:Not.Type) => void
 }
 
+enum ChatStatus {
+    init,
+    newMsg,
+    MsgSeen
+}
+
 export default function Nav(props:NavProps) {
     const [lobbyIndex, setLobbyIndex] = useState(0) //default to answers
     //vars for displaying content depending on flow
     const [lastRound, setLastRound] = useState(-1) 
     const [showSolution, setShowSolution] = useState(false)
+    //handle new chat messages
+    const [chatMsgCount, setChatMsgCount] = useState(-1)
+    const [chatStatus, setChatStatus] = useState(ChatStatus.init)
 
     useEffect(() => {
         //jump to answers once the round started
@@ -53,6 +62,18 @@ export default function Nav(props:NavProps) {
             setShowSolution(true)
             setLobbyIndex(1)
         }
+
+        //check if new messages have arrived
+        if (props.chatmessages.length > chatMsgCount) {
+            setChatMsgCount(props.chatmessages.length)
+            if (lobbyIndex === 2) {
+                setChatStatus(ChatStatus.MsgSeen)
+            }
+            else {
+                //only indicate new messages when other chat is not open
+                setChatStatus(ChatStatus.newMsg)
+            }
+        }   
     })
 
     const onSelectAnswer = (profile:Profile) => {
@@ -99,25 +120,37 @@ export default function Nav(props:NavProps) {
     }
 
     const getLobbyNavClass = (navItemIndex:number) => {
+        //display new messages colour, but only when user is not in chat
+        if (navItemIndex === 2 && chatStatus === ChatStatus.newMsg && lobbyIndex !== 2) {
+            return st.NavItem_Con_Alert
+        }
+        //default
         if (navItemIndex === lobbyIndex) {
             return st.NavItem_Con_Active
         }
         return st.NavItem_Con
     }
 
+    const onNavItemClick = (index:number) => {
+        if (index === 2 && chatStatus === ChatStatus.newMsg) {
+            setChatStatus(ChatStatus.MsgSeen)
+        }   
+        setLobbyIndex(index)
+    }
+
     return (
         <div className={st.Con}>
             <div className={st.NavBar}>
-                <div className={getLobbyNavClass(0)} onClick={() => {setLobbyIndex(0)}}>
+                <div className={getLobbyNavClass(0)} onClick={() => {onNavItemClick(0)}}>
                     <img className={st.Icon} src={Answer_Icon} alt="Answer" title="Your answer"/>
                 </div>
-                <div className={getLobbyNavClass(1)} onClick={() => {setLobbyIndex(1)}}>
+                <div className={getLobbyNavClass(1)} onClick={() => {onNavItemClick(1)}}>
                     <img className={st.Icon} src={Ranking_Icon} alt="Ranking" title="Ranking"/>
                 </div>
-                <div className={getLobbyNavClass(2)} onClick={() => {setLobbyIndex(2)}}>
+                <div className={getLobbyNavClass(2)} onClick={() => {onNavItemClick(2)}}>
                     <img className={st.Icon} src={Chat_Icon} alt="Chat" title="Chat"/>
                 </div>
-                <div className={getLobbyNavClass(3)} onClick={() => {setLobbyIndex(3)}}>
+                <div className={getLobbyNavClass(3)} onClick={() => {onNavItemClick(3)}}>
                     <img className={st.Icon} src={Settings_Icon} alt="Settings" title="Settings"/>
                 </div>
             </div>

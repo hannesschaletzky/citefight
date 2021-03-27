@@ -37,29 +37,11 @@
   align-items: center;
 }
 
-.Search_Con {
-  height: 100%;
-}
-
-.Search {
-  height: 100%;
-  object-fit: contain;
-}
-
 .Tweet_Con {
   height: 100%;
 }
 
 .Tweet {
-  height: 100%;
-  object-fit: contain;
-}
-
-.Answers_Con {
-  height: 40%;
-}
-
-.Answers {
   height: 100%;
   object-fit: contain;
 }
@@ -72,6 +54,9 @@
 
 .Bottom_Con {
   margin-top: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .Button_Ready {
@@ -81,4 +66,24 @@
   &:hover {
     background-color: rgba($ready_colour, 0.6);
   }
+}
+
+.Button_Find {
+  @extend .Button_Base;
+  margin-left: 20px;
+  flex-shrink: 0;
+  background-color: rgba($ready_colour, 0.8);
+  &:hover {
+    background-color: rgba($ready_colour, 0.6);
+  }
+}
+
+.ID_Input {
+  margin-left: 5px;
+  height: 30px;
+  @extend .borderWithRoundedCorners;
+}
+
+.Info {
+  margin-left: 10px;
 }

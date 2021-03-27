@@ -32,6 +32,11 @@ $sdbg: false; //show debugging background = sdbg
   }
 }
 
+.Name_Con_Bold {
+  @extend .Name_Con;
+  font-weight: bold;
+}
+
 .Icon_Base {
   flex: 1;
   display: flex;
