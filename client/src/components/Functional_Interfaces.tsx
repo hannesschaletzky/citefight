@@ -32,8 +32,13 @@ export interface RankingProps {
     userName: string
     roundUntil: number //calc scoreboard until this round
     readyEnabled: boolean
+    onDetailedRankingClick: () => void
 }
 export interface ChatProps {
     messages: ChatMsg[]
     onNewMessage: (newMsg:ChatMsg) => void
+}
+export interface MatrixProps {
+    matrix: Matrix
+    onCloseClick: () => void
 }

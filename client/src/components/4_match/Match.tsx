@@ -14,7 +14,7 @@ import {Tweet} from 'components/Interfaces'
 import {Matrix, Point} from 'components/Interfaces'
 import {ChatMsg, SysMsgType} from 'components/Interfaces'
 //functional interfaces
-import {MatchProps} from 'components/Functional_Interfaces'
+import {MatchProps, MatrixProps} from 'components/Functional_Interfaces'
 //logic
 import {isValidMatchID, setCountdown} from 'components/Logic'
 //pusher
@@ -22,6 +22,7 @@ import * as Pu from 'components/pusher/Pusher'
 //components
 import Players from '../3_setup/players/Players'
 import Nav, {NavProps} from './nav/Nav'
+import MatrixComponent from './matrix/Matrix'
 import * as Chat from 'components/00_shared/chat/Chat'
 import * as Settings from 'components/00_shared/settings/Settings'
 import * as Not from 'components/00_shared/notification/Notification'
@@ -124,6 +125,7 @@ export default function Match(props:MatchProps) {
     const ref_players = useRef(init_players)
     const ref_chat = useRef(init_chat)
     const ref_HoverPic = useRef('')
+    const ref_showMatrix = useRef(false)
     const ref_timeouts = useRef(init_timeouts)
     //pusher refs
     const ref_pusherClient = useRef(Pu.init_pusherCient)
@@ -879,6 +881,16 @@ export default function Match(props:MatchProps) {
         ref_settings_match.current = newSettings
         forceUpdate()
     }
+    
+    const onDetailedRankingClick = () => {
+        ref_showMatrix.current = true
+        forceUpdate()
+    }
+
+    const onMatrixCloseClick = () => {
+        ref_showMatrix.current = false
+        forceUpdate()
+    }
 
     /*
     ##################################
@@ -1112,9 +1124,18 @@ export default function Match(props:MatchProps) {
             userName: ref_username.current,
             roundUntil: roundUntil,
             readyEnabled: readyEnabled,
+            onDetailedRankingClick: onDetailedRankingClick,
             onNotfication: showNotification
         }
         return React.createElement(Nav, props)
+    }
+
+    const getMatrixComponent = () => {
+        let props:MatrixProps = {
+            matrix: ref_matrix.current,
+            onCloseClick: onMatrixCloseClick
+        }
+        return React.createElement(MatrixComponent, props)
     }
 
 	return (
@@ -1142,6 +1163,9 @@ export default function Match(props:MatchProps) {
                 <div className={st.HoverPic_Con} onClick={() => pictureClick('')}>
                     <img className={st.HoverPic} src={ref_HoverPic.current} alt=""/>
                 </div>
+            }
+            {ref_showMatrix.current && 
+                getMatrixComponent()
             }
         </div>
 	)

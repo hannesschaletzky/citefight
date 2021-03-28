@@ -32,6 +32,7 @@ export interface NavProps {
     userName: string
     roundUntil: number
     readyEnabled: boolean
+    onDetailedRankingClick: () => void
     onNotfication: (msg:string, notType:Not.Type) => void
 }
 
@@ -103,7 +104,8 @@ export default function Nav(props:NavProps) {
                 matrix: props.matrix,
                 userName: props.userName,
                 roundUntil: props.roundUntil,
-                readyEnabled: props.readyEnabled
+                readyEnabled: props.readyEnabled,
+                onDetailedRankingClick: props.onDetailedRankingClick
             }
             const comp = React.createElement(Ranking, props_)
             content = comp

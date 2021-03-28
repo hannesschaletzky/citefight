@@ -1,16 +1,17 @@
 _________
 PRIO 1:
-insert history in ranking cards
+insert recent rounds results in ranking cards
 Encrypt sharing tweets and matrix points
 
 _________
 PRIO 2:
 add drinking mode
+create categories
+add big results matrix
+add admin area to force next round
 
 _________
 PRIO 3:
-add big results matrix
-create categories
 create history -> users can just use the profiles from a recent match
 let ready button jump in setup screen (also in match but here only in first round)
 

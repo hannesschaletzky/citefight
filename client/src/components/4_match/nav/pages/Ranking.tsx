@@ -14,7 +14,7 @@ export default function Ranking(props:RankingProps) {
     }
 
     const showDetailed = () => {
-        
+        props.onDetailedRankingClick()
     }
 
     const getCards = () => {
@@ -212,11 +212,13 @@ export default function Ranking(props:RankingProps) {
             }
 
             cards.push(
-                <div className={className} key={user.name}>
-                    {status}
-                    <div className={props.userName === user.name ? st.Name_IsYou : st.Name} title={user.name}>{user.name}</div>
-                    <div className={st.Points} title="Total correct/ratio correct">{user.points}/{user.ratio}%</div>
-                    <div className={st.Time} title={"Total time: " + user.time/1000}>{round(user.time/1000, 1)}s</div>
+                <div className={st.Cards_Con}>
+                    <div className={className} key={user.name}>
+                        {status}
+                        <div className={props.userName === user.name ? st.Name_IsYou : st.Name} title={user.name}>{user.name}</div>
+                        <div className={st.Points} title="Total correct/ratio correct">{user.points}/{user.ratio}%</div>
+                        <div className={st.Time} title={"Total time: " + user.time/1000}>{round(user.time/1000, 1)}s</div>
+                    </div>
                 </div>
             )
         }
@@ -233,9 +235,7 @@ export default function Ranking(props:RankingProps) {
                 <div className={st.Headline_Points} title="Total correct answers">👍</div>
                 <div className={st.Headline_Time} title="Total time taken">⏱️</div>
             </div>
-            <div className={st.Cards_Con}>
-                {getCards()}
-            </div>
+            {getCards()}
             <div className={st.Details_Con}>
                 <button className={st.Button_Detailed} onClick={() => showDetailed()}>
                     Show Detailed
