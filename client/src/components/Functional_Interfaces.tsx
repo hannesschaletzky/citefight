@@ -41,5 +41,6 @@ export interface ChatProps {
 export interface MatrixProps {
     matrix: Matrix
     profiles:Profile[]
+    roundUntil:number
     onCloseClick: () => void
 }

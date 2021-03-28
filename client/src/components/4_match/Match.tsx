@@ -1131,9 +1131,15 @@ export default function Match(props:MatchProps) {
     }
 
     const getMatrixComponent = () => {
+
+        let roundUntil = ref_state.current.roundIndex
+        if (ref_state.current.status === Status.showRound_Solution) {
+            roundUntil++
+        }
         let props:MatrixProps = {
             matrix: ref_matrix.current,
             profiles: ref_profiles.current,
+            roundUntil: roundUntil,
             onCloseClick: onMatrixCloseClick
         }
         return React.createElement(MatrixComponent, props)

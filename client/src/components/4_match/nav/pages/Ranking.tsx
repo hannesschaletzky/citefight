@@ -176,18 +176,18 @@ export default function Ranking(props:RankingProps) {
             let user = calcArr[i]
 
             let status = <div className={st.Answer} title='No Action yet'>❓</div>
-            let className = st.Card_Con
+            let className = st.Cards_Con
 
             //-> when round finished -> check ready & correct/false
             if (props.readyEnabled) {
                 let point = matrix[user.name][props.roundUntil-1]
                 //ready
                 if (point.ready) {
-                    className = st.Card_Con_Ready
+                    className = st.Cards_Con_Ready
                 }
                 //correct/false
                 if (point.answer === '') {
-                    status = <div className={st.Answer} title='No answer was given'>⭕</div>
+                    status = <div className={st.Answer} title='No answer was given'>⚫</div>
                 }
                 else {
                     const text = 'Solution: ' + point.goal + ', Answer: ' + point.answer
@@ -205,8 +205,8 @@ export default function Ranking(props:RankingProps) {
             }
 
             cards.push(
-                <div className={st.Cards_Con}>
-                    <div className={className} key={user.name}>
+                <div className={className}>
+                    <div className={st.Card_Con} key={user.name}>
                         {status}
                         <div className={props.userName === user.name ? st.Name_IsYou : st.Name} title={user.name}>{user.name}</div>
                         <div className={st.Points} title="Total correct/ratio correct">{user.points}/{user.ratio}%</div>

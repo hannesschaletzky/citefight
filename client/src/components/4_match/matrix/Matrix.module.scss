@@ -1,4 +1,4 @@
-$sdbg: false; //show debugging background = sdbg
+$sdbg: false;
 @import "styles/app.global.scss";
 
 .Con {
@@ -9,13 +9,29 @@ $sdbg: false; //show debugging background = sdbg
   left: 0;
   margin: 10px;
 
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-
   cursor: pointer;
   overflow: auto;
   background-color: rgba(255, 255, 255, 0.95);
+
+  display: grid;
+  grid-template-columns: 100px 100px 100px 100px 100px;
+  grid-template-rows: 80px 80px;
+  //grid-column: 2;
+}
+
+.Item_Props {
+  width: 100%;
+  height: 100%;
+  padding: 3px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.TopLeftPlaceholder {
+  @extend .Item_Props;
 }
 
 /*
@@ -23,17 +39,9 @@ $sdbg: false; //show debugging background = sdbg
   HEADLINE
   ################################
 */
-.Headline_Con {
-  display: flex;
-}
-
 .Headline_Item {
-  min-width: 120px;
-  height: 80px;
-  padding: 3px;
-  margin-right: 5px;
-  text-align: center;
-  background-color: burlywood;
+  @extend .Item_Props;
+  border-bottom: 1px solid rgb(197, 197, 197);
 }
 
 .Headline_Name {
@@ -46,17 +54,13 @@ $sdbg: false; //show debugging background = sdbg
   ROW
   ################################
 */
-.Row_Con {
-  margin-top: 10px;
-  display: flex;
+.Row_Item {
+  @extend .Item_Props;
 }
 
-.Row_Item {
-  width: 100px;
-  padding: 3px;
-  margin-right: 5px;
-  text-align: center;
-  background-color: rgb(13, 163, 93);
+.Row_PlayerName {
+  @extend .Item_Props;
+  word-break: break-all;
 }
 
 .Row_Name {
@@ -71,5 +75,7 @@ $sdbg: false; //show debugging background = sdbg
 .Pic {
   height: 40px;
   width: 40px;
+  margin-top: 5px;
+  margin-bottom: 5px;
   border-radius: 50%;
 }

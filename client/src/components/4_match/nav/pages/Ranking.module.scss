@@ -59,6 +59,11 @@ $sdbg: false; //show debugging background = sdbg
   }
 }
 
+.Cards_Con_Ready {
+  @extend .Cards_Con;
+  background-color: rgba($ready_colour, 0.2);
+}
+
 /*
   ################################
   USER
@@ -68,11 +73,6 @@ $sdbg: false; //show debugging background = sdbg
   height: 20px;
   display: flex;
   align-items: center;
-}
-
-.Card_Con_Ready {
-  @extend .Card_Con;
-  background-color: rgba($ready_colour, 0.2);
 }
 
 .Answer {
