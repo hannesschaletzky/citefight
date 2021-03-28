@@ -1,12 +1,7 @@
 _________
 PRIO 1:
-care for the 1.5 seconds when everyone gave answer and showSolution 
-    -> maybe insert status round closed!
-    -> EVEN BETTER: integrate check if everyone is ready in decrease timeout call
-
 insert history in ranking cards
 Encrypt sharing tweets and matrix points
-
 
 _________
 PRIO 2:
@@ -21,6 +16,9 @@ let ready button jump in setup screen (also in match but here only in first roun
 
 ___________________________________________________________________________________________
 DONE:
+care for the 1.5 seconds when everyone gave answer and showSolution 
+    -> EVEN BETTER: integrate check if everyone is ready in decrease timeout call
+when user leaves/joins in match -> force update will make weird stuff especially when round ended
 add match ended screen after last round
 make links in tweet blue as well
 implement what happens when user leaves match

@@ -13,6 +13,26 @@ $sdbg: false; //show debugging background = sdbg
 
 /*
   ################################
+  DETAILS
+  ################################
+*/
+
+.Details_Con {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.Button_Detailed {
+  @extend .Button_Base;
+  height: 30px;
+  font-size: 10pt;
+  background-color: rgba($unready_colour, 0.8);
+}
+
+/*
+  ################################
   HEADLINE
   ################################
 */

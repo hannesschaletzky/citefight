@@ -417,9 +417,12 @@ export default function Match(props:MatchProps) {
             channel.bind(Pu.Channel_Member_Removed, //left
                 (member:any) => userLeft(member.id)
             )
-            channel.bind(Pu.Channel_Member_Added,   //joined
-                () => checkIfEveryoneJoined()
-            )
+            channel.bind(Pu.Channel_Member_Added, () => { //joined 
+                if (ref_state.current.status === Status.everyoneJoined) {
+                    checkIfEveryoneJoined()
+                }
+            })
+            
             channel.bind(Pu.Channel_Sub_Fail, (err:any) => {
                 logObjectPretty(err)
                 setPusherState(Pu.State.failed) 
@@ -566,11 +569,34 @@ export default function Match(props:MatchProps) {
 
         //calc differnce until target date
         let diffS = ref_settings_lobby.current.roundtime
+
         //logic for decrease timeout
         const decrease = () => {
+            //finish round when everyone answered
+            if (ref_state.current.status === Status.showRound_OwnPick) {
+                //check if everyone answered
+                let finishRound = true
+                ref_players.current.forEach((player) => {
+                    if (ref_matrix.current[player.name][ref_state.current.roundIndex].answer === '') {
+                        finishRound = false
+                    }
+                })
+                if (finishRound) {
+                    log('everyone answered -> show solution!')
+                    //stop countdown by clearing timeouts
+                    ref_timeouts.current.forEach((timeout) => {
+                        clearTimeout(timeout)
+                    })
+                    ref_timeouts.current = []
+                    //show solution after small timeout so animation can finish
+                    setTimeout(() => showRoundSolution(),1000)
+                    return
+                }
+            }
             ref_state.current.roundCountdown -= 1
             forceUpdate()
         }
+
         //start countdown and store timeouts
         ref_timeouts.current = setCountdown(diffS, diffS*1000, decrease, showRoundSolution)
 
@@ -768,28 +794,6 @@ export default function Match(props:MatchProps) {
         else if (ref_state.current.status === Status.showRound_Solution) {
             forceUpdate()
         }
-
-        //finish round when everyone answered
-        if (ref_state.current.status === Status.showRound_OwnPick) {
-            //check if everyone answered
-            let finishRound = true
-            ref_players.current.forEach((player) => {
-                if (ref_matrix.current[player.name][ref_state.current.roundIndex].answer === '') {
-                    finishRound = false
-                }
-            })
-            if (finishRound) {
-                log('everyone answered -> show solution!')
-                //stop countdown by clearing timeouts
-                ref_timeouts.current.forEach((timeout) => {
-                    clearTimeout(timeout)
-                })
-                ref_timeouts.current = []
-                //show solution after small timeout so animation can finish
-                setTimeout(() => showRoundSolution(),1000)
-                return
-            }
-        }
         
         //ADMIN starts next round if everyone is ready
         if (isAdmin() && ref_state.current.status === Status.showRound_Solution) {
@@ -937,8 +941,7 @@ export default function Match(props:MatchProps) {
                 </div>
         }
         //HAS EVERTYONE JOINED?
-        else if (ref_state.current.status === Status.init ||
-            ref_state.current.status === Status.everyoneJoined) {
+        else if (ref_state.current.status === Status.init || ref_state.current.status === Status.everyoneJoined) {
             return content =  
                 <div className={st.State_Con}>
                     <div className={st.State_Caption}>

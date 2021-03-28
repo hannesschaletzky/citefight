@@ -13,6 +13,10 @@ export default function Ranking(props:RankingProps) {
         return Math.round(value * multiplier) / multiplier;
     }
 
+    const showDetailed = () => {
+        
+    }
+
     const getCards = () => {
 
         let matrix = props.matrix
@@ -231,6 +235,11 @@ export default function Ranking(props:RankingProps) {
             </div>
             <div className={st.Cards_Con}>
                 {getCards()}
+            </div>
+            <div className={st.Details_Con}>
+                <button className={st.Button_Detailed} onClick={() => showDetailed()}>
+                    Show Detailed
+                </button>
             </div>
         </div>
     );
