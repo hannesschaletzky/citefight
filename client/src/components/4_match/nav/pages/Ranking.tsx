@@ -3,18 +3,21 @@ import st from './Ranking.module.scss'
 //functional-interface
 import {RankingProps} from 'components/Functional_Interfaces'
 //import {Matrix, Point} from 'components/Interfaces'
-//interfaces
+//logic
+import {round} from 'components/Logic'
+//components
 import * as Sorting from './Ranking_Sorting'
 
 export default function Ranking(props:RankingProps) {
-    
-    function round(value: number, precision: number) {
-        var multiplier = Math.pow(10, precision || 0);
-        return Math.round(value * multiplier) / multiplier;
-    }
 
     const showDetailed = () => {
         props.onDetailedRankingClick()
+    }
+
+    //get random key
+    let key = 0
+    function grk():string {
+        return '' + key++
     }
 
     const getCards = () => {
@@ -136,43 +139,11 @@ export default function Ranking(props:RankingProps) {
         //MOCK END
         */
         
-        const keys = Object.keys(matrix)
-        let calcArr:Sorting.User[] = []
-        keys.forEach((player) => {
-
-            //calc total points/time
-            let correct = 0
-            let timeMS = 0
-            let answersCount = 0 
-            let arr = matrix[player]
-            for(let i=0;i<arr.length;i++) {
-                //check if max given round reached
-                if (i === props.roundUntil) {break}
-                //calc measures
-                if (arr[i].correct) {correct++}
-                if (arr[i].answer !== '') {answersCount++}
-                timeMS += arr[i].timeMS
-            }
-
-            //calc ratio
-            let ratio = 0
-            if (answersCount !== 0) {
-                ratio = round((correct/answersCount)*100,0)
-            }
-
-            //insert into sorted array
-            let user:Sorting.User = {
-                name: player,
-                points: correct,
-                ratio: ratio,
-                time: timeMS
-            }
-            Sorting.insertIntoRanking(user, calcArr)
-        })
-
-        //create cards (-> loop backwards)
+        let calcArr = Sorting.getSortedArray(props.matrix, props.roundUntil)
+       
+        //create cards
         let cards:JSX.Element[] = []
-        for(let i=calcArr.length-1;i>=0;i--) {
+        for(let i=0;i<calcArr.length;i++) {
             let user = calcArr[i]
 
             let status = <div className={st.Answer} title='No Action yet'>❓</div>
@@ -205,8 +176,8 @@ export default function Ranking(props:RankingProps) {
             }
 
             cards.push(
-                <div className={className}>
-                    <div className={st.Card_Con} key={user.name}>
+                <div className={className} key={grk()}>
+                    <div className={st.Card_Con}>
                         {status}
                         <div className={props.userName === user.name ? st.Name_IsYou : st.Name} title={user.name}>{user.name}</div>
                         <div className={st.Points} title="Total correct/ratio correct">{user.points}/{user.ratio}%</div>

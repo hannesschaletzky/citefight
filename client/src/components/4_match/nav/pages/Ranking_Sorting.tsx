@@ -1,10 +1,55 @@
+import {Matrix} from 'components/Interfaces'
+import {round} from 'components/Logic'
+
 export interface User {
     name: string
     points: number
     ratio: number
     time: number
 }
-export function insertIntoRanking(input: User, ranking:User[]) {
+
+export function getSortedArray(matrix:Matrix, roundUntil:number):User[] {
+    const keys = Object.keys(matrix)
+    let calcArr:User[] = []
+    keys.forEach((player) => {
+
+        //calc total points/time
+        let correct = 0
+        let timeMS = 0
+        let answersCount = 0 
+        let arr = matrix[player]
+        for(let i=0;i<arr.length;i++) {
+            //check if max given round reached
+            if (i === roundUntil) {break}
+            //calc measures
+            if (arr[i].correct) {correct++}
+            if (arr[i].answer !== '') {answersCount++}
+            timeMS += arr[i].timeMS
+        }
+
+        //calc ratio
+        let ratio = 0
+        if (answersCount !== 0) {
+            ratio = round((correct/answersCount)*100,0)
+        }
+
+        //insert into sorted array
+        let user:User = {
+            name: player,
+            points: correct,
+            ratio: ratio,
+            time: timeMS
+        }
+        insertIntoRanking(user, calcArr)
+    })
+    //reverse array
+    calcArr = calcArr.reverse()
+    //return
+    return calcArr
+}
+
+
+function insertIntoRanking(input: User, ranking:User[]) {
 
     //insert first item
     if (ranking.length === 0) {

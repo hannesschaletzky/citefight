@@ -53,6 +53,11 @@ export function getRandomInt(max:number) {
     return Math.floor(Math.random() * Math.floor(max))
 }
 
+export function round(value: number, precision: number) {
+    var multiplier = Math.pow(10, precision || 0)
+    return Math.round(value * multiplier) / multiplier
+}
+
 export function isDevEnv():boolean {
     if (process.env.NODE_ENV === 'development') {
         return true

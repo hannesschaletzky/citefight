@@ -3,7 +3,8 @@ import React from 'react';
 import st from './Matrix.module.scss'
 //functional interfaces
 import {MatrixProps} from 'components/Functional_Interfaces'
-//inferfaces
+//components
+import * as Sorting from '../nav/pages/Ranking_Sorting'
 
 export default function Matrix(props:MatrixProps) {
 
@@ -11,6 +12,12 @@ export default function Matrix(props:MatrixProps) {
 
     const onCloseClick = () => {
         props.onCloseClick()
+    }
+
+    //get random key
+    let key = 0
+    function grk():string {
+        return '' + key++
     }
 
     const getProfilePicURLFor = (screen_name:string) => {
@@ -29,7 +36,7 @@ export default function Matrix(props:MatrixProps) {
         props.matrix[keys[0]].forEach((point, index) => {
             if (index < props.roundUntil) {
                 items.push(
-                    <div className={st.Headline_Item} key={count}>
+                    <div className={st.Headline_Item} key={grk()}>
                         {count++}
                         <img className={st.Pic} src={getProfilePicURLFor(point.goal)} alt="Correct Answer"/>
                         <div className={st.Headline_Name}>{point.goal}</div> 
@@ -37,22 +44,26 @@ export default function Matrix(props:MatrixProps) {
             }
             else {
                 items.push(
-                    <div className={st.Headline_Item} key={count}>
+                    <div className={st.Headline_Item} key={grk()}>
                         {count++}
                     </div>)
             }
-
-            
         })
         return items
     }
 
     const getRows = () => {
+
+        //get sorted array from matrix
+        let calcArr = Sorting.getSortedArray(props.matrix, props.roundUntil)
+
+        //COMPOSE ROWS
         let rows: JSX.Element[] = []
-        keys.forEach((player) => {
+        calcArr.forEach((item) => {
+            let player = item.name
             //first item is player name
             rows.push(
-                    <div className={st.Row_PlayerName} key={player}>
+                    <div className={st.Row_PlayerName} key={grk()}>
                         {player}
                     </div>)
             //rounds
@@ -76,7 +87,7 @@ export default function Matrix(props:MatrixProps) {
 
                 if (index < props.roundUntil) {
                     rows.push(
-                        <div className={st.Row_Item} title={text} key={index}>
+                        <div className={st.Row_Item} title={text} key={grk()}>
                             {(point.answer !== '') && 
                                 <img className={st.Pic} src={getProfilePicURLFor(point.answer)} alt="Correct Answer"/> 
                             }
@@ -85,7 +96,7 @@ export default function Matrix(props:MatrixProps) {
                         </div>)
                 }
                 else {
-                    rows.push(<div className={st.Row_Item} title={text} key={index}></div>)
+                    rows.push(<div className={st.Row_Item} title={text} key={grk()}></div>)
                 }
             })
         })
@@ -110,21 +121,21 @@ export default function Matrix(props:MatrixProps) {
 
         const style = {
             position: "absolute",
-            "top": 0,
-            "right": "0",
-            "bottom": "0",
-            "left": "0",
+            "top": "55px",
+            "right": 0,
+            "bottom": "60px",
+            "left": 0,
             margin: "10px",
 
             cursor: "pointer",
             overflow: "auto",
-            "background-color": "rgba(255, 255, 255, 0.95)",
+            backgroundColor: "rgba(255, 255, 255, 0.95)",
 
             display: "grid",
-            "grid-column-gap": "10px",
-            "grid-row-gap": "10px",
-            "grid-template-columns": cssColumns,
-            "grid-template-rows": cssRows
+            gridColumnGap: "10px",
+            gridRowGap: "10px",
+            gridTemplateColumns: cssColumns,
+            gridTemplateRows: cssRows
         } as React.CSSProperties
 
         let rtn = 
