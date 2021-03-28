@@ -5,13 +5,71 @@ $sdbg: false; //show debugging background = sdbg
   position: absolute;
   top: $header_height;
   right: 0;
-  bottom: 0;
+  bottom: $footer_height;
   left: 0;
+  margin: 10px;
 
   display: flex;
+  flex-direction: column;
   justify-content: center;
-  align-items: center;
 
   cursor: pointer;
+  overflow: auto;
   background-color: rgba(255, 255, 255, 0.95);
+}
+
+/*
+  ################################
+  HEADLINE
+  ################################
+*/
+.Headline_Con {
+  display: flex;
+}
+
+.Headline_Item {
+  min-width: 120px;
+  height: 80px;
+  padding: 3px;
+  margin-right: 5px;
+  text-align: center;
+  background-color: burlywood;
+}
+
+.Headline_Name {
+  overflow: hidden;
+  font-size: 12px;
+}
+
+/*
+  ################################
+  ROW
+  ################################
+*/
+.Row_Con {
+  margin-top: 10px;
+  display: flex;
+}
+
+.Row_Item {
+  width: 100px;
+  padding: 3px;
+  margin-right: 5px;
+  text-align: center;
+  background-color: rgb(13, 163, 93);
+}
+
+.Row_Name {
+  @extend .Headline_Name;
+}
+
+/*
+  ################################
+  SHARED
+  ################################
+*/
+.Pic {
+  height: 40px;
+  width: 40px;
+  border-radius: 50%;
 }

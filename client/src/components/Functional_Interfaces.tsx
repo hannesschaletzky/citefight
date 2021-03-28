@@ -40,5 +40,6 @@ export interface ChatProps {
 }
 export interface MatrixProps {
     matrix: Matrix
+    profiles:Profile[]
     onCloseClick: () => void
 }

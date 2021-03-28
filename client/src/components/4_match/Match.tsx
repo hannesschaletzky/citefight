@@ -1133,6 +1133,7 @@ export default function Match(props:MatchProps) {
     const getMatrixComponent = () => {
         let props:MatrixProps = {
             matrix: ref_matrix.current,
+            profiles: ref_profiles.current,
             onCloseClick: onMatrixCloseClick
         }
         return React.createElement(MatrixComponent, props)

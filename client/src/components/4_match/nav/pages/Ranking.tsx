@@ -136,14 +136,8 @@ export default function Ranking(props:RankingProps) {
         //MOCK END
         */
         
-
         const keys = Object.keys(matrix)
-
-        let cards = [<div key="_"></div>]
-        cards = []
-
         let calcArr:Sorting.User[] = []
-
         keys.forEach((player) => {
 
             //calc total points/time
@@ -176,9 +170,8 @@ export default function Ranking(props:RankingProps) {
             Sorting.insertIntoRanking(user, calcArr)
         })
 
-        
-
         //create cards (-> loop backwards)
+        let cards:JSX.Element[] = []
         for(let i=calcArr.length-1;i>=0;i--) {
             let user = calcArr[i]
 
