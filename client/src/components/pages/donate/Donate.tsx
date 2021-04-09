@@ -1,11 +1,11 @@
 import st from './Donate.module.scss';
 
-export default function DonationThankYou() {
+export default function Donation() {
 
     return (
         <div className={st.Con}>
             <div className={st.Caption}>
-                Thank you for cosindering a donation! <br></br> 
+                Thank you for considering a donation! <br></br> 
                 This helps me to provide a nice game experience :) <br></br> 
                 Paypal: hannes.schaletzky@gmx.de <br></br> 
             </div>

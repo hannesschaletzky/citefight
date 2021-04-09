@@ -90,7 +90,8 @@ export default function Landing() {
         <div className={st.Con}>
             <div className={st.Headline}>
                 Citefight is a Twitter guessing game. Choose public Twitter profiles and invite your friends to play! <br></br>
-                A random tweet will be displayed each round. Guess who tweeted! The player with the highest number of correct answers wins!!!
+                A random tweet will be displayed each round. Guess who tweeted!<br></br>
+                The player with the highest number of correct answers wins!!!
             </div>
             <div className={st.PicFlow_Con}>
                 <div className={st.Tweet_Con}>

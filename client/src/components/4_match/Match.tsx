@@ -1133,7 +1133,8 @@ export default function Match(props:MatchProps) {
     const getMatrixComponent = () => {
 
         let roundUntil = ref_state.current.roundIndex
-        if (ref_state.current.status === Status.showRound_Solution) {
+        if (ref_state.current.status === Status.showRound_Solution ||
+            ref_state.current.status === Status.finishMatch) {
             roundUntil++
         }
         let props:MatrixProps = {
